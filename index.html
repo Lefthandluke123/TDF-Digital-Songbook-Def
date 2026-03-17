@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Doggy Few Digital Songbook v5.84</title>
+    <title>The Doggy Few Digital Songbook v5.85</title>
     <style>
         :root { --bg-dark: #121412; --card-bg: #1e241e; --celtic-green: #2d5a27; --griffin-orange: #d48e3d; --griffin-red: #c12718; --text-light: #f0f4ef; --lyrics-white: #ffffff; --char-width: 1.15ch; }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; outline: none; }
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; }
         body { font-family: 'Georgia', serif; color: var(--text-light); display: flex; flex-direction: column; align-items: center; padding: 10px; }
-        .song-card { background: var(--card-bg); padding: 15px; border-radius: 15px; border: 3px double var(--celtic-green); width: 100%; max-width: 100%; display: flex; flex-direction: column; flex-grow: 1; position: relative; z-index: 1; }
+        .song-card { background: var(--card-bg); padding: 15px; border-radius: 15px; border: 3px double var(--celtic-green); width: 100%; max-width: 100%; display: flex; flex-direction: column; flex-grow: 1; position: relative; }
         @media (min-width: 1025px) { .song-card { max-width: 950px; } }
         .lyrics-chords-view, #editorArea { background: var(--lyrics-white); color: #000; padding: 25px; border-radius: 8px; font-family: 'Courier New', monospace !important; font-size: 1.2rem; border: 2px solid var(--griffin-orange); width: 100%; flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
         #editorArea { display: none; white-space: pre; resize: none; }
@@ -19,16 +19,16 @@
         @media (max-width: 768px) { .sidebar { width: 85vw; left: -85vw; } }
         .sidebar-header { padding: 20px; background: var(--celtic-green); color: white; border-bottom: 3px solid var(--griffin-orange); }
         .sidebar-header input { background: #333; border: 1px solid var(--griffin-orange); padding: 12px; width: 100%; margin: 10px 0; border-radius: 5px; color: white; font-size: 1rem; }
-        .index-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .index-item { padding: 18px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: block; width: 100%; text-align: left; }
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-dark); z-index: 6000; padding: 20px; overflow-y: auto; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 8px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; position: relative; z-index: 10; }
-        .btn { padding: 12px 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 8px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
+        .btn { padding: 12px 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; text-align: center; color: white; -webkit-appearance: none; }
         .btn-green { background: var(--celtic-green); }
         .btn-orange { background: var(--griffin-orange); color: #000; }
         .btn-red { background: var(--griffin-red); }
         .chord-item { position: absolute; top: 0; white-space: nowrap; color: var(--griffin-red); font-weight: 900; }
         .lyric-line { white-space: pre; display: block; line-height: 1.0; font-weight: 800; }
-        .settings-trigger { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; cursor: pointer; z-index: 20; background: rgba(128,128,128,0.3); border-radius: 50%; padding: 10px; }
+        .settings-trigger { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; cursor: pointer; z-index: 100; background: rgba(128,128,128,0.3); border-radius: 50%; padding: 10px; }
     </style>
 </head>
 <body>
@@ -47,18 +47,17 @@
         <div style="max-width:600px; margin:auto; background:var(--card-bg); padding:30px; border-radius:15px; border:2px solid var(--celtic-green);">
             <h1 style="color:var(--griffin-orange);">BEHEER</h1>
             <div class="dashboard" style="grid-template-columns: 1fr;">
-                <button class="btn btn-green" id="bulkImportBtn">📂 BATCH IMPORT (.TXT / .CHORDPRO)</button>
-                <button class="btn btn-orange" id="downloadBtn">💾 BACKUP DOWNLOADEN (.JSON)</button>
-                <button class="btn btn-orange" id="restoreBtn">🔄 RESTORE BACKUP (.JSON)</button>
+                <button class="btn btn-green" id="bulkImportBtn">📂 BATCH IMPORT (.TXT)</button>
+                <button class="btn btn-orange" id="downloadBtn">💾 BACKUP DOWNLOADEN</button>
+                <button class="btn btn-orange" id="restoreBtn">🔄 RESTORE BACKUP</button>
                 <button class="btn btn-red" id="closeSettingsBtn">SLUITEN</button>
             </div>
         </div>
     </div>
-    <div class="settings-trigger" id="openSettingsBtn"><svg viewBox="0 0 24 24" style="fill:var(--griffin-orange);"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
+    <div class="settings-trigger" id="openSettingsBtn"><svg viewBox="0 0 24 24" style="fill:var(--griffin-orange); pointer-events:none;"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
     <div class="header" style="padding: 5px 0;"><h3>The Doggy Few Digital Songbook</h3></div>
     <div class="song-card">
         <div class="dashboard" style="margin-top:0;">
-            <select id="bookSelect" class="btn" style="background:white; color:black; appearance:none; padding-left:10px;"></select>
             <button class="btn btn-green" id="sidebarBtn">INDEX / SETLIST</button>
             <button class="btn btn-orange" id="editBtn">EDIT</button>
             <button class="btn btn-green" id="saveBtn">SAVE</button>
@@ -69,17 +68,80 @@
         let songDatabase = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let selectedSong = null;
 
-        const listen = (id, fn) => { const el = document.getElementById(id); if(el) { el.addEventListener('click', fn); el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); }, {passive: false}); } };
-        listen('sidebarBtn', toggleSidebar); listen('sidebarOverlay', toggleSidebar); listen('openSettingsBtn', () => openOverlay('settingsOverlay')); listen('closeSettingsBtn', () => closeOverlay('settingsOverlay')); listen('editBtn', enableEdit); listen('saveBtn', saveSong); listen('newSongBtn', createNewSong); listen('downloadBtn', downloadBackup); listen('bulkImportBtn', () => document.getElementById('bulkImportInput').click()); listen('restoreBtn', () => document.getElementById('restoreInput').click());
+        const listen = (id, fn) => { 
+            const el = document.getElementById(id); 
+            if(el) { el.addEventListener('click', fn); }
+        };
 
-        function toggleSidebar() { const s = document.getElementById('indexSidebar'); const o = document.getElementById('sidebarOverlay'); if(s.classList.contains('open')) { s.classList.remove('open'); o.style.display = 'none'; } else { renderIndex(); s.classList.add('open'); o.style.display = 'block'; } }
-        function renderIndex() { const container = document.getElementById('indexContent'); container.innerHTML = ""; const filter = document.getElementById('indexSearch').value.toLowerCase(); songDatabase.filter(s => s.title.toLowerCase().includes(filter)).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => { const i = document.createElement('div'); i.className = 'index-item'; i.innerHTML = `<span>${s.title}</span>`; i.addEventListener('click', () => { selectSong(s.title); toggleSidebar(); }); i.addEventListener('touchstart', (e) => { e.preventDefault(); selectSong(s.title); toggleSidebar(); }); container.appendChild(i); }); }
-        function selectSong(t) { selectedSong = songDatabase.find(s => s.title === t); if(selectedSong) { renderLyrics(); } }
-        function renderLyrics() { if(!selectedSong) return; const lines = selectedSong.content.split(/\n/); let out = ""; lines.forEach(l => { let chords = [], text = "", i = 0; while(i < l.length) { if(l[i]==='[') { let e = l.indexOf(']', i); chords.push({p: text.length, v: l.substring(i+1, e)}); i = e+1; continue; } text += l[i]; i++; } let cIt = ""; chords.forEach(c => { cIt += `<span class="chord-item" style="left: calc(${c.p} * var(--char-width))">${c.v}</span>`; }); out += `<div style="position:relative; margin-bottom:35px; display:inline-block; text-align:left; width:fit-content;"><div style="position:relative; height:2.2rem;">${cIt}</div><div class="lyric-line">${text || " "}</div></div><br>`; }); document.getElementById('lyricsArea').innerHTML = out; document.getElementById('lyricsArea').scrollTop = 0; }
+        listen('sidebarBtn', toggleSidebar); 
+        listen('sidebarOverlay', toggleSidebar); 
+        listen('openSettingsBtn', () => openOverlay('settingsOverlay')); 
+        listen('closeSettingsBtn', () => closeOverlay('settingsOverlay')); 
+        listen('editBtn', enableEdit); 
+        listen('saveBtn', saveSong); 
+        listen('newSongBtn', createNewSong); 
+        listen('downloadBtn', downloadBackup); 
+        listen('bulkImportBtn', () => document.getElementById('bulkImportInput').click()); 
+        listen('restoreBtn', () => document.getElementById('restoreInput').click());
+
+        function toggleSidebar() { 
+            const s = document.getElementById('indexSidebar'); 
+            const o = document.getElementById('sidebarOverlay'); 
+            const isOpen = s.classList.contains('open');
+            s.classList.toggle('open', !isOpen);
+            o.style.display = isOpen ? 'none' : 'block';
+            if(!isOpen) renderIndex();
+        }
+
+        function renderIndex() { 
+            const container = document.getElementById('indexContent'); container.innerHTML = ""; 
+            const filter = document.getElementById('indexSearch').value.toLowerCase(); 
+            songDatabase.filter(s => s.title.toLowerCase().includes(filter)).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => { 
+                const i = document.createElement('div'); 
+                i.className = 'index-item'; 
+                i.innerHTML = `<span>${s.title}</span>`; 
+                i.onclick = () => { selectSong(s.title); toggleSidebar(); }; 
+                container.appendChild(i); 
+            }); 
+        }
+
+        function selectSong(t) { 
+            selectedSong = songDatabase.find(s => s.title === t); 
+            if(selectedSong) renderLyrics(); 
+        }
+
+        function renderLyrics() { 
+            if(!selectedSong) return; 
+            const lines = selectedSong.content.split(/\n/); let out = ""; 
+            lines.forEach(l => { 
+                let chords = [], text = "", i = 0; 
+                while(i < l.length) { 
+                    if(l[i]==='[') { let e = l.indexOf(']', i); chords.push({p: text.length, v: l.substring(i+1, e)}); i = e+1; continue; } 
+                    text += l[i]; i++; 
+                } 
+                let cIt = ""; chords.forEach(c => { cIt += `<span class="chord-item" style="left: calc(${c.p} * var(--char-width))">${c.v}</span>`; }); 
+                out += `<div style="position:relative; margin-bottom:35px; display:inline-block; text-align:left; width:fit-content;"><div style="position:relative; height:2.2rem;">${cIt}</div><div class="lyric-line">${text || " "}</div></div><br>`; 
+            }); 
+            const area = document.getElementById('lyricsArea');
+            area.innerHTML = out; 
+            area.scrollTop = 0; 
+        }
+
         function createNewSong() { selectedSong = { title: "Nieuw Lied", content: "" }; enableEdit(); toggleSidebar(); document.getElementById('editorArea').value = ""; }
         function enableEdit() { document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; if(selectedSong) document.getElementById('editorArea').value = selectedSong.content; }
         function saveSong() { const content = document.getElementById('editorArea').value; const title = content.split('\n')[0].replace(/[\[\]]/g, '') || "Naamloos Lied"; const existingIdx = songDatabase.findIndex(s => s.title === selectedSong.title); if(existingIdx > -1) songDatabase[existingIdx] = { title, content }; else songDatabase.push({ title, content }); localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); selectedSong = { title, content }; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; renderLyrics(); }
-        document.getElementById('bulkImportInput').addEventListener('change', async (e) => { const files = Array.from(e.target.files); for (const file of files) { const text = await file.text(); const title = file.name.replace(/\.(txt|chordpro)$/i, ''); if(!songDatabase.find(s => s.title === title)) songDatabase.push({ title, content: text }); } localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); alert("Geïmporteerd."); closeOverlay('settingsOverlay'); });
+        
+        document.getElementById('bulkImportInput').addEventListener('change', async (e) => { 
+            const files = Array.from(e.target.files); 
+            for (const file of files) { 
+                const text = await file.text(); 
+                const title = file.name.replace(/\.(txt|chordpro)$/i, ''); 
+                if(!songDatabase.find(s => s.title === title)) songDatabase.push({ title, content: text }); 
+            } 
+            localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); 
+            alert("Klaar."); closeOverlay('settingsOverlay'); 
+        });
+
         function downloadBackup() { const data = JSON.stringify(songDatabase); const b = new Blob([data], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `TDF_BACKUP.json`; a.click(); }
         document.getElementById('restoreInput').addEventListener('change', (e) => { const reader = new FileReader(); reader.onload = (ev) => { songDatabase = JSON.parse(ev.target.result); localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); alert("Hersteld."); }; reader.readAsText(e.target.files[0]); });
         function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
