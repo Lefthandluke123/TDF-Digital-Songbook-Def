@@ -1,20 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Doggy Few Digital Songbook v5.76</title>
+    <title>The Doggy Few Digital Songbook v5.77</title>
     <style>
-        :root { --bg-dark: #121412; --card-bg: #1e241e; --celtic-green: #2d5a27; --griffin-orange: #d48e3d; --griffin-red: #c12718; --text-light: #f0f4ef; --lyrics-white: #ffffff; --char-width: 1.15ch; --fs-size: 4vh; }
+        :root { --bg-dark: #121412; --card-bg: #1e241e; --celtic-green: #2d5a27; --griffin-orange: #d48e3d; --griffin-red: #c12718; --text-light: #f0f4ef; --lyrics-white: #ffffff; --char-width: 1.15ch; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; position: fixed; width: 100%; overflow: hidden; }
-        body { font-family: 'Georgia', serif; background-color: var(--bg-dark); color: var(--text-light); margin: 0; display: flex; flex-direction: column; align-items: center; padding: 5px; }
+        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); }
+        body { font-family: 'Georgia', serif; color: var(--text-light); display: flex; flex-direction: column; align-items: center; padding: 10px; }
         
-        .song-card { background: var(--card-bg); padding: 15px; border-radius: 15px; border: 3px double var(--celtic-green); width: 100%; max-width: 100%; display: flex; flex-direction: column; flex-grow: 1; position: relative; }
+        .song-card { background: var(--card-bg); padding: 15px; border-radius: 15px; border: 3px double var(--celtic-green); width: 100%; max-width: 100%; display: flex; flex-direction: column; flex-grow: 1; position: relative; z-index: 1; }
         @media (min-width: 1025px) { .song-card { max-width: 950px; } }
         
-        #visualArea { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
-        .lyrics-chords-view, #editorArea { background: var(--lyrics-white); color: #000; padding: 25px; border-radius: 8px; font-family: 'Courier New', monospace !important; font-size: 1.2rem; border: 2px solid var(--griffin-orange); width: 100%; flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .lyrics-chords-view, #editorArea { background: var(--lyrics-white); color: #000; padding: 25px; border-radius: 8px; font-family: 'Courier New', monospace !important; font-size: 1.2rem; border: 2px solid var(--griffin-orange); width: 100%; flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
         #editorArea { display: none; white-space: pre; resize: none; }
 
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 5000; }
@@ -22,110 +22,123 @@
         .sidebar.open { left: 0; }
         @media (max-width: 768px) { .sidebar { width: 85vw; left: -85vw; } }
 
-        .sidebar-header { padding: 20px; background: var(--celtic-green); color: white; border-bottom: 3px solid var(--griffin-orange); }
-        .sidebar-header input { background: #333; border: 1px solid var(--griffin-orange); padding: 12px; width: 100%; margin-top: 10px; border-radius: 5px; color: white; font-size: 1rem; }
-        .sidebar-content { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        
-        .index-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-dark); z-index: 6000; padding: 20px; overflow-y: auto; }
-        .manual-container { max-width: 850px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 15px; border: 2px solid var(--celtic-green); line-height: 1.6; }
-
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 8px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; }
-        .btn { padding: 12px 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .btn-green { background: var(--celtic-green); color: white; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin: 8px 0; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; position: relative; z-index: 10; }
+        .btn { padding: 12px 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+        .btn-green { background: var(--celtic-green); }
         .btn-orange { background: var(--griffin-orange); color: #000; }
-        .btn-red { background: var(--griffin-red); color: white; }
+        .btn-red { background: var(--griffin-red); }
         
-        .settings-trigger { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; cursor: pointer; z-index: 1000; background: rgba(128,128,128,0.2); border-radius: 50%; padding: 8px; display: flex; align-items: center; justify-content: center; }
-        .settings-trigger svg { fill: var(--griffin-orange); pointer-events: none; }
-        
-        #fsStageBar { display: none; position: fixed; bottom: 0; left: 0; width: 100vw; height: 120px; background: rgba(0,0,0,0.98); padding: 10px 20px; z-index: 7000; justify-content: center; gap: 15px; align-items: center; border-top: 3px solid var(--griffin-orange); }
-        body.full-page-mode #fsStageBar { display: flex; }
         .chord-item { position: absolute; top: 0; white-space: nowrap; color: var(--griffin-red); font-weight: 900; }
         .lyric-line { white-space: pre; display: block; line-height: 1.0; font-weight: 800; }
+        .settings-trigger { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; cursor: pointer; z-index: 20; background: rgba(128,128,128,0.3); border-radius: 50%; padding: 10px; }
     </style>
 </head>
 <body>
-    <input type="file" id="restoreInput" style="display:none;" onchange="restoreBackup(event)">
-    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <input type="file" id="restoreInput" style="display:none;">
+    
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
     <div id="indexSidebar" class="sidebar">
-        <div class="sidebar-header"><h3 id="sidebarTitle" style="margin:0;">INDEX</h3><input type="text" id="indexSearch" placeholder="Zoek lied..." onkeyup="renderIndex()"></div>
-        <div class="sidebar-content" id="indexContent"></div>
+        <div style="padding:20px; background:var(--celtic-green); border-bottom:3px solid var(--griffin-orange);">
+            <h3 style="margin:0;">INDEX</h3>
+            <input type="text" id="indexSearch" placeholder="Zoek..." style="width:100%; margin-top:10px; padding:12px; border-radius:5px; border:none;">
+        </div>
+        <div id="indexContent" style="flex-grow:1; overflow-y:auto; padding:10px;"></div>
     </div>
 
-    <div id="libraryOverlay" class="full-overlay"><div class="manual-container" style="max-width:600px;"><h1>LIBRARY MANAGER</h1><button class="btn btn-green" style="width:100%; padding:15px; margin-bottom:15px;" onclick="createBook()">+ NIEUW BOEK</button><div id="libraryContent"></div><button class="btn btn-red" onclick="closeOverlay('libraryOverlay')">SLUITEN</button></div></div>
-    <div id="manualOverlay" class="full-overlay"><div class="overlay-content"><div class="manual-container" id="manualText"></div><div style="text-align:center; margin-top:20px;"><button class="btn btn-red" style="padding:15px 40px;" onclick="closeOverlay('manualOverlay')">LETS ROCK!</button></div></div></div>
-    <div id="settingsOverlay" class="full-overlay"><h1>SETTINGS</h1><div class="dashboard" style="grid-template-columns: 1fr;"><button class="btn btn-orange" onclick="downloadBackup()">💾 BACKUP DOWNLOADEN</button><button class="btn btn-orange" onclick="document.getElementById('restoreInput').click()">🔄 RESTORE</button><button class="btn btn-red" onclick="closeOverlay('settingsOverlay')">SLUITEN</button></div></div>
+    <div id="manualOverlay" class="full-overlay">
+        <div id="manualText" class="manual-container" style="background:var(--card-bg); padding:30px; border-radius:15px; border:2px solid var(--celtic-green); max-width:850px; margin:auto;"></div>
+        <div style="text-align:center; margin-top:20px;"><button class="btn btn-red" style="padding:15px 40px; margin:auto;" id="closeManualBtn">LETS ROCK!</button></div>
+    </div>
 
-    <div class="settings-trigger" onclick="openOverlay('settingsOverlay')"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
+    <div class="settings-trigger" id="openSettingsBtn"><svg viewBox="0 0 24 24" style="fill:var(--griffin-orange);"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
 
-    <div class="header" style="padding: 5px 0;"><h3>The Doggy Few Digital Songbook</h3></div>
+    <div class="header"><h3>The Doggy Few Digital Songbook</h3></div>
     <div class="song-card">
-        <div class="dashboard" style="margin-top:0;">
-            <select id="bookSelect" class="btn" style="background:white; color:black; appearance:none; -webkit-appearance:none;" onchange="updateSongList()"><option value="all">📚 ALLE LIEDJES</option></select>
-            <button class="btn btn-green" onclick="toggleSidebar()">INDEX / SETLIST</button>
-            <button class="btn btn-orange" onclick="openOverlay('libraryOverlay'); renderLibrary();">LIBRARY</button>
-            <button class="btn btn-orange" onclick="openOverlay('manualOverlay');">MANUAL</button>
+        <div class="dashboard">
+            <select id="bookSelect" class="btn" style="background:white; color:black; appearance:none; padding-left:10px;"></select>
+            <button class="btn btn-green" id="sidebarBtn">INDEX / SETLIST</button>
+            <button class="btn btn-orange" id="manualBtn">MANUAL</button>
         </div>
         <div class="dashboard">
-            <select id="songSelect" onchange="selectSong(this.value)" class="btn" style="flex-grow:2; background:white; color:black; text-align:left; appearance:none; -webkit-appearance:none;"></select>
-            <button class="btn btn-orange" onclick="enableEdit()">EDIT</button>
-            <button class="btn btn-green" onclick="saveSong()">SAVE</button>
-            <button class="btn btn-green" onclick="toggleFullPage()">FULL SCREEN</button>
+            <select id="songSelect" class="btn" style="flex-grow:2; background:white; color:black; text-align:left; appearance:none; padding-left:10px;"></select>
+            <button class="btn btn-orange" id="editBtn">EDIT</button>
+            <button class="btn btn-green" id="saveBtn">SAVE</button>
         </div>
-        <div id="chordInserter" style="display:none;" class="dashboard">
-            <button class="btn btn-green" onclick="insertChord('A')">A</button><button class="btn btn-green" onclick="insertChord('Am')">Am</button><button class="btn btn-green" onclick="insertChord('B')">B</button><button class="btn btn-green" onclick="insertChord('C')">C</button><button class="btn btn-green" onclick="insertChord('D')">D</button><button class="btn btn-green" onclick="insertChord('Dm')">Dm</button><button class="btn btn-green" onclick="insertChord('E')">E</button><button class="btn btn-green" onclick="insertChord('Em')">Em</button><button class="btn btn-green" onclick="insertChord('F')">F</button><button class="btn btn-green" onclick="insertChord('G')">G</button><button class="btn btn-green" onclick="insertChord('G7')">G7</button><button class="btn btn-green" onclick="insertChord('G/B')">G/B</button>
-        </div>
-        <div id="visualArea"><div id="lyricsArea" class="lyrics-chords-view">Selecteer een lied uit de Index...</div><textarea id="editorArea" spellcheck="false"></textarea></div>
-    </div>
-
-    <div id="fsStageBar">
-        <button class="btn btn-orange" onclick="adjustFsFontSize(-0.5)">F-</button>
-        <button class="btn btn-orange" onclick="adjustFsFontSize(0.5)">F+</button>
-        <button class="btn btn-green" id="scrollBtn" onclick="toggleAutoScroll()">SCROLL ON</button>
-        <div style="color:white; flex-grow:1;">SPEED: <input type="range" id="scrollSpeedRange" min="0" max="100" value="30"></div>
-        <button class="btn btn-red" onclick="toggleFullPage()">BACK</button>
+        <div class="lyrics-chords-view" id="lyricsArea">Selecteer een lied uit de Index...</div>
+        <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
         let songDatabase = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let books = JSON.parse(localStorage.getItem('tdfBooks')) || {};
-        let selectedSong = null, fsFontSize = 4, isEditing = false, scrollActive = false, scrollPos = 0;
+        let selectedSong = null;
 
-        document.getElementById('manualText').innerHTML = `
-            <h2 style="color:var(--griffin-orange); text-align:center;">TDF Song Machine v5.7 | Stage Manual</h2>
-            <p><b>1. Gebruik op het podium</b><br>• <b>De Index:</b> Snelste weg naar je krakers.<br>• <b>Full Screen:</b> Voor de optredens.<br>• <b>Edit:</b> Teksten live aanpassen.</p>
-            <p><b>2. Een kadootje van de band</b><br>Eigendom van <b>Lucas Sterk</b> en <b>The Doggy Few</b>. © 2026.</p>
-            <p style="font-style:italic; color:var(--griffin-orange);">"Don't you just hate it when you are having a good time singing along and the band decides to get the lyrics wrong?"</p>`;
+        document.getElementById('manualText').innerHTML = `<h2>Stage Manual</h2><p><b>Gebruik op het podium:</b> Gebruik de Index voor je krakers. De app is een cadeau voor de band, eigendom van Lucas Sterk. © 2026.</p><p><i>"Don't you just hate it when you are having a good time singing along and the band decides to get the lyrics wrong?"</i></p>`;
 
-        const buttons = document.querySelectorAll('.btn, .settings-trigger, .index-item');
-        buttons.forEach(b => { b.addEventListener('touchstart', (e) => {}, {passive: true}); });
+        // iOS Direct Event Listeners
+        const listen = (id, fn) => { 
+            const el = document.getElementById(id); 
+            if(el) { el.addEventListener('click', fn); el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); }, {passive: false}); }
+        };
 
-        function toggleSidebar() { const s = document.getElementById('indexSidebar'); const o = document.getElementById('sidebarOverlay'); if(s.classList.contains('open')) { s.classList.remove('open'); o.style.display = 'none'; } else { renderIndex(); s.classList.add('open'); o.style.display = 'block'; } }
-        function renderIndex() { const container = document.getElementById('indexContent'); container.innerHTML = ""; const b = document.getElementById('bookSelect').value; const filter = document.getElementById('indexSearch').value.toLowerCase(); songDatabase.filter(s => s.title.toLowerCase().includes(filter)).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => { const inBook = b !== 'all' && books[b].includes(s.title); const i = document.createElement('div'); i.className = 'index-item'; i.innerHTML = `<span onclick="selectSongDirect('${s.title}')" style="flex-grow:1; ${inBook?'color:var(--griffin-orange); font-weight:bold;':''}">${s.title}</span>${b !== 'all' ? `<button class="btn ${inBook?'btn-red':'btn-green'}" onclick="toggleInBook('${s.title}')">${inBook?'UIT':'+'}</button>` : ''}`; container.appendChild(i); }); }
-        function toggleInBook(t) { const b = document.getElementById('bookSelect').value; if(books[b].includes(t)) books[b] = books[b].filter(x => x !== t); else books[b].push(t); localStorage.setItem('tdfBooks', JSON.stringify(books)); renderIndex(); updateSongList(); }
-        function selectSongDirect(t) { selectSong(t); toggleSidebar(); }
-        function selectSong(t) { selectedSong = songDatabase.find(s => s.title === t); if(selectedSong) { renderLyrics(); document.getElementById('songSelect').value = t; } }
-        function renderLyrics() { if(!selectedSong) return; const lines = selectedSong.content.split(/\n/); let out = ""; lines.forEach(l => { let chords = [], text = "", i = 0; while(i < l.length) { if(l[i]==='[') { let e = l.indexOf(']', i); chords.push({p: text.length, v: l.substring(i+1, e)}); i = e+1; continue; } text += l[i]; i++; } let cIt = ""; chords.forEach(c => { cIt += `<span class="chord-item" style="left: calc(${c.p} * var(--char-width))">${c.v}</span>`; }); out += `<div style="position:relative; margin-bottom:35px; display:inline-block; text-align:left; width:fit-content;"><div style="position:relative; height:2.2rem;">${cIt}</div><div class="lyric-line">${text || " "}</div></div><br>`; }); document.getElementById('lyricsArea').innerHTML = out; }
-        function updateSongList() { const b = document.getElementById('bookSelect').value; const s = document.getElementById('songSelect'); s.innerHTML = '<option disabled selected>Kies...</option>'; let list = b === 'all' ? songDatabase : songDatabase.filter(x => books[b].includes(x.title)); list.sort((a,b) => a.title.localeCompare(b.title)).forEach(x => { s.innerHTML += `<option value="${x.title}">${x.title}</option>`; }); }
-        function renderLibrary() { const c = document.getElementById('libraryContent'); c.innerHTML = ""; Object.keys(books).forEach(b => { c.innerHTML += `<div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;"><b>${b.toUpperCase()}</b> <button class="btn btn-red" onclick="deleteBook('${b}')">WIS</button></div>`; }); }
-        function createBook() { const n = prompt("Boeknaam:"); if(n && !books[n]) { books[n] = []; localStorage.setItem('tdfBooks', JSON.stringify(books)); renderLibrary(); updateBookListInit(); updateSongList(); } }
-        function deleteBook(n) { if(confirm("Wissen?")) { delete books[n]; localStorage.setItem('tdfBooks', JSON.stringify(books)); renderLibrary(); updateBookListInit(); updateSongList(); } }
+        listen('sidebarBtn', toggleSidebar);
+        listen('sidebarOverlay', toggleSidebar);
+        listen('manualBtn', () => openOverlay('manualOverlay'));
+        listen('closeManualBtn', () => closeOverlay('manualOverlay'));
+        listen('editBtn', enableEdit);
+        listen('saveBtn', saveSong);
+        listen('openSettingsBtn', () => alert("Instellingen: Gebruik Restore/Backup in de MacBook versie."));
+
+        function toggleSidebar() {
+            const s = document.getElementById('indexSidebar');
+            const o = document.getElementById('sidebarOverlay');
+            if(s.classList.contains('open')) { s.classList.remove('open'); o.style.display = 'none'; }
+            else { renderIndex(); s.classList.add('open'); o.style.display = 'block'; }
+        }
+
+        function renderIndex() {
+            const container = document.getElementById('indexContent'); container.innerHTML = "";
+            songDatabase.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const i = document.createElement('div'); i.className = 'index-item';
+                i.innerHTML = `<span>${s.title}</span>`;
+                i.onclick = () => { selectSong(s.title); toggleSidebar(); };
+                container.appendChild(i);
+            });
+        }
+
+        function selectSong(t) {
+            selectedSong = songDatabase.find(s => s.title === t);
+            if(selectedSong) { renderLyrics(); document.getElementById('songSelect').value = t; }
+        }
+
+        function renderLyrics() {
+            if(!selectedSong) return;
+            const lines = selectedSong.content.split(/\n/);
+            let out = "";
+            lines.forEach(l => {
+                let chords = [], text = "", i = 0;
+                while(i < l.length) {
+                    if(l[i]==='[') { let e = l.indexOf(']', i); chords.push({p: text.length, v: l.substring(i+1, e)}); i = e+1; continue; }
+                    text += l[i]; i++;
+                }
+                let cIt = ""; chords.forEach(c => { cIt += `<span class="chord-item" style="left: calc(${c.p} * var(--char-width))">${c.v}</span>`; });
+                out += `<div style="position:relative; margin-bottom:35px; display:inline-block; text-align:left; width:fit-content;"><div style="position:relative; height:2.2rem;">${cIt}</div><div class="lyric-line">${text || " "}</div></div><br>`;
+            });
+            document.getElementById('lyricsArea').innerHTML = out;
+        }
+
+        function updateSongList() {
+            const s = document.getElementById('songSelect'); s.innerHTML = '<option disabled selected>Kies lied...</option>';
+            songDatabase.sort((a,b) => a.title.localeCompare(b.title)).forEach(x => { s.innerHTML += `<option value="${x.title}">${x.title}</option>`; });
+        }
+
         function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
         function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
-        function toggleFullPage() { document.body.classList.toggle('full-page-mode'); }
-        function enableEdit() { isEditing = true; document.body.classList.add('is-editing'); document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value = selectedSong.content; document.getElementById('chordInserter').style.display='grid'; }
-        function saveSong() { selectedSong.content = document.getElementById('editorArea').value; isEditing = false; document.body.classList.remove('is-editing'); localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('chordInserter').style.display='none'; renderLyrics(); }
-        function insertChord(c) { const el = document.getElementById('editorArea'); const start = el.selectionStart; el.value = el.value.slice(0, start) + "[" + c + "]" + el.value.slice(el.selectionEnd); el.focus(); }
-        function toggleAutoScroll() { const b = document.getElementById('scrollBtn'); if (!scrollActive) { scrollActive = true; scrollPos = document.getElementById('lyricsArea').scrollTop; b.textContent = "OFF"; b.style.backgroundColor = "var(--griffin-red)"; runScroll(); } else { scrollActive = false; b.textContent = "ON"; b.style.backgroundColor = "var(--celtic-green)"; } }
-        function runScroll() { if (!scrollActive) return; const a = document.getElementById('lyricsArea'); scrollPos += parseFloat(document.getElementById('scrollSpeedRange').value) / 100; a.scrollTop = Math.floor(scrollPos); requestAnimationFrame(runScroll); }
-        function downloadBackup() { const data = JSON.stringify({songs: songDatabase, books: books}, null, 2); const b = new Blob([data], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `TDF_BACKUP.json`; a.click(); }
-        function restoreBackup(e) { const reader = new FileReader(); reader.onload = (ev) => { const d = JSON.parse(ev.target.result); songDatabase = d.songs || d; books = d.books || {}; localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); updateBookListInit(); updateSongList(); alert("Klaar!"); }; reader.readAsText(e.target.files[0]); }
-        function updateBookListInit() { const s = document.getElementById('bookSelect'); s.innerHTML = '<option value="all">📚 ALLE LIEDJES</option>'; Object.keys(books).forEach(b => { s.innerHTML += `<option value="${b}">${b.toUpperCase()}</option>`; }); }
-        
-        updateBookListInit(); updateSongList();
-        window.addEventListener('keydown', (e) => { if(e.key === 'Escape') { toggleSidebar(); closeOverlay('settingsOverlay'); closeOverlay('manualOverlay'); closeOverlay('libraryOverlay'); } });
+        function enableEdit() { document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value = selectedSong.content; }
+        function saveSong() { selectedSong.content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(songDatabase)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; renderLyrics(); }
+
+        updateSongList();
     </script>
 </body>
 </html>
