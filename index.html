@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.75</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>TDF Master v6.76</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
@@ -11,131 +13,115 @@
             --griffin-orange: #d48e3d; 
             --griffin-red: #c12718;
         }
-        
-        /* Dwing de iPad om de lichte modus van de browser te gebruiken */
-        html { color-scheme: light; }
-
+        /* Alleen structurele CSS */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        html, body { 
-            height: 100dvh; width: 100vw; 
-            background-color: #ffffff !important; 
-            color: #000000 !important; 
-            overflow: hidden; position: fixed; font-family: sans-serif; 
-        }
-
-        .top-bar { 
-            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
-            background-color: #ffffff !important; 
-            border-bottom: 3px solid #000000; 
-            z-index: 100001; display: flex; flex-direction: column; 
-        }
+        html, body { height: 100dvh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; background: #fff !important; color: #000 !important; }
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 100001; border-bottom: 3px solid #000; background: #fff !important; }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
-        #displayTitle { color: #000000 !important; font-weight: bold; cursor: pointer; }
-        
-        .songs-menu { 
-            position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); 
-            background-color: #ffffff !important; 
-            z-index: 100000; transition: left 0.3s ease; border-right: 3px solid #000000; 
-            display: flex; flex-direction: column; 
-        }
+        .songs-menu { position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); z-index: 100000; transition: left 0.3s ease; border-right: 3px solid #000; background: #fff !important; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
-        #menuSearch { width: 90%; margin: 15px auto; padding: 12px; border: 2px solid #000; border-radius: 8px; background: #ffffff !important; color: #000 !important; }
-
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: #ffffff !important; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.4rem; color: #000000 !important; background-color: #ffffff !important; }
-        #editorArea { display: none; width: 100%; height: 75dvh; padding: 20px; font-family: monospace; font-size: 1.25rem; border: none; outline: none; background: #ffffff !important; color: #000000 !important; }
-
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff !important; }
+        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.4rem; color: #000 !important; }
         .chord-row { height: 1.6rem; color: var(--griffin-red) !important; font-weight: bold; position: relative; }
-        .chord-item { position: absolute; white-space: pre; background: rgba(255,255,255,0.7); }
-
-        .floater { position: fixed; background: #ffffff !important; border: 3px solid #000; border-radius: 12px; z-index: 10001; text-align: center; color: #000 !important; }
-        .scroll-floater { width: 65px; right: 15px; top: 120px; padding: 8px; }
-        .f-btn { border: 1px solid #000; border-radius: 6px; background: #ffffff !important; color: #000000 !important; font-weight: bold; cursor: pointer; }
-
-        .floating-pad { width: 110px; height: 110px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
-        .pad-btn { position: absolute; background: #eee; border: 1px solid #000; width: 34px; height: 34px; border-radius: 6px; }
-        .btn-up { top: 4px; left: 38px; } .btn-down { bottom: 4px; left: 38px; } .btn-left { left: 4px; top: 38px; } .btn-right { right: 4px; top: 38px; }
-        .btn-center { left: 38px; top: 38px; background: var(--griffin-orange); border: none; border-radius: 50%; }
-
-        .floating-chords { width: 110px; right: 20px; bottom: 40px; padding: 6px; display: none; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .chord-item { position: absolute; white-space: pre; background: rgba(255,255,255,0.8); }
+        .floater { position: fixed; background: #fff !important; border: 3px solid #000; border-radius: 12px; z-index: 10001; text-align: center; padding: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.25rem; border: none; outline: none; background: #fff !important; color: #000 !important; }
+        .f-btn { border: 1px solid #000; border-radius: 6px; background: #fff !important; color: #000 !important; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body>
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto;">
+<body style="background-color: #ffffff !important;">
+
+    <div class="top-bar" style="background-color: #ffffff !important;">
+        <div class="top-bar-content" style="background-color: #ffffff !important;">
+            <div style="display:flex; align-items:center; gap:15px; background-color: #ffffff !important;">
+                <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto; background-color: #ffffff !important;">
                 <button onclick="toggleMenu()" style="background:none; border:none; color:#007aff; font-weight:bold; font-size:1.1rem;">MENU</button>
             </div>
-            <div id="displayTitle" onclick="saveFromTitle()">TDF Master</div>
-            <div style="display:flex; gap:15px;">
-                <button onclick="createNewSong()" style="background:none; border:none; color:#007aff; font-size:1.8rem; font-weight:bold;">+</button>
+            <div id="displayTitle" onclick="saveFromTitle()" style="color: #000000 !important; font-weight:bold;">TDF Master</div>
+            <div style="display:flex; gap:15px; background-color: #ffffff !important;">
+                <button onclick="createNewSong()" style="background:none; border:none; color:#007aff; font-size:1.8rem;">+</button>
                 <button onclick="startEdit()" style="background:none; border:none; color:#007aff; font-size:1.4rem;">✎</button>
             </div>
         </div>
     </div>
 
-    <div class="songs-menu" id="songsMenu">
-        <input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()">
-        <div id="menuContent" style="flex:1; overflow-y:auto; background-color:#ffffff !important;"></div>
+    <div class="songs-menu" id="songsMenu" style="background-color: #ffffff !important;">
+        <div style="padding:15px; background-color: #ffffff !important;">
+            <input type="text" id="menuSearch" placeholder="Zoek liedje..." oninput="renderMenu()" style="width:100%; padding:12px; border:2px solid #000; border-radius:8px; background:#fff;">
+        </div>
+        <div id="menuContent" style="flex:1; overflow-y:auto; background-color: #ffffff !important;"></div>
     </div>
 
-    <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea"></div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
+    <div class="lyrics-container" id="scroller" style="background-color: #ffffff !important;">
+        <div id="lyricsArea" style="background-color: #ffffff !important;"></div>
+        <textarea id="editorArea" spellcheck="false" style="background-color: #ffffff !important;"></textarea>
     </div>
 
-    <div class="floater scroll-floater">
-        <div id="speedDisplay" style="font-size:0.7rem; font-weight:bold;">180s</div>
+    <div class="floater" style="right:15px; top:120px; width:65px;">
+        <div id="speedDisplay" style="font-size:0.7rem; font-weight:bold; color:#000;">180s</div>
         <button class="f-btn" style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
         <button class="f-btn" style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
+        <hr style="margin:8px 0; border:1px solid #000;">
+        <button class="f-btn" style="width:100%; height:35px;" onclick="transpose(1)">b+</button>
+        <button class="f-btn" style="width:100%; height:35px; margin-top:4px;" onclick="transpose(-1)">b-</button>
         <button id="playBtn" class="f-btn" style="width:100%; height:45px; background:#007aff !important; color:#fff !important; margin-top:10px;" onclick="toggleScroll()">▶</button>
     </div>
 
-    <div class="floater floating-pad" id="floatPad">
-        <button class="pad-btn btn-up" onclick="moveCursor('up')">↑</button>
-        <button class="pad-btn btn-down" onclick="moveCursor('down')">↓</button>
-        <button class="pad-btn btn-left" onclick="moveCursor('left')">←</button>
-        <button class="pad-btn btn-right" onclick="moveCursor('right')">→</button>
-        <button class="pad-btn btn-center" onclick="injectChord('')">[]</button>
+    <div class="floater" id="floatPad" style="width:110px; height:110px; left:20px; bottom:40px; border-radius:50%; display:none;">
+        <button style="position:absolute; top:4px; left:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('up')">↑</button>
+        <button style="position:absolute; bottom:4px; left:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('down')">↓</button>
+        <button style="position:absolute; left:4px; top:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('left')">←</button>
+        <button style="position:absolute; right:4px; top:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('right')">→</button>
+        <button style="position:absolute; left:38px; top:38px; width:34px; height:34px; background:var(--griffin-orange) !important; border:none; border-radius:50%;" onclick="injectChord('')">[]</button>
     </div>
 
-    <div class="floater floating-chords" id="floatChords">
+    <div class="floater" id="floatChords" style="width:110px; right:20px; bottom:40px; padding:6px; display:none; grid-template-columns:1fr 1fr; gap:4px;">
         <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
         <button class="f-btn" style="padding:8px 0;" onclick="injectChord('B')">B</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Bm')">Bm</button>
         <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('D')">D</button>
     </div>
 
-    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; background:rgba(255,255,255,0.95); z-index:1000001; padding:20px;">
+    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; background:rgba(255,255,255,0.98); z-index:1000001; padding:20px;">
         <div style="max-width:400px; margin:40px auto; background:#fff; padding:25px; border:3px solid #000; text-align:center; border-radius:12px;">
-            <h3>BEHEER</h3>
+            <h3 style="color:#000;">BEHEER</h3>
             <button onclick="location.reload()" style="width:100%; padding:15px; margin:10px 0; background:#ff3b30; color:#fff; font-weight:bold; border:none; border-radius:8px;">🔄 VERVERSEN</button>
             <button onclick="downloadBackup()" style="width:100%; padding:15px; margin:10px 0; background:#007aff; color:#fff; font-weight:bold; border:none; border-radius:8px;">💾 BACK-UP</button>
             <button onclick="el('settingsOverlay').style.display='none'" style="width:100%; padding:15px; margin:10px 0; background:#000; color:#fff; font-weight:bold; border:none; border-radius:8px;">SLUITEN</button>
+            <input type="file" id="logoInput" accept="image/*" style="display:none;">
         </div>
     </div>
 
     <script>
         const el = (id) => document.getElementById(id);
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], tags = JSON.parse(localStorage.getItem('tdfTags')) || {};
-        let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180;
+        let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
+        const chordMap = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-        window.onload = () => { if(appLogoData) el('appLogo').src = appLogoData; renderMenu(); };
+        window.onload = () => { 
+            document.body.style.backgroundColor = "#ffffff";
+            if(appLogoData) el('appLogo').src = appLogoData; 
+            renderMenu(); 
+        };
+
+        function transposeChord(chord) { return chord.replace(/[A-G][#b]?/g, (match) => { let n = match; if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#"; let idx = chordMap.indexOf(n); if(idx === -1) return match; let ni = (idx + transOffset) % 12; while(ni < 0) ni += 12; return chordMap[ni]; }); }
+        function transpose(d) { transOffset += d; draw(); }
+
+        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
+        function setTag(t) { currentTag = t; renderMenu(); }
 
         function renderMenu() {
             const c = el('menuContent'); c.innerHTML = "";
             const q = el('menuSearch').value.toLowerCase();
             if(!q) {
                 const all = document.createElement('div');
-                all.style.padding = "15px 20px"; all.style.fontWeight = "bold";
+                all.style.padding = "15px 20px"; all.style.fontWeight = "bold"; all.style.borderBottom = "1px solid #eee";
                 all.style.background = currentTag === 'ALLES' ? "var(--griffin-orange)" : "#fff";
                 all.style.color = currentTag === 'ALLES' ? "#fff" : "var(--griffin-orange)";
                 all.textContent = "📜 ALLE LIEDJES"; all.onclick = () => { currentTag = 'ALLES'; renderMenu(); };
                 c.appendChild(all);
                 Object.keys(tags).sort().forEach(t => {
                     const b = document.createElement('div');
-                    b.style.padding = "15px 20px"; b.style.fontWeight = "bold";
+                    b.style.padding = "15px 20px"; b.style.fontWeight = "bold"; b.style.borderBottom = "1px solid #eee";
                     b.style.background = currentTag === t ? "var(--griffin-orange)" : "#fff";
                     b.style.color = currentTag === t ? "#fff" : "var(--griffin-orange)";
                     b.textContent = `🏷️ ${t}`; b.onclick = () => { currentTag = t; renderMenu(); };
@@ -146,16 +132,15 @@
             if(q) f = db.filter(s => s.title.toLowerCase().includes(q));
             f.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const i = document.createElement('div');
-                i.style.padding = "15px 20px"; i.style.borderBottom = "1px solid #eee";
-                i.style.color = "#000"; i.textContent = s.title; i.onclick = () => loadSong(s.title);
+                i.style.padding = "15px 20px"; i.style.borderBottom = "1px solid #eee"; i.style.color = "#000"; i.style.backgroundColor = "#fff";
+                i.textContent = s.title; i.onclick = () => loadSong(s.title);
                 c.appendChild(i);
             });
         }
 
-        function loadSong(t) { cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw(); el('songsMenu').classList.remove('open'); }
-        function draw() { if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: l.substring(i+1, e) }); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`); h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px;">${txt || ' '}</div>`; }); el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0; }
+        function loadSong(t) { cur = db.find(x => x.title === t); transOffset = 0; el('displayTitle').textContent = t; draw(); el('songsMenu').classList.remove('open'); }
+        function draw() { if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: transposeChord(l.substring(i+1, e)) }); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`); h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px; color:#000;">${txt || ' '}</div>`; }); el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0; }
         
-        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
         function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid'; el('editorArea').value = cur.content; el('editorArea').focus(); }
         function saveFromTitle() { if(el('editorArea').style.display === 'block') { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none'; draw(); }}
         
