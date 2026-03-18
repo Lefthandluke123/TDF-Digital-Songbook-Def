@@ -3,40 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.12</title>
-    <style id="mainStyle">
-        :root { --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 65px; }
+    <title>TDF Master v6.14</title>
+    <style>
+        :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { height: 100dvh; width: 100vw; background-color: #121212; overflow: hidden; position: fixed; top: 0; left: 0; }
-        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; }
-        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; }
+        
+        /* Basis is altijd Light (Zwarte tekst op wit) */
+        html, body { 
+            height: 100dvh; width: 100vw; 
+            background-color: #ffffff; 
+            overflow: hidden; position: fixed; 
+            top: 0; left: 0; transition: filter 0.3s ease;
+        }
+
+        /* De "Nuclear" Dark Mode: alles omkeren */
+        body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
+
+        .top-bar { 
+            position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
+            background: #1a1a1a; border-bottom: 1px solid #333; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; 
+        }
+
+        /* Voorkom dat de bar en het logo ook omkeren van kleur */
+        body.inverted .top-bar { filter: invert(100%) hue-rotate(180deg); }
+
         .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; }
         .top-bar-center { text-align: center; flex-grow: 1; }
         .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
-        .transpose-pill { display: flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 2px 10px; border-radius: 20px; border: 1px solid #444; }
-        .tp-btn { color: #007aff; font-weight: bold; font-size: 1.4rem; background: none; border: none; cursor: pointer; }
+        .transpose-pill { display: flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 2px 10px; border-radius: 20px; }
+        .tp-btn { color: #007aff; font-weight: bold; font-size: 1.4rem; background: none; border: none; }
         #tpVal { font-size: 0.9rem; color: #fff; min-width: 15px; }
-        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; cursor: pointer; font-family: sans-serif; font-weight: bold; }
-        .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
-        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; width: 100%; min-height: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); }
-        .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 90000; }
+        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
+        .top-bar-icon { width: 28px; height: 28px; fill: #007aff; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; display: none; }
+
+        .lyrics-container { 
+            width: 100%; height: 100dvh; padding-top: var(--header-height); 
+            background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+        }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; width: 100%; height: 100%; }
+
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100dvh; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
-        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
-        .index-container { position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid #333; background: #c12718; }
-        .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; transition: transform 0.2s ease; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c12718; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
-        .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; pointer-events: none; }
-        .chord-item { position: absolute; top: 0; white-space: pre; }
+        body.inverted .songs-menu { filter: invert(100%) hue-rotate(180deg); }
+
+        .index-container { width: 100%; border-bottom: 1px solid #333; background: #c12718; position: relative; }
+        .index-item { padding: 18px 20px; background: #1c1c1e; color: white; position: relative; z-index: 2; transition: transform 0.2s; }
+        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c12718; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        .chord-row { height: 1.5rem; color: var(--griffin-red); font-weight: bold; position: relative; }
+        .chord-item { position: absolute; white-space: pre; }
         .lyric-line { white-space: pre; display: block; margin-bottom: 10px; }
-        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
-        .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; position: relative; }
-        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; cursor: pointer; display: block; font-family: sans-serif; }
+
+        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; }
+        .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; }
+        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; }
     </style>
-    <style id="dynamicTheme"></style>
 </head>
 <body>
     <input type="file" id="logoInput" accept="image/png" style="display:none;">
@@ -50,7 +74,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF v6.12</h2>
+                <h2 id="displayTitle">TDF v6.14</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -69,17 +93,14 @@
 
     <div class="songs-menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
     <div class="songs-menu" id="songsMenu">
-        <div style="padding:15px; background:#2c2c2e; border-bottom:1px solid #444; color:white; font-weight:bold; display:flex; justify-content: space-between; align-items: center;">
-            <span>SONGS</span>
-            <button class="top-bar-btn" style="font-size: 0.8rem;" onclick="toggleMenu()">TERUG</button>
-        </div>
+        <div style="padding:15px; color:white; font-weight:bold;">SONGS</div>
         <div id="indexContent" style="flex-grow:1; overflow-y:auto;"></div>
     </div>
 
     <div id="settingsOverlay" class="full-overlay">
         <div class="modal-box">
             <h3 style="color:white; margin-bottom:15px;">Instellingen</h3>
-            <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 DARK/LIGHT MODE</button>
+            <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
             <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
             <button class="modal-btn" onclick="el('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
@@ -89,41 +110,31 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">TDF Master v6.12 geladen.</div>
+        <div id="lyricsArea">TDF Master v6.14 Inversion Mode.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.12";
+        const el = (id) => document.getElementById(id);
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, startX = 0, sInt = null;
-        const el = (id) => document.getElementById(id);
 
         window.onload = () => {
-            if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
-                localStorage.setItem('tdfVersion', APP_VERSION);
-                location.reload(true);
-            }
-            applyTheme(localStorage.getItem('tdfTheme') || 'light');
+            if(localStorage.getItem('tdfTheme') === 'dark') document.body.classList.add('inverted');
+            updateThemeBtn();
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
             renderIndex();
         };
 
-        function applyTheme(t) {
-            const isD = t === 'dark';
-            const bg = isD ? '#000000' : '#ffffff';
-            const txt = isD ? '#ffffff' : '#000000';
-            el('dynamicTheme').innerHTML = `
-                .lyrics-container { background-color: ${bg} !important; }
-                #lyricsArea, #editorArea { color: ${txt} !important; }
-            `;
-            el('themeBtn').textContent = isD ? "🌓 WISSEL NAAR LIGHT" : "🌓 WISSEL NAAR DARK";
-            localStorage.setItem('tdfTheme', t);
+        function cycleTheme() {
+            const isDark = document.body.classList.toggle('inverted');
+            localStorage.setItem('tdfTheme', isDark ? 'dark' : 'light');
+            updateThemeBtn();
         }
 
-        function cycleTheme() { 
-            applyTheme((localStorage.getItem('tdfTheme') || 'light') === 'light' ? 'dark' : 'light'); 
+        function updateThemeBtn() {
+            el('themeBtn').textContent = document.body.classList.contains('inverted') ? "🌓 NAAR LIGHT MODE" : "🌓 NAAR DARK MODE";
         }
 
         el('bulkImportInput').onchange = async (e) => {
@@ -177,7 +188,7 @@
             const pMs = ch / (dur * 1000); const st = Date.now(); const sp = s.scrollTop;
             el('scrollBtn').style.fill = "#c12718"; el('scrollBtn').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             sInt = setInterval(() => {
-                const elap = Date.now() - st; s.scrollTop = sp + (elap * pMs);
+                const elap = Date.now() - startT; s.scrollTop = sp + (elap * pMs);
                 if(s.scrollTop >= ch) stopScroll();
             }, 50);
         }
