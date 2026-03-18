@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="color-scheme" content="light">
-    <title>TDF Master v6.92</title>
+    <title>TDF Master v6.93</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
@@ -29,14 +29,16 @@
             color: var(--ink-black) !important; 
         }
 
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 10000; border-bottom: 3px solid #000; background-color: var(--clean-bg) !important; }
+        /* Navigatie balk bovenaan */
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 100000; border-bottom: 3px solid #000; background-color: var(--clean-bg) !important; }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
         #displayTitle { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; color: #000 !important; }
         
+        /* Songs Menu */
         .songs-menu { 
             position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); 
-            z-index: 20000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: var(--clean-bg) !important;
-            visibility: hidden; pointer-events: none;
+            z-index: 90000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: var(--clean-bg) !important;
+            visibility: hidden; pointer-events: none; /* Cruciaal: blokkeert niks als het dicht is */
         }
         .songs-menu.open { left: 0; visibility: visible; pointer-events: auto; }
 
@@ -47,17 +49,29 @@
         .text-line { display: block; margin-bottom: 12px; }
         .chord-span { position: absolute; white-space: pre; }
 
-        .floater { position: fixed; border: 3px solid #000; border-radius: 12px; z-index: 30000; text-align: center; padding: 8px; background-color: var(--clean-bg) !important; }
+        /* FLOATER STYLE - ALTIJD BOVENOP */
+        .floater { 
+            position: fixed; 
+            border: 3px solid #000; 
+            border-radius: 12px; 
+            z-index: 999999; /* Maximale prioriteit */
+            text-align: center; 
+            padding: 8px; 
+            background-color: var(--clean-bg) !important; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            pointer-events: auto !important;
+        }
+
         #editorArea { display: none; width: 100%; height: 75vh; padding: 25px; font-family: monospace; font-size: 1.4rem; border: none; background-color: var(--clean-bg) !important; color: var(--ink-black) !important; outline: none; }
-        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #fff !important; font-weight: 900; cursor: pointer; padding: 5px; color: #000 !important; }
+        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #ffffff !important; font-weight: 900; cursor: pointer; padding: 5px; color: #000 !important; }
         
-        /* Floating Tools Restoration */
-        .floating-pad { width: 115px; height: 115px; left: 20px; bottom: 40px; border-radius: 50%; display: none; pointer-events: auto !important; }
-        .pad-btn { position: absolute; background: #fff !important; border: 2px solid #000; width: 36px; height: 36px; border-radius: 8px; font-weight: 900; z-index: 30001; }
+        /* Edit Pad & Chords */
+        .floating-pad { width: 115px; height: 115px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
+        .pad-btn { position: absolute; background: #ffffff !important; border: 2px solid #000; width: 36px; height: 36px; border-radius: 8px; font-weight: 900; color: #000 !important; }
         .btn-up { top: 4px; left: 40px; } .btn-down { bottom: 4px; left: 40px; } .btn-left { left: 4px; top: 40px; } .btn-right { right: 4px; top: 40px; }
-        .btn-center { left: 40px; top: 40px; width: 36px; height: 36px; background: var(--griffin-orange) !important; border-radius: 50%; border: 2px solid #000; }
+        .btn-center { left: 40px; top: 40px; width: 36px; height: 36px; background: var(--griffin-orange) !important; border-radius: 50%; border: 2px solid #000; color: #fff !important; }
         
-        .floating-chords { width: 120px; right: 20px; bottom: 40px; padding: 8px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; pointer-events: auto !important; }
+        .floating-chords { width: 120px; right: 20px; bottom: 40px; padding: 8px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; }
     </style>
 </head>
 <body>
@@ -77,8 +91,8 @@
     </div>
 
     <div class="songs-menu" id="songsMenu">
-        <div style="padding:15px; border-bottom:1px solid #000; background: inherit;"><input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold; background:#fff; color:#000;"></div>
-        <div id="menuContent" style="flex:1; overflow-y:auto; background: inherit;"></div>
+        <div style="padding:15px; border-bottom:1px solid #000;"><input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold; background:#fff; color:#000;"></div>
+        <div id="menuContent" style="flex:1; overflow-y:auto;"></div>
     </div>
 
     <div class="lyrics-container" id="scroller">
@@ -88,7 +102,7 @@
 
     <div class="floater" style="right:15px; top:120px; width:70px;">
         <div id="speedDisplay" style="font-size:0.8rem; font-weight:900; color:#000;">180s</div>
-        <button class="f-btn" style="width:100%;" onclick="adjustSpeed(-10)">+</button>
+        <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
         <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
         <hr style="margin:8px 0; border:1px solid #000;">
         <button class="f-btn" style="width:100%;" onclick="transpose(1)">b+</button>
@@ -106,13 +120,13 @@
 
     <div class="floater floating-chords" id="floatChords">
         <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('D')">D</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('E')">E</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('G')">G</button>
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('G')">G</button>
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('D')">D</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('E')">E</button>
     </div>
 
-    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:40000; background:rgba(250,250,250,0.98); padding:20px;">
+    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:9999999; background:rgba(250,250,250,0.98); padding:20px;">
         <div style="max-width:400px; margin:40px auto; background:var(--clean-bg); padding:30px; border:4px solid #000; text-align:center; border-radius:15px; color:#000;">
-            <button class="f-btn" onclick="location.reload()" style="width:100%; margin:10px 0; background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS</button>
+            <button class="f-btn" onclick="location.reload()" style="width:100%; margin:10px 0; background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS APP</button>
             <button class="f-btn" onclick="createNewBook()" style="width:100%; margin:10px 0; background:var(--griffin-orange) !important; color:#fff !important;">📚 NIEUW BOEK</button>
             <button class="f-btn" onclick="downloadBackup()" style="width:100%; margin:10px 0;">💾 BACK-UP</button>
             <button class="f-btn" onclick="el('settingsOverlay').style.display='none'" style="width:100%; margin:10px 0; background:#000 !important; color:#fff !important;">SLUITEN</button>
@@ -192,6 +206,7 @@
         function stopScroll() { clearInterval(sInt); sInt = null; el('playBtn').textContent = "▶"; }
         function createNewSong() { const t = prompt("Titel:"); if(t && t.trim()) { const nt = t.trim(); db.push({title: nt, content: nt + "\n..."}); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderMenu(); loadSong(nt); setTimeout(startEdit, 200); }}
         function createNewBook() { const n = prompt("Boek naam:"); if(n && n.trim()) { const nt = n.trim(); tags[nt] = []; localStorage.setItem('tdfTags', JSON.stringify(tags)); el('settingsOverlay').style.display = 'none'; renderMenu(); }}
+        function manageBook(t) { const m = el('settingsOverlay'); el('settingsOverlay').style.display='none'; const d = prompt("Typ 'WISSEN' om boek "+t+" te verwijderen"); if(d === 'WISSEN') { delete tags[t]; localStorage.setItem('tdfTags', JSON.stringify(tags)); renderMenu(); } else { alert("Selecteer liedjes via de edit-modus (toekomstige functie) of voeg ze handmatig toe."); }}
         function downloadBackup() { const d = JSON.stringify({ songs: db, tags: tags, logo: appLogoData }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([d], {type: 'application/json'})); a.download = `TDF_Backup.json`; a.click(); }
     </script>
 </body>
