@@ -3,45 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.54</title>
+    <title>TDF Master v6.55</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
+        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
-        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; }
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; }
         body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay, body.inverted .floater { filter: invert(100%) hue-rotate(180deg); }
         .top-bar-left { display: flex; align-items: center; gap: 10px; }
         #appLogo { height: 42px; width: auto; display: block; object-fit: contain; }
         .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
         .top-bar-icon { width: 24px; height: 24px; fill: #007aff; cursor: pointer; }
-        
         .songs-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: #1c1c1e; z-index: 10000; transition: left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .songs-menu.open { left: 0; }
         .section-label { padding: 15px 15px 5px 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .tag-item { padding: 15px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .tag-item.active { background: var(--griffin-orange); color: black; }
         .song-item { padding: 15px 20px; background: #1c1c1e; color: white; border-bottom: 1px solid #333; cursor: pointer; }
-
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
         .modal-box { max-width: 400px; margin: 20px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; color: white; text-align: center; }
         .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; display: block; }
-        
         .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; width: 100%; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
-        
         .floater { position: fixed; background: rgba(26,26,26,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; z-index: 10001; touch-action: none; backdrop-filter: blur(5px); text-align: center; }
         .scroll-floater { width: 50px; right: 15px; top: 80px; padding: 6px; }
         .s-btn { width: 100%; height: 40px; margin-bottom: 5px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.1rem; }
-        
         .floating-pad { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--griffin-orange); }
         .pad-btn { position: absolute; background: #333; border: 1px solid #555; color: white; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; }
         .btn-up { top: 4px; left: 39px; } .btn-down { bottom: 4px; left: 39px; } .btn-left { left: 4px; top: 39px; } .btn-right { right: 4px; top: 39px; }
         .btn-center { left: 39px; top: 39px; background: var(--griffin-orange); color: black; border-radius: 50%; border: none; }
         .floating-chords { width: 100px; padding: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .c-btn { padding: 8px 0; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-
         .btn-play { background: #007aff; } .btn-play.active { background: var(--griffin-red); }
         .chord-row { height: 1.5rem; color: var(--griffin-red); font-weight: bold; position: relative; }
         .chord-item { position: absolute; white-space: pre; }
@@ -114,4 +108,50 @@
     <script>
         const el = (id) => document.getElementById(id);
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], tags = JSON.parse(localStorage.getItem('tdfTags')) || {};
-        let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur
+        let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180;
+
+        window.onload = () => { 
+            if(localStorage.getItem('tdfTheme') === 'light') document.body.classList.remove('inverted');
+            if(appLogoData) el('appLogo').src = appLogoData;
+            renderMenu(); makeDraggable(el('scrollFloater')); makeDraggable(el('floatPad')); makeDraggable(el('floatChords'));
+        };
+
+        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
+        function cycleTheme() { const isDark = document.body.classList.toggle('inverted'); localStorage.setItem('tdfTheme', isDark ? 'dark' : 'light'); }
+
+        function renderMenu() {
+            const c = el('menuContent'); c.innerHTML = "<div class='section-label'>Boeken</div>";
+            const allBtn = document.createElement('div');
+            allBtn.className = `tag-item ${currentTag === 'ALLES' ? 'active' : ''}`;
+            allBtn.textContent = "📜 ALLE LIEDJES";
+            allBtn.onclick = () => { currentTag = "ALLES"; renderMenu(); };
+            c.appendChild(allBtn);
+            
+            Object.keys(tags).sort().forEach(t => {
+                const btn = document.createElement('div');
+                btn.className = `tag-item ${currentTag === t ? 'active' : ''}`;
+                btn.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
+                btn.onclick = () => { currentTag = t; renderMenu(); };
+                c.appendChild(btn);
+            });
+            
+            c.innerHTML += "<div class='section-label'>Liedjes</div>";
+            let filtered = currentTag === "ALLES" ? db : db.filter(s => (tags[currentTag] || []).includes(s.title));
+            filtered.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const item = document.createElement('div'); item.className = 'song-item'; item.textContent = s.title;
+                item.onclick = () => loadSong(s.title);
+                c.appendChild(item);
+            });
+        }
+
+        function loadSong(t) { 
+            el('songsMenu').classList.remove('open');
+            setTimeout(() => { cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw(); }, 100);
+        }
+
+        function draw() {
+            if(!cur) return; const lines = cur.content.split('\n'); let h = "";
+            lines.forEach(l => {
+                let chords = [], txt = "", i = 0;
+                while(i < l.length) {
+                    if(l
