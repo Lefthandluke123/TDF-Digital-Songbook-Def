@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="color-scheme" content="light">
-    <title>TDF Master v6.87</title>
+    <title>TDF Master v6.89 - Paper Edition</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
             --header-height: calc(60px + var(--safe-top)); 
-            /* Zachte achtergrondkleur */
-            --soft-white: #F5F5F5; 
+            --paper-bg: #FDF5E6; /* Old Lace / Papier kleur */
+            --ink-black: #111111;
+            --griffin-orange: #d48e3d; 
+            --griffin-red: #c12718;
         }
         * { 
             box-sizing: border-box; 
@@ -22,99 +24,102 @@
         html, body { 
             height: 100dvh; width: 100vw; 
             overflow: hidden; position: fixed; 
-            font-family: sans-serif; 
-            background-color: var(--soft-white) !important; 
-            color: #000000 !important; 
+            font-family: ui-sans-serif, system-ui, sans-serif; 
+            background-color: var(--paper-bg) !important; 
+            color: var(--ink-black) !important; 
         }
 
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 10000; border-bottom: 3px solid #000; background-color: var(--soft-white) !important; }
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 10000; border-bottom: 3px solid #333; background-color: var(--paper-bg) !important; }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
-        
-        #displayTitle { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; cursor: pointer; color: #000 !important; }
+        #displayTitle { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; color: var(--ink-black) !important; }
         
         .songs-menu { 
             position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); 
-            z-index: 9000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: var(--soft-white) !important;
-            visibility: hidden;
+            z-index: 9000; transition: left 0.3s ease; border-right: 3px solid #333; background-color: var(--paper-bg) !important;
+            visibility: hidden; pointer-events: none;
         }
-        .songs-menu.open { left: 0; visibility: visible; }
+        .songs-menu.open { left: 0; visibility: visible; pointer-events: auto; }
+        #menuSearch { width: 90%; margin: 15px auto; padding: 12px; border: 2px solid #333; border-radius: 8px; font-weight: 900; background: #fff !important; color: #000 !important; }
 
-        #menuSearch { width: 90%; margin: 15px auto; padding: 12px; border: 2px solid #000; border-radius: 8px; font-weight: 900; background: #fff !important; color: #000 !important; }
-
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; background-color: var(--soft-white) !important; }
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; background-color: var(--paper-bg) !important; }
+        .lyric-line-wrapper { background-color: var(--paper-bg) !important; color: var(--ink-black) !important; width: 100%; }
+        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.5rem; font-weight: bold; color: var(--ink-black) !important; }
         
-        /* Forceer elke regel op de zachte achtergrond */
-        .lyric-line-wrapper { background-color: var(--soft-white) !important; color: #000000 !important; width: 100%; }
-        
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #000000 !important; }
-        
-        .chord-row { height: 1.7rem; position: relative; color: #c12718 !important; background-color: var(--soft-white) !important; }
+        .chord-row { height: 1.7rem; position: relative; color: var(--griffin-red) !important; background-color: var(--paper-bg) !important; }
         .chord-item { position: absolute; white-space: pre; font-weight: 900; }
 
-        .floater { position: fixed; border: 3px solid #000; border-radius: 12px; z-index: 11000; text-align: center; padding: 8px; background-color: var(--soft-white) !important; color: #000 !important; }
-        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; background-color: var(--soft-white) !important; color: #000000 !important; }
-        
-        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #ffffff !important; font-weight: 900; cursor: pointer; padding: 5px; color: #000000 !important; }
+        .floater { position: fixed; border: 3px solid #333; border-radius: 12px; z-index: 11000; text-align: center; padding: 8px; background-color: var(--paper-bg) !important; color: var(--ink-black) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; background-color: var(--paper-bg) !important; color: var(--ink-black) !important; }
+        .f-btn { border: 2px solid #333; border-radius: 6px; background-color: #fff !important; font-weight: 900; cursor: pointer; padding: 5px; color: #000 !important; }
+
+        /* Pads */
+        .floating-pad { width: 115px; height: 115px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
+        .pad-btn { position: absolute; background: #fff !important; border: 2px solid #333; width: 36px; height: 36px; border-radius: 8px; font-weight: 900; }
+        .btn-up { top: 4px; left: 40px; } .btn-down { bottom: 4px; left: 40px; } .btn-left { left: 4px; top: 40px; } .btn-right { right: 4px; top: 40px; }
+        .btn-center { left: 40px; top: 40px; width: 36px; height: 36px; background: var(--griffin-orange) !important; border-radius: 50%; border: 2px solid #333; }
+        .floating-chords { width: 120px; right: 20px; bottom: 40px; padding: 8px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; }
     </style>
 </head>
-<body style="background-color: #F5F5F5 !important; color: #000000 !important;">
+<body>
 
-    <div class="top-bar" style="background-color: #F5F5F5 !important;">
-        <div class="top-bar-content" style="background-color: #F5F5F5 !important;">
-            <div style="display:flex; align-items:center; gap:15px; background-color: #F5F5F5 !important;">
-                <img id="appLogo" src="" alt="Logo" onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto; border:1px solid #000; background-color: #F5F5F5 !important;">
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto; border:1px solid #333;">
                 <button onclick="toggleMenu()" class="f-btn" style="color:#007aff !important;">SONGS</button>
             </div>
             <div id="displayTitle" onclick="saveFromTitle()">TDF Master</div>
-            <div style="display:flex; gap:10px; background-color: #F5F5F5 !important;">
+            <div style="display:flex; gap:10px;">
                 <button onclick="createNewSong()" class="f-btn" style="color:#007aff !important; font-size:1.5rem;">+</button>
                 <button onclick="startEdit()" class="f-btn" style="color:#007aff !important;">✎</button>
             </div>
         </div>
     </div>
 
-    <div class="songs-menu" id="songsMenu" style="background-color: #F5F5F5 !important;">
-        <div style="padding:15px; border-bottom:1px solid #000; background-color: #F5F5F5 !important;">
-            <input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold; background-color:#fff; color:#000;">
-        </div>
-        <div id="menuContent" style="flex:1; overflow-y:auto; background-color: #F5F5F5 !important;"></div>
+    <div class="songs-menu" id="songsMenu">
+        <div style="padding:15px; border-bottom:1px solid #333;"><input type="text" id="menuSearch" placeholder="Zoek liedje..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #333; font-weight:bold; background:#fff;"></div>
+        <div id="menuContent" style="flex:1; overflow-y:auto;"></div>
     </div>
 
-    <div class="lyrics-container" id="scroller" style="background-color: #F5F5F5 !important;">
-        <div id="lyricsArea" style="background-color: #F5F5F5 !important; color: #000000 !important;"></div>
-        <textarea id="editorArea" spellcheck="false" style="background-color: #F5F5F5 !important; color: #000000 !important;"></textarea>
+    <div class="lyrics-container" id="scroller">
+        <div id="lyricsArea"></div>
+        <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div class="floater" style="right:15px; top:120px; width:70px; background-color: #F5F5F5 !important;">
-        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900; color:#000000 !important;">180s</div>
+    <div class="floater" style="right:15px; top:120px; width:70px;">
+        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900;">180s</div>
         <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
         <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
-        <hr style="margin:8px 0; border:1px solid #000;">
+        <hr style="margin:8px 0; border:1px solid #333;">
         <button class="f-btn" style="width:100%;" onclick="transpose(1)">b+</button>
         <button class="f-btn" style="width:100%; margin-top:5px;" onclick="transpose(-1)">b-</button>
         <button id="playBtn" class="f-btn" style="background-color:#007aff !important; color:#ffffff !important;" onclick="toggleScroll()">▶</button>
     </div>
 
-    <div class="floater" id="floatPad" style="width:115px; height:115px; left:20px; bottom:40px; border-radius:50%; display:none; background-color: #F5F5F5 !important;">
-        <button style="position:absolute; top:4px; left:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('up')">↑</button>
-        <button style="position:absolute; bottom:4px; left:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('down')">↓</button>
-        <button style="position:absolute; left:4px; top:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('left')">←</button>
-        <button style="position:absolute; right:4px; top:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('right')">→</button>
-        <button style="position:absolute; left:40px; top:40px; width:36px; height:36px; background:#d48e3d !important; border-radius:50%; border:2px solid #000;" onclick="injectChord('')">[]</button>
+    <div class="floater floating-pad" id="floatPad">
+        <button class="pad-btn btn-up" onclick="moveCursor('up')">↑</button>
+        <button class="pad-btn btn-down" onclick="moveCursor('down')">↓</button>
+        <button class="pad-btn btn-left" onclick="moveCursor('left')">←</button>
+        <button class="pad-btn btn-right" onclick="moveCursor('right')">→</button>
+        <button class="pad-btn btn-center" onclick="injectChord('')">[]</button>
     </div>
 
-    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:20000; background:rgba(245,245,245,0.98); padding:20px;">
-        <div style="max-width:400px; margin:40px auto; background:#F5F5F5; padding:30px; border:4px solid #000; text-align:center; border-radius:15px; color:#000;">
+    <div class="floater floating-chords" id="floatChords">
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('G')">G</button>
+    </div>
+
+    <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:20000; background:rgba(253,245,230,0.98); padding:20px;">
+        <div style="max-width:400px; margin:40px auto; background:var(--paper-bg); padding:30px; border:4px solid #333; text-align:center; border-radius:15px;">
             <button class="f-btn" onclick="location.reload()" style="width:100%; margin:10px 0; background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS APP</button>
-            <button class="f-btn" onclick="createNewBook()" style="width:100%; margin:10px 0; background:var(--griffin-orange) !important;">📚 NIEUW BOEK MAKEN</button>
-            <button class="f-btn" onclick="downloadBackup()" style="width:100%; margin:10px 0;">💾 BACK-UP</button>
+            <button class="f-btn" onclick="createNewBook()" style="width:100%; margin:10px 0; background:var(--griffin-orange) !important; color:#fff !important;">📚 NIEUW BOEK MAKEN</button>
+            <button class="f-btn" onclick="downloadBackup()" style="width:100%; margin:10px 0;">💾 BACK-UP DOWNLOADEN</button>
             <button class="f-btn" onclick="el('settingsOverlay').style.display='none'" style="width:100%; margin:10px 0; background:#000 !important; color:#fff !important;">SLUITEN</button>
-            <input type="file" id="logoInput" accept="image/*" style="display:none;">
         </div>
     </div>
 
-    <div id="tagOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:20000; background:rgba(245,245,245,0.98); padding:20px;">
-        <div style="max-width:400px; margin:40px auto; background:#F5F5F5; padding:30px; border:4px solid #000; text-align:center; border-radius:15px; color:#000;" id="tagModalContent"></div>
+    <div id="tagOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:20000; background:rgba(253,245,230,0.98); padding:20px;">
+        <div style="max-width:400px; margin:40px auto; background:var(--paper-bg); padding:30px; border:4px solid #333; text-align:center; border-radius:15px;" id="tagModalContent"></div>
     </div>
 
     <script>
@@ -137,8 +142,7 @@
                     else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`);
-                // Forceer elke regel wrapper op de zachte kleur
-                h += `<div class="lyric-line-wrapper"><div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:12px; color:#000000 !important; background-color:#F5F5F5 !important;">${txt || ' '}</div></div>`;
+                h += `<div class="lyric-line-wrapper"><div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:12px;">${txt || ' '}</div></div>`;
             });
             el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
         }
@@ -148,16 +152,16 @@
             const q = el('menuSearch').value.toLowerCase();
             if(!q) {
                 const all = document.createElement('div');
-                all.style.padding = "20px"; all.style.fontWeight = "900"; all.style.borderBottom = "3px solid #000";
-                all.style.background = currentTag === 'ALLES' ? "#d48e3d" : "#F5F5F5";
-                all.style.color = currentTag === 'ALLES' ? "#fff !important" : "var(--griffin-orange) !important";
+                all.style.padding = "20px"; all.style.fontWeight = "900"; all.style.borderBottom = "2px solid #333";
+                all.style.background = currentTag === 'ALLES' ? "var(--griffin-orange)" : "var(--paper-bg)";
+                all.style.color = currentTag === 'ALLES' ? "#fff" : "var(--griffin-orange)";
                 all.textContent = "📜 ALLE LIEDJES"; all.onclick = () => { currentTag = 'ALLES'; renderMenu(); };
                 c.appendChild(all);
                 Object.keys(tags).sort().forEach(t => {
                     const b = document.createElement('div');
-                    b.style.padding = "20px"; b.style.fontWeight = "900"; b.style.borderBottom = "3px solid #000";
-                    b.style.background = currentTag === t ? "#d48e3d" : "#F5F5F5";
-                    b.style.color = currentTag === t ? "#fff !important" : "var(--griffin-orange) !important";
+                    b.style.padding = "20px"; b.style.fontWeight = "900"; b.style.borderBottom = "2px solid #333";
+                    b.style.background = currentTag === t ? "var(--griffin-orange)" : "var(--paper-bg)";
+                    b.style.color = currentTag === t ? "#fff" : "var(--griffin-orange)";
                     b.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff !important; padding:10px;" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
                     b.onclick = () => { currentTag = t; renderMenu(); };
                     c.appendChild(b);
@@ -167,20 +171,20 @@
             if(q) f = db.filter(s => s.title.toLowerCase().includes(q));
             f.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const i = document.createElement('div');
-                i.style.padding = "20px"; i.style.borderBottom = "1px solid #eee"; i.style.color = "#000 !important"; i.style.background = "#F5F5F5";
+                i.style.padding = "20px"; i.style.borderBottom = "1px solid #333"; i.style.color = "#000"; i.style.background = "var(--paper-bg)";
                 i.textContent = s.title; i.onclick = () => loadSong(s.title);
                 c.appendChild(i);
             });
         }
 
         function createNewBook() { const n = prompt("Boek naam:"); if(n && n.trim()) { const nt = n.trim(); tags[nt] = []; localStorage.setItem('tdfTags', JSON.stringify(tags)); el('settingsOverlay').style.display = 'none'; renderMenu(); }}
-        function manageBook(t) { const m = el('tagOverlay'); const c = el('tagModalContent'); c.innerHTML = `<h3>${t}</h3><div style="text-align:left; max-height:300px; overflow-y:auto; margin:15px 0;" id="tagCL"></div>`; db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => { const d = document.createElement('div'); d.style.padding = '10px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = (tags[t] || []).includes(s.title); cb.onchange = () => { if(!tags[t]) tags[t] = []; if(cb.checked) tags[t].push(s.title); else tags[t] = tags[t].filter(x => x !== s.title); localStorage.setItem('tdfTags', JSON.stringify(tags)); }; const lb = document.createElement('label'); lb.textContent = " " + s.title; lb.style.color="#000 !important"; d.appendChild(cb); d.appendChild(lb); el('tagCL').appendChild(d); }); const dbn = document.createElement('button'); dbn.className = 'f-btn'; dbn.style.background = '#ff3b30 !important'; dbn.style.color='#fff !important'; dbn.style.width="100%"; dbn.textContent = "BOEK WISSEN"; dbn.onclick = () => { if(confirm("Zeker?")) { delete tags[t]; localStorage.setItem('tdfTags', JSON.stringify(tags)); location.reload(); }}; c.appendChild(dbn); const cbn = document.createElement('button'); cbn.className = 'f-btn'; cbn.style.background = '#000 !important'; cbn.style.color='#fff !important'; cbn.style.width="100%"; cbn.style.marginTop="10px"; cbn.textContent = "KLAAR"; cbn.onclick = () => { m.style.display = 'none'; renderMenu(); }; c.appendChild(cbn); m.style.display = 'block'; }
+        function manageBook(t) { const m = el('tagOverlay'); const c = el('tagModalContent'); c.innerHTML = `<h3>${t}</h3><div style="text-align:left; max-height:300px; overflow-y:auto; margin:15px 0;" id="tagCL"></div>`; db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => { const d = document.createElement('div'); d.style.padding = '10px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = (tags[t] || []).includes(s.title); cb.onchange = () => { if(!tags[t]) tags[t] = []; if(cb.checked) tags[t].push(s.title); else tags[t] = tags[t].filter(x => x !== s.title); localStorage.setItem('tdfTags', JSON.stringify(tags)); }; const lb = document.createElement('label'); lb.textContent = " " + s.title; d.appendChild(cb); d.appendChild(lb); el('tagCL').appendChild(d); }); const cbn = document.createElement('button'); cbn.className = 'f-btn'; cbn.style.background = '#000 !important'; cbn.style.color='#fff !important'; cbn.style.width="100%"; cbn.style.marginTop="10px"; cbn.textContent = "KLAAR"; cbn.onclick = () => { el('tagOverlay').style.display = 'none'; renderMenu(); }; c.appendChild(cbn); el('tagOverlay').style.display = 'block'; }
         function loadSong(t) { cur = db.find(x => x.title === t); transOffset = 0; el('displayTitle').textContent = t; draw(); el('songsMenu').classList.remove('open'); }
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
-        function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('editorArea').value = cur.content; el('editorArea').focus(); }
-        function saveFromTitle() { if(el('editorArea').style.display === 'block') { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; draw(); }}
+        function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid'; el('editorArea').value = cur.content; el('editorArea').focus(); }
+        function saveFromTitle() { if(el('editorArea').style.display === 'block') { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none'; draw(); }}
         function moveCursor(d) { const a = el('editorArea'); a.focus(); let p = a.selectionStart, v = a.value; if(d === 'left') a.selectionStart = a.selectionEnd = p - 1; else if(d === 'right') a.selectionStart = a.selectionEnd = p + 1; else { const lines = v.split('\n'), currentLineIdx = v.substr(0, p).split('\n').length - 1; const currentCol = p - v.lastIndexOf('\n', p - 1) - 1; const targetLineIdx = d === 'up' ? currentLineIdx - 1 : currentLineIdx + 1; if(targetLineIdx >= 0 && targetLineIdx < lines.length) { let np = 0; for(let i=0; i<targetLineIdx; i++) np += lines[i].length + 1; a.selectionStart = a.selectionEnd = np + Math.min(currentCol, lines[targetLineIdx].length); }}}
-        function injectChord(c) { const a = el('editorArea'), s = a.selectionStart, e = a.selectionEnd; a.value = a.value.slice(0, s) + `[${c}]` + a.value.slice(e); a.selectionStart = a.selectionEnd = s + 2; a.focus(); }
+        function injectChord(c) { const a = el('editorArea'), s = a.selectionStart, e = a.selectionEnd; a.value = a.value.slice(0, s) + `[${c}]` + a.value.slice(e); a.selectionStart = a.selectionEnd = s + (c ? c.length + 2 : 2); a.focus(); }
         function adjustSpeed(d) { scrollSpeed = Math.max(10, scrollSpeed + d); el('speedDisplay').textContent = scrollSpeed + 's'; }
         function transpose(d) { transOffset += d; draw(); }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
