@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.06</title>
+    <title>TDF Master v6.07</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -33,10 +33,10 @@
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
         .lyrics-container { 
-            background: #ffffff; width: 100%; height: 100vh; padding-top: var(--header-height);
+            width: 100%; height: 100vh; padding-top: var(--header-height);
             overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; 
         }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: inherit; color: inherit; caret-color: var(--griffin-orange); }
 
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
@@ -65,11 +65,11 @@
     <div class="top-bar">
         <div class="top-bar-left">
             <img id="appLogo" alt="Logo">
-            <button class="top-bar-btn" id="songsMenuBtn">Songs</button>
+            <button class="top-bar-btn" id="songsMenuBtn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF v6.06</h2>
+                <h2 id="displayTitle">TDF v6.07</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -98,8 +98,8 @@
     <div id="settingsOverlay" class="full-overlay">
         <div class="modal-box">
             <h3 style="color:white; margin-top:0; padding-bottom:10px;">Instellingen</h3>
-            <button class="modal-btn" onclick="toggleFullScreen()" style="background:#34c759;">📺 GA VOLLEDIG SCHERM</button>
-            <button class="modal-btn" id="themeBtn" onclick="toggleTheme()">🌓 WISSEL THEMA</button>
+            <button class="modal-btn" onclick="toggleFS()" style="background:#34c759;">📺 GA VOLLEDIG SCHERM</button>
+            <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
             <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
             <button class="modal-btn" onclick="el('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
@@ -109,12 +109,12 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Songbook v6.06 geladen.</div>
+        <div id="lyricsArea">Songbook v6.07 geladen.</div>
         <textarea id="editorArea" spellcheck="false" placeholder="Typ hier..."></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.06";
+        const APP_VERSION = "6.07";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, startX = 0, sInt = null;
 
@@ -126,16 +126,14 @@
                 location.reload(true);
             }
             if(db.length > 0) localStorage.setItem('tdfSongs_backup', JSON.stringify({date: new Date().toISOString(), data: db}));
-            
             const savedTheme = localStorage.getItem('tdfTheme') || 'light';
             applyTheme(savedTheme);
-
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
             renderIndex();
         };
 
-        function toggleTheme() {
+        function cycleTheme() {
             const current = localStorage.getItem('tdfTheme') || 'light';
             const next = current === 'light' ? 'dark' : 'light';
             applyTheme(next);
@@ -146,29 +144,27 @@
             const editor = el('editorArea');
             const lyrics = el('lyricsArea');
             if(theme === 'dark') {
-                container.style.backgroundColor = "#000000";
-                editor.style.color = "#ffffff";
-                lyrics.style.color = "#ffffff";
+                container.style.setProperty('background-color', '#000000', 'important');
+                editor.style.setProperty('color', '#ffffff', 'important');
+                lyrics.style.setProperty('color', '#ffffff', 'important');
                 el('themeBtn').textContent = "🌓 WISSEL NAAR LIGHT MODE";
             } else {
-                container.style.backgroundColor = "#ffffff";
-                editor.style.color = "#000000";
-                lyrics.style.color = "#000000";
+                container.style.setProperty('background-color', '#ffffff', 'important');
+                editor.style.setProperty('color', '#000000', 'important');
+                lyrics.style.setProperty('color', '#000000', 'important');
                 el('themeBtn').textContent = "🌓 WISSEL NAAR DARK MODE";
             }
             localStorage.setItem('tdfTheme', theme);
         }
 
-        function toggleFullScreen() {
+        function toggleFS() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(e => alert("Fullscreen niet ondersteund of geblokkeerd."));
+                document.documentElement.requestFullscreen().catch(e => alert("Fullscreen geblokkeerd. Gebruik Safari 'Zet op beginscherm' voor beste resultaat."));
             } else {
                 document.exitFullscreen();
             }
             el('settingsOverlay').style.display = 'none';
         }
-
-        el('songsMenuBtn').onclick = toggleMenu;
 
         el('logoInput').onchange = (e) => {
             const r = new FileReader();
@@ -311,6 +307,13 @@
             el('lyricsArea').style.display = 'block'; el('saveBtn').style.display = 'none';
             el('editorArea').style.display = 'none'; el('displayTitle').textContent = title; draw();
         }
+
+        // Keyboard pijltjes fix
+        window.addEventListener('keydown', (e) => {
+            if(el('editorArea').style.display === 'block' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.stopPropagation();
+            }
+        });
     </script>
 </body>
 </html>
