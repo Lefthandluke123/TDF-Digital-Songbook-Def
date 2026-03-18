@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.56</title>
+    <title>TDF Master v6.57</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -22,7 +22,8 @@
 
         .songs-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: #1c1c1e; z-index: 10000; transition: left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .songs-menu.open { left: 0; }
-        .section-label { padding: 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .section-label { padding: 15px 15px 5px 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        
         .tag-item { padding: 15px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .tag-item.active { background: var(--griffin-orange); color: black; }
         .song-item { padding: 15px 20px; background: #1c1c1e; color: white; border-bottom: 1px solid #333; cursor: pointer; }
@@ -59,7 +60,7 @@
     <div class="top-bar">
         <div class="top-bar-left">
             <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'">
-            <button class="top-bar-btn" style="padding:10px;" onclick="toggleMenu()">Songs</button>
+            <button class="top-bar-btn" style="padding:10px; color:#007aff; font-weight:bold; background:none; border:none;" onclick="toggleMenu()">Songs</button>
         </div>
         <div id="displayTitle" style="color:white; font-size:0.9rem; font-weight:bold; max-width:20%; overflow:hidden;">TDF Master</div>
         <div style="display:flex; align-items:center;">
@@ -67,7 +68,7 @@
             <button class="nav-icon-btn" onclick="renameSong()"><svg class="top-bar-icon" viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-2h11v2H3V8zm0 4h7v2H3v-2zm13-7.58l3.34 3.4L20.5 5.67l-3.34-3.4L16 3.42zM11 19v3h3l8.29-8.29-3-3L11 19z"/></svg></button>
             <button class="nav-icon-btn" onclick="deleteCurrentSong()"><svg class="top-bar-icon icon-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
             <button class="nav-icon-btn" onclick="startEdit()"><svg class="top-bar-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg></button>
-            <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange); padding-left:10px;">GEREED</button>
+            <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange); padding-left:10px; font-weight:bold; background:none; border:none;">GEREED</button>
         </div>
     </div>
 
@@ -133,23 +134,33 @@
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
         function cycleTheme() { const isDark = document.body.classList.toggle('inverted'); localStorage.setItem('tdfTheme', isDark ? 'dark' : 'light'); }
 
+        function setTag(tagName) {
+            currentTag = tagName;
+            renderMenu();
+        }
+
         function renderMenu() {
-            const c = el('menuContent'); c.innerHTML = "<div class='section-label'>Boeken</div>";
+            const c = el('menuContent'); c.innerHTML = "";
+            const label1 = document.createElement('div'); label1.className = 'section-label'; label1.textContent = 'Boeken';
+            c.appendChild(label1);
+
             const allBtn = document.createElement('div');
             allBtn.className = `tag-item ${currentTag === 'ALLES' ? 'active' : ''}`;
             allBtn.textContent = "📜 ALLE LIEDJES";
-            allBtn.onclick = () => { currentTag = "ALLES"; renderMenu(); };
+            allBtn.onclick = () => setTag('ALLES');
             c.appendChild(allBtn);
             
             Object.keys(tags).sort().forEach(t => {
                 const btn = document.createElement('div');
                 btn.className = `tag-item ${currentTag === t ? 'active' : ''}`;
-                btn.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff; padding:5px;" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
-                btn.onclick = () => { currentTag = t; renderMenu(); };
+                btn.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff; padding:10px; font-size:1.2rem;" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
+                btn.onclick = () => setTag(t);
                 c.appendChild(btn);
             });
             
-            c.innerHTML += "<div class='section-label'>Liedjes</div>";
+            const label2 = document.createElement('div'); label2.className = 'section-label'; label2.textContent = 'Liedjes';
+            c.appendChild(label2);
+
             let filtered = currentTag === "ALLES" ? db : db.filter(s => (tags[currentTag] || []).includes(s.title));
             filtered.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
                 const item = document.createElement('div'); item.className = 'song-item'; item.textContent = s.title;
@@ -163,25 +174,11 @@
             setTimeout(() => { el('songsMenu').classList.remove('open'); }, 150);
         }
 
-        function draw() {
-            if(!cur) return; const lines = cur.content.split('\n'); let h = "";
-            lines.forEach(l => {
-                let chords = [], txt = "", i = 0;
-                while(i < l.length) {
-                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: l.substring(i+1, e) }); i = e + 1; }
-                    else { txt += l[i]; i++; }
-                }
-                let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`);
-                h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px;">${txt || ' '}</div>`;
-            });
-            el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
-        }
-
         function manageBook(tagName) {
             const modal = el('tagOverlay'); const content = el('tagModalContent');
             content.innerHTML = `<h3>${tagName}</h3><div style="text-align:left; max-height:300px; overflow-y:auto; margin:15px 0;" id="tagChecklist"></div>`;
             db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
-                const div = document.createElement('div'); div.style.padding = '8px';
+                const div = document.createElement('div'); div.style.padding = '10px';
                 const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'mcb_'+s.title;
                 cb.checked = (tags[tagName] || []).includes(s.title);
                 cb.onchange = () => {
@@ -190,7 +187,7 @@
                     else tags[tagName] = tags[tagName].filter(x => x !== s.title);
                     localStorage.setItem('tdfTags', JSON.stringify(tags));
                 };
-                const lb = document.createElement('label'); lb.htmlFor = 'mcb_'+s.title; lb.textContent = " " + s.title;
+                const lb = document.createElement('label'); lb.htmlFor = 'mcb_'+s.title; lb.style.fontSize = "1.1rem"; lb.textContent = " " + s.title;
                 div.appendChild(cb); div.appendChild(lb); el('tagChecklist').appendChild(div);
             });
             const delBtn = document.createElement('button'); delBtn.className = 'modal-btn'; delBtn.style.background = '#c12718';
@@ -212,18 +209,29 @@
             }
         }
 
+        function draw() {
+            if(!cur) return; const lines = cur.content.split('\n'); let h = "";
+            lines.forEach(l => {
+                let chords = [], txt = "", i = 0;
+                while(i < l.length) {
+                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: l.substring(i+1, e) }); i = e + 1; }
+                    else { txt += l[i]; i++; }
+                }
+                let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`);
+                h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px;">${txt || ' '}</div>`;
+            });
+            el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
+        }
+
         function startEdit() { 
-            if(!cur) return; 
-            el('lyricsArea').style.display='none'; el('saveBtn').style.display='block'; 
+            if(!cur) return; el('lyricsArea').style.display='none'; el('saveBtn').style.display='block'; 
             el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid';
             el('editorArea').value = cur.content; 
         }
 
         function finishEdit() {
-            const idx = db.findIndex(s => s.title === cur.title);
-            db[idx].content = el('editorArea').value;
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            cur = db[idx];
+            const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value;
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); cur = db[idx];
             el('lyricsArea').style.display='block'; el('saveBtn').style.display='none'; 
             el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none';
             draw();
@@ -254,10 +262,10 @@
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() { if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight; if(ch <= 0) return; const pMs = ch / (scrollSpeed * 1000), st = Date.now(), sp = s.scrollTop; el('playBtn').textContent = "■"; el('playBtn').classList.add('active'); sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50); }
         function stopScroll() { clearInterval(sInt); sInt = null; el('playBtn').textContent = "▶"; el('playBtn').classList.remove('active'); }
+        function makeDraggable(el) { let x = 0, y = 0; el.ontouchstart = (e) => { x = e.touches[0].clientX - el.offsetLeft; y = e.touches[0].clientY - el.offsetTop; }; el.ontouchmove = (e) => { el.style.left = (e.touches[0].clientX - x) + 'px'; el.style.top = (e.touches[0].clientY - y) + 'px'; el.style.bottom = 'auto'; el.style.right = 'auto'; e.preventDefault(); }; }
         function createNewSong() { const t = prompt("Nieuwe liedje:"); if(t && t.trim()) { const nt = t.trim(); if(db.find(s => s.title === nt)) return alert("Bestaat al."); db.push({title: nt, content: nt + "\n..."}); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderMenu(); loadSong(nt); setTimeout(startEdit, 300); }}
         function renameSong() { if(!cur) return; const n = prompt("Nieuwe titel:", cur.title); if(n && n.trim()) { const old = cur.title; cur.title = n.trim(); db.forEach(s => { if(s.title === old) s.title = cur.title; }); Object.keys(tags).forEach(t => { tags[t] = (tags[t] || []).map(x => x === old ? cur.title : x); }); localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfTags', JSON.stringify(tags)); el('displayTitle').textContent = cur.title; renderMenu(); }}
         function deleteCurrentSong() { if(!cur) return; if(confirm(`Verwijder "${cur.title}"?`)) { db = db.filter(s => s.title !== cur.title); localStorage.setItem('tdfSongs', JSON.stringify(db)); cur = null; el('lyricsArea').innerHTML = ""; el('displayTitle').textContent = "TDF Master"; renderMenu(); }}
-        function makeDraggable(el) { let x = 0, y = 0; el.ontouchstart = (e) => { x = e.touches[0].clientX - el.offsetLeft; y = e.touches[0].clientY - el.offsetTop; }; el.ontouchmove = (e) => { el.style.left = (e.touches[0].clientX - x) + 'px'; el.style.top = (e.touches[0].clientY - y) + 'px'; el.style.bottom = 'auto'; el.style.right = 'auto'; e.preventDefault(); }; }
         function downloadBackup() { const data = JSON.stringify({ songs: db, tags: tags, logo: appLogoData }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'})); a.download = `TDF_Backup.json`; a.click(); }
         function restoreData(e) { const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); db = d.songs; tags = d.tags || {}; appLogoData = d.logo || ""; localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfTags', JSON.stringify(tags)); localStorage.setItem('tdfLogo', appLogoData); location.reload(); }; r.readAsText(e.target.files[0]); }
         el('restoreInput').onchange = restoreData;
