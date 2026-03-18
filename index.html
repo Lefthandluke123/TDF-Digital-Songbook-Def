@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.10</title>
-    <style>
-        :root { --bg-dark: #121212; --top-bar-bg: #1a1a1a; --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 65px; }
+    <title>TDF Master v6.12</title>
+    <style id="mainStyle">
+        :root { --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 65px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { height: 100dvh; width: 100vw; background-color: var(--bg-dark); overflow: hidden; position: fixed; top: 0; left: 0; }
+        html, body { height: 100dvh; width: 100vw; background-color: #121212; overflow: hidden; position: fixed; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; }
-        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; }
+        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; }
         .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; }
         .top-bar-center { text-align: center; flex-grow: 1; }
         .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
@@ -19,9 +19,9 @@
         .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; cursor: pointer; font-family: sans-serif; font-weight: bold; }
         .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; transition: background 0.2s; }
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; width: 100%; min-height: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: inherit; color: inherit; caret-color: var(--griffin-orange); }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); }
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100dvh; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
@@ -36,6 +36,7 @@
         .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; position: relative; }
         .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; cursor: pointer; display: block; font-family: sans-serif; }
     </style>
+    <style id="dynamicTheme"></style>
 </head>
 <body>
     <input type="file" id="logoInput" accept="image/png" style="display:none;">
@@ -49,7 +50,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF Master</h2>
+                <h2 id="displayTitle">TDF v6.12</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -77,8 +78,8 @@
 
     <div id="settingsOverlay" class="full-overlay">
         <div class="modal-box">
-            <h3 style="color:white; margin:0 0 10px 0;">Instellingen</h3>
-            <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
+            <h3 style="color:white; margin-bottom:15px;">Instellingen</h3>
+            <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 DARK/LIGHT MODE</button>
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
             <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
             <button class="modal-btn" onclick="el('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
@@ -88,12 +89,12 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Songbook v6.10 Klaar voor Bulk Import.</div>
+        <div id="lyricsArea">TDF Master v6.12 geladen.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.10";
+        const APP_VERSION = "6.12";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, startX = 0, sInt = null;
         const el = (id) => document.getElementById(id);
@@ -111,28 +112,28 @@
 
         function applyTheme(t) {
             const isD = t === 'dark';
-            el('scroller').style.backgroundColor = isD ? "#000" : "#fff";
-            el('lyricsArea').style.color = isD ? "#fff" : "#000";
-            el('editorArea').style.color = isD ? "#fff" : "#000";
-            el('themeBtn').textContent = isD ? "🌓 LIGHT MODE" : "🌓 DARK MODE";
+            const bg = isD ? '#000000' : '#ffffff';
+            const txt = isD ? '#ffffff' : '#000000';
+            el('dynamicTheme').innerHTML = `
+                .lyrics-container { background-color: ${bg} !important; }
+                #lyricsArea, #editorArea { color: ${txt} !important; }
+            `;
+            el('themeBtn').textContent = isD ? "🌓 WISSEL NAAR LIGHT" : "🌓 WISSEL NAAR DARK";
             localStorage.setItem('tdfTheme', t);
         }
 
-        function cycleTheme() { applyTheme((localStorage.getItem('tdfTheme') || 'light') === 'light' ? 'dark' : 'light'); }
+        function cycleTheme() { 
+            applyTheme((localStorage.getItem('tdfTheme') || 'light') === 'light' ? 'dark' : 'light'); 
+        }
 
-        // BULK IMPORT LOGICA
         el('bulkImportInput').onchange = async (e) => {
             for (let f of e.target.files) {
                 const text = await f.text();
                 const title = text.split('\n')[0].replace(/[\[\]]/g, '').trim() || f.name.replace('.txt', '');
-                if(!db.find(s => s.title === title)) {
-                    db.push({ title, content: text });
-                }
+                if(!db.find(s => s.title === title)) db.push({ title, content: text });
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex();
-            el('settingsOverlay').style.display = 'none';
-            alert(e.target.files.length + " liedjes verwerkt!");
+            renderIndex(); el('settingsOverlay').style.display = 'none';
         };
 
         function renderIndex() {
@@ -157,33 +158,29 @@
         }
 
         function loadSong(t) { stopScroll(); cur = db.find(s => s.title === t); tOff = 0; el('tpVal').textContent = "0"; el('displayTitle').textContent = cur.title; draw(); }
-
         function transpose(dir) { if(!cur) return; tOff += dir; el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
 
         const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         function tpChord(c, off) {
             return c.replace(/[A-G][#b]?/g, (m) => {
-                let n = m;
-                if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#";
+                let n = m; if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#";
                 let idx = notes.indexOf(n); if(idx === -1) return m;
-                let newIdx = (idx + off) % 12; while(newIdx < 0) newIdx += 12; return notes[newIdx];
+                let ni = (idx + off) % 12; while(ni < 0) ni += 12; return notes[ni];
             });
         }
 
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
-
         function startScroll() {
-            if(!cur) return; const container = el('scroller'); const contentHeight = container.scrollHeight - container.clientHeight;
-            let dur = 180; const match = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
-            if(match) dur = parseInt(match[1]) * 60 + parseInt(match[2]);
-            const pMs = contentHeight / (dur * 1000); const startT = Date.now(); const startP = container.scrollTop;
+            if(!cur) return; const s = el('scroller'); const ch = s.scrollHeight - s.clientHeight;
+            let dur = 180; const m = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
+            if(m) dur = parseInt(m[1]) * 60 + parseInt(m[2]);
+            const pMs = ch / (dur * 1000); const st = Date.now(); const sp = s.scrollTop;
             el('scrollBtn').style.fill = "#c12718"; el('scrollBtn').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
             sInt = setInterval(() => {
-                const elap = Date.now() - startT; container.scrollTop = startP + (elap * pMs);
-                if(container.scrollTop >= contentHeight) stopScroll();
+                const elap = Date.now() - st; s.scrollTop = sp + (elap * pMs);
+                if(s.scrollTop >= ch) stopScroll();
             }, 50);
         }
-
         function stopScroll() { clearInterval(sInt); sInt = null; el('scrollBtn').style.fill = "#34c759"; el('scrollBtn').innerHTML = '<path d="M8 5v14l11-7z"/>'; }
 
         function draw() {
@@ -192,8 +189,8 @@
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
                     if(l[i] === '[') {
-                        let end = l.indexOf(']', i); let c = l.substring(i+1, end);
-                        if(tOff !== 0) c = tpChord(c, tOff); chords.push({ p: txt.length, v: c }); i = end + 1;
+                        let e = l.indexOf(']', i); let c = l.substring(i+1, e);
+                        if(tOff !== 0) c = tpChord(c, tOff); chords.push({ p: txt.length, v: c }); i = e + 1;
                     } else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
@@ -203,34 +200,28 @@
         }
 
         function startEdit() { if(!cur) return; stopScroll(); el('lyricsArea').style.display = 'none'; el('saveBtn').style.display = 'block'; el('editorArea').style.display = 'block'; el('editorArea').value = cur.content; setTimeout(() => el('editorArea').focus(), 100); }
-
         function finishEdit() {
             const content = el('editorArea').value; const title = content.split('\n')[0].replace(/[\[\]]/g, '').trim() || "Naamloos";
             const idx = db.findIndex(s => s.title === cur.title); db[idx] = { title, content }; localStorage.setItem('tdfSongs', JSON.stringify(db));
             cur = db[idx]; el('lyricsArea').style.display = 'block'; el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none'; el('displayTitle').textContent = title; draw();
         }
-
-        function toggleMenu() { const open = el('songsMenu').classList.toggle('open'); el('menuOverlay').style.display = open ? 'block' : 'none'; }
-        
+        function toggleMenu() { const o = el('songsMenu').classList.toggle('open'); el('menuOverlay').style.display = o ? 'block' : 'none'; }
         function downloadBackup() {
             const data = JSON.stringify({date: new Date().toISOString(), data: db});
             const blob = new Blob([data], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TDF_Backup_${new Date().toLocaleDateString()}.json`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TDF_Backup.json`; a.click();
         }
-
         el('restoreInput').onchange = (e) => {
             const r = new FileReader(); r.onload = (ev) => {
-                const imported = JSON.parse(ev.target.result);
-                if(imported.data) { db = imported.data; localStorage.setItem('tdfSongs', JSON.stringify(db)); location.reload(); }
+                const i = JSON.parse(ev.target.result);
+                if(i.data) { db = i.data; localStorage.setItem('tdfSongs', JSON.stringify(db)); location.reload(); }
             };
             r.readAsDataURL(e.target.files[0]);
         };
-
         el('logoInput').onchange = (e) => {
             const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
             r.readAsDataURL(e.target.files[0]);
         };
-
         window.addEventListener('keydown', (e) => { if(el('editorArea').style.display === 'block' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.stopPropagation(); });
     </script>
 </body>
