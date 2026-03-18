@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.41</title>
+    <title>TDF Master v6.43</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
         
-        /* Top Bar */
         .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; }
         body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay, body.inverted .floater { filter: invert(100%) hue-rotate(180deg); }
         
-        .top-bar-left { display: flex; align-items: center; gap: 10px; }
+        .top-bar-left { display: flex; align-items: center; gap: 10px; min-width: 120px; }
         #appLogo { height: 42px; width: auto; display: block; }
         
         .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
-        .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
+        .top-bar-icon { width: 26px; height: 26px; fill: #007aff; cursor: pointer; }
+        .icon-delete { fill: #ff3b30; }
 
         .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
-        /* FLOATING ELEMENTS */
         .floater { position: fixed; background: rgba(26,26,26,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; z-index: 10001; touch-action: none; backdrop-filter: blur(5px); }
         .scroll-floater { width: 50px; right: 15px; top: 80px; padding: 6px; }
         .s-btn { width: 100%; height: 40px; margin-bottom: 5px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.1rem; }
@@ -41,7 +40,6 @@
         .floating-chords { width: 100px; padding: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .c-btn { padding: 8px 0; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
-        /* Overlays & Menu */
         .songs-menu { position: fixed; top: 0; left: -85%; width: 85%; height: 100dvh; background: #1c1c1e; z-index: 10000; transition: left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; }
         .songs-menu.open { left: 0; }
         .tag-item { padding: 18px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; cursor: pointer; font-weight: bold; }
@@ -60,11 +58,12 @@
 
     <div class="top-bar">
         <div class="top-bar-left">
-            <img id="appLogo" src="logo.png" alt="Logo">
+            <img id="appLogo" src="logo.png" alt=" ">
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
-        <div id="displayTitle" style="color:white; font-size:1rem; font-weight:bold;">TDF Master</div>
-        <div style="display:flex; gap:15px; align-items:center;">
+        <div id="displayTitle" style="color:white; font-size:1rem; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:30%;">TDF Master</div>
+        <div style="display:flex; gap:18px; align-items:center;">
+            <svg class="top-bar-icon icon-delete" onclick="deleteCurrentSong()" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
             <svg class="top-bar-icon" onclick="startEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
             <svg class="top-bar-icon" onclick="el('settingsOverlay').style.display='block'" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c(0.18,0.14,0.23,0.41,0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c(0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c(0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
             <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange);">GEREED</button>
@@ -137,12 +136,19 @@
             let filtered = currentTag === "ALLES" ? db : db.filter(s => (tags[currentTag] || []).includes(s.title));
             filtered.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
                 const item = document.createElement('div'); item.className = 'song-item'; item.textContent = s.title;
-                item.onclick = () => { loadSong(s.title); toggleMenu(); }; c.appendChild(item);
+                item.onclick = () => { loadSong(s.title); }; c.appendChild(item);
             });
         }
 
-        function loadSong(t) { cur = db.find(x => x.title === t); draw(); }
+        function loadSong(t) { 
+            cur = db.find(x => x.title === t); 
+            el('displayTitle').textContent = t; 
+            draw();
+            toggleMenu(); // Sluit menu na selectie
+        }
+
         function draw() {
+            if(!cur) return;
             const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
@@ -156,6 +162,16 @@
                 h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px;">${txt || ' '}</div>`;
             });
             el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
+        }
+
+        function deleteCurrentSong() {
+            if(!cur) return;
+            if(confirm(`Weet je zeker dat je "${cur.title}" wilt verwijderen?`)) {
+                db = db.filter(s => s.title !== cur.title);
+                localStorage.setItem('tdfSongs', JSON.stringify(db));
+                cur = null; el('lyricsArea').innerHTML = ""; el('displayTitle').textContent = "TDF Master";
+                renderMenu();
+            }
         }
 
         function adjustSpeed(delta) { scrollSpeed = Math.max(10, scrollSpeed + delta); el('speedDisplay').textContent = scrollSpeed + 's'; }
