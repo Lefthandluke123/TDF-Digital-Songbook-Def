@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.47</title>
+    <title>TDF Master v6.49</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -19,12 +19,13 @@
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
         .floater { position: fixed; background: rgba(26,26,26,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; z-index: 10001; touch-action: none; backdrop-filter: blur(5px); }
-        .scroll-floater { width: 50px; right: 15px; top: 80px; padding: 6px; }
+        .scroll-floater { width: 50px; right: 15px; top: 80px; padding: 6px; text-align: center; }
         .s-btn { width: 100%; height: 40px; margin-bottom: 5px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.1rem; }
         .btn-plus, .btn-min { background: rgba(68,68,68,0.8); }
         .btn-play { background: #007aff; }
         .btn-play.active { background: var(--griffin-red); }
-        #speedDisplay { color: white; font-size: 0.65rem; text-align: center; display: block; font-family: monospace; margin-bottom: 5px; }
+        #speedDisplay { color: white; font-size: 0.65rem; display: block; font-family: monospace; }
+        #factorDisplay { color: var(--griffin-orange); font-size: 0.55rem; display: block; font-family: monospace; margin-bottom: 5px; }
         .floating-pad { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--griffin-orange); }
         .pad-btn { position: absolute; background: #333; border: 1px solid #555; color: white; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; }
         .btn-up { top: 4px; left: 39px; } .btn-down { bottom: 4px; left: 39px; } .btn-left { left: 4px; top: 39px; } .btn-right { right: 4px; top: 39px; }
@@ -74,6 +75,7 @@
     </div>
     <div class="floater scroll-floater" id="scrollFloater">
         <span id="speedDisplay">180s</span>
+        <span id="factorDisplay">1.0x</span>
         <button class="s-btn btn-plus" onclick="adjustSpeed(-10)">+</button>
         <button class="s-btn btn-min" onclick="adjustSpeed(10)">-</button>
         <button class="s-btn btn-play" id="playBtn" onclick="toggleScroll()">▶</button>
@@ -128,7 +130,7 @@
         }
         function loadSong(t) { 
             cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw();
-            el('songsMenu').classList.remove('open');
+            setTimeout(() => { el('songsMenu').classList.remove('open'); }, 50);
         }
         function draw() {
             if(!cur) return; const lines = cur.content.split('\n'); let h = "";
@@ -159,7 +161,12 @@
                 cur = null; el('lyricsArea').innerHTML = ""; el('displayTitle').textContent = "TDF Master"; renderMenu();
             }
         }
-        function adjustSpeed(delta) { scrollSpeed = Math.max(10, scrollSpeed + delta); el('speedDisplay').textContent = scrollSpeed + 's'; }
+        function adjustSpeed(delta) { 
+            scrollSpeed = Math.max(10, scrollSpeed + delta); 
+            el('speedDisplay').textContent = scrollSpeed + 's';
+            el('factorDisplay').textContent = (180 / scrollSpeed).toFixed(1) + 'x';
+            if(sInt) { stopScroll(); startScroll(); }
+        }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() {
             if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight;
