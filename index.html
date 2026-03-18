@@ -14,7 +14,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         html, body { 
             height: 100dvh; width: 100vw; 
-            background-color: #000; /* Start altijd Dark */
+            background-color: #000; 
             color: #fff;
             overflow: hidden; position: fixed; top: 0; left: 0; 
             font-family: -apple-system, system-ui, sans-serif;
@@ -25,6 +25,7 @@
         .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .nav-icon-btn { background: none; border: none; padding: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .top-bar-icon { width: 26px; height: 26px; fill: #007aff; pointer-events: none; }
+
         .songs-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: #1c1c1e; z-index: 100000; transition: left 0.3s ease; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.5); padding-top: var(--safe-top); }
         .songs-menu.open { left: 0; }
         .search-container { padding: 10px 15px; background: inherit; position: sticky; top: 0; z-index: 10; }
@@ -33,11 +34,14 @@
         .section-label { padding: 15px 15px 5px 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .tag-item { padding: 15px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .song-item { padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; }
+
         .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; width: 100%; color: inherit; line-height: 1.4; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
+        
         .chord-row { height: 1.5rem; color: var(--griffin-red); font-weight: bold; position: relative; }
         .chord-item { position: absolute; white-space: pre; }
+
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.9); z-index: 1000001; padding: 20px; overflow-y: auto; }
         .modal-box { max-width: 400px; margin: 40px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; color: white; text-align: center; border: 1px solid #444; }
         .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; display: block; cursor: pointer; }
@@ -47,6 +51,7 @@
 <body>
     <input type="file" id="logoInput" accept="image/*" style="display:none;">
     <input type="file" id="restoreInput" accept=".json" style="display:none;">
+
     <div class="top-bar">
         <div class="top-bar-content">
             <div class="top-bar-left">
@@ -63,10 +68,12 @@
             </div>
         </div>
     </div>
+
     <div class="songs-menu" id="songsMenu">
         <div class="search-container"><input type="text" id="menuSearch" placeholder="Zoek liedje..." oninput="renderMenu()"></div>
         <div id="menuContent" class="menu-scroll-area"></div>
     </div>
+
     <div id="settingsOverlay" class="full-overlay">
         <div class="modal-box">
             <h3 style="margin-bottom:15px;">Instellingen</h3>
@@ -79,14 +86,17 @@
             <button class="modal-btn" style="background:#444;" onclick="el('settingsOverlay').style.display='none'">SLUITEN</button>
         </div>
     </div>
+
     <div id="tagOverlay" class="full-overlay"><div class="modal-box" id="tagModalContent"></div></div>
     <div class="lyrics-container" id="scroller"><div id="lyricsArea"></div><textarea id="editorArea" spellcheck="false"></textarea></div>
+
     <div class="floater" id="scrollFloater" style="width:55px; right:15px; top:100px;">
         <span id="speedDisplay" style="font-size:0.7rem;">180s</span>
         <button style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
         <button style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
         <button id="playBtn" style="width:100%; height:40px; margin-top:5px; background:#007aff; border:none; color:white;" onclick="toggleScroll()">▶</button>
     </div>
+
     <script>
         const el = (id) => document.getElementById(id);
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], tags = JSON.parse(localStorage.getItem('tdfTags')) || {};
@@ -108,19 +118,27 @@
 
         function applyTheme(theme) {
             const isLight = theme === 'light';
-            document.body.style.backgroundColor = isLight ? "#ffffff" : "#000000";
-            document.body.style.color = isLight ? "#000000" : "#ffffff";
-            el('songsMenu').style.backgroundColor = isLight ? "#f2f2f7" : "#1c1c1e";
-            el('scroller').style.backgroundColor = isLight ? "#ffffff" : "#000000";
+            const bg = isLight ? "#ffffff" : "#000000";
+            const txt = isLight ? "#000000" : "#ffffff";
+            const mBg = isLight ? "#f2f2f7" : "#1c1c1e";
+
+            document.body.style.backgroundColor = bg;
+            document.body.style.color = txt;
+            el('songsMenu').style.backgroundColor = mBg;
+            el('scroller').style.backgroundColor = bg;
+            
+            // Dwing renderMenu om nieuwe kleuren te gebruiken voor lijstitems
             renderMenu();
         }
 
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
         function setTag(t) { currentTag = t; el('menuSearch').value = ""; renderMenu(); }
+
         function renderMenu() {
             const c = el('menuContent'); c.innerHTML = "";
             const q = el('menuSearch').value.toLowerCase();
             const isLight = localStorage.getItem('tdfTheme') === 'light';
+            
             if(!q) {
                 const l1 = document.createElement('div'); l1.className='section-label'; l1.textContent='Boeken'; c.appendChild(l1);
                 const all = document.createElement('div'); all.className='tag-item'; 
@@ -138,12 +156,14 @@
             if(q) f = db.filter(s => s.title.toLowerCase().includes(q));
             f.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const i = document.createElement('div'); i.className='song-item'; i.textContent=s.title;
-                i.style.color = isLight ? "#000" : "#fff";
+                i.style.color = isLight ? "#000000" : "#ffffff";
+                i.style.borderBottom = isLight ? "1px solid #d1d1d6" : "1px solid #333";
                 i.onclick=()=>loadSong(s.title); c.appendChild(i);
             });
         }
 
         function loadSong(t) { cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw(); setTimeout(() => { el('songsMenu').classList.remove('open'); }, 150); }
+        
         function draw() {
             if(!cur) return; const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
