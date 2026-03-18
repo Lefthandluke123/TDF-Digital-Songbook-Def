@@ -3,50 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.23</title>
+    <title>TDF Master v6.27</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        html, body { 
-            height: 100dvh; width: 100vw; 
-            background-color: #ffffff; 
-            overflow: hidden; position: fixed; 
-            top: 0; left: 0; transition: filter 0.2s ease;
-        }
-
+        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
-
-        .top-bar { 
-            position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
-            background: #1a1a1a; border-bottom: 1px solid #333; 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; 
-        }
-
-        body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay { filter: invert(100%) hue-rotate(180deg); }
-
-        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; }
-        .top-bar-center { text-align: center; flex-grow: 1; }
-        .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
         
-        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; cursor: pointer; font-family: sans-serif; font-weight: bold; }
+        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; }
+        body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay { filter: invert(100%) hue-rotate(180deg); }
+        
+        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
         .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
-        #appLogo { height: 42px; width: auto; max-width: 80px; display: none; }
-
-        .lyrics-container { 
-            width: 100%; height: 100dvh; padding-top: var(--header-height); 
-            background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-            position: relative; z-index: 1;
-        }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
+        
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); }
 
         .songs-menu { position: fixed; top: 0; left: -85%; width: 85%; height: 100dvh; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         @media (min-width: 768px) { .songs-menu { width: 33.33%; left: -33.33%; } }
         .songs-menu.open { left: 0; }
         
-        .menu-header { padding: 15px; background: #2c2c2e; border-bottom: 1px solid #444; }
-        .alpha-header { background: var(--gray-header); color: #aaa; padding: 5px 20px; font-size: 0.8rem; font-weight: bold; border-bottom: 1px solid #444; text-transform: uppercase; }
+        /* De Grid Layout voor boeken */
+        .book-grid-toggle { padding: 15px; background: #2c2c2e; color: var(--griffin-orange); font-weight: bold; text-align: center; border-bottom: 1px solid #444; cursor: pointer; font-size: 0.9rem; }
+        .book-grid { display: none; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; background: #1a1a1a; border-bottom: 1px solid #444; max-height: 50vh; overflow-y: auto; }
+        .book-grid.active { display: grid; }
+        .book-cell { padding: 12px; background: #333; color: white; border-radius: 6px; text-align: center; font-size: 0.75rem; font-weight: bold; border: none; cursor: pointer; overflow: hidden; text-overflow: ellipsis; }
+        .book-cell.active { background: var(--griffin-orange); color: black; }
+
+        .alpha-header { background: var(--gray-header); color: #aaa; padding: 5px 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #444; }
         .index-item { padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; border-bottom: 1px solid #333; }
         
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
@@ -62,12 +47,10 @@
     <input type="file" id="bulkImportInput" accept=".txt" multiple style="display:none;">
 
     <div class="top-bar">
-        <div class="top-bar-left">
-            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
-        </div>
+        <div class="top-bar-left"><button class="top-bar-btn" onclick="toggleMenu()">Songs</button></div>
         <div class="top-bar-center">
-            <div class="title-row"><h2 id="displayTitle">TDF Master</h2></div>
-            <p id="curBookDisplay" style="margin:0; font-size:0.7rem; color:var(--griffin-orange); font-weight:bold; cursor:pointer;" onclick="toggleMenu()">ALLE LIEDJES</p>
+            <h2 id="displayTitle" style="color:white; font-size:1.1rem; margin:0;">TDF Master</h2>
+            <p id="curBookDisplay" style="margin:0; font-size:0.7rem; color:var(--griffin-orange); font-weight:bold;">HOOFDBIBLIOTHEEK</p>
         </div>
         <div class="top-bar-right">
             <svg class="top-bar-icon" id="scrollIcon" onclick="toggleScroll()" viewBox="0 0 24 24" style="fill:#34c759;"><path d="M8 5v14l11-7z"/></svg>
@@ -78,9 +61,8 @@
     </div>
 
     <div class="songs-menu" id="songsMenu">
-        <div class="menu-header">
-            <select id="bookSelector" onchange="switchBook()" style="width:100%; padding:12px; background:#444; color:white; border:none; border-radius:8px; font-size:1.1rem;"></select>
-        </div>
+        <div class="book-grid-toggle" onclick="el('bookGrid').classList.toggle('active')">📚 WISSEL BOEK (KLIK HIER)</div>
+        <div class="book-grid" id="bookGrid"></div>
         <div id="indexContent" style="flex-grow:1; overflow-y:auto;"></div>
         <button id="addSongsBtn" class="modal-btn" style="margin:0; border-radius:0; display:none; background:var(--griffin-orange);" onclick="openOrganizer()">+ LIEDJES TOEVOEGEN</button>
     </div>
@@ -106,7 +88,7 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Gebruik de 'Songs' knop linksboven.</div>
+        <div id="lyricsArea">Kies een liedje uit het menu.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
@@ -119,7 +101,7 @@
 
         window.onload = () => {
             if(localStorage.getItem('tdfTheme') === 'dark') document.body.classList.add('inverted');
-            updateBookSelector();
+            updateBookGrid();
             renderIndex();
         };
 
@@ -129,47 +111,49 @@
             el('themeBtn').textContent = isDark ? "🌓 NAAR LIGHT MODE" : "🌓 NAAR DARK MODE";
         }
 
-        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
+        function toggleMenu() { el('songsMenu').classList.toggle('open'); el('bookGrid').classList.remove('active'); }
 
-        function updateBookSelector() {
-            const sel = el('bookSelector');
-            sel.options.length = 0;
-            sel.add(new Option("HOOFDBIBLIOTHEEK", "all"));
-            Object.keys(books).sort().forEach(b => sel.add(new Option(b.toUpperCase(), b)));
-            sel.value = currentBook;
+        function updateBookGrid() {
+            const grid = el('bookGrid');
+            grid.innerHTML = "";
+            
+            // Hoofdbibliotheek
+            const cellAll = document.createElement('button');
+            cellAll.className = `book-cell ${currentBook === 'all' ? 'active' : ''}`;
+            cellAll.textContent = "ALLES";
+            cellAll.onclick = () => { currentBook = "all"; finalizeSwitch(); };
+            grid.appendChild(cellAll);
+
+            // Alle boeken
+            Object.keys(books).sort().forEach(b => {
+                const cell = document.createElement('button');
+                cell.className = `book-cell ${currentBook === b ? 'active' : ''}`;
+                cell.textContent = b.toUpperCase();
+                cell.onclick = () => { currentBook = b; finalizeSwitch(); };
+                grid.appendChild(cell);
+            });
         }
 
-        function switchBook() {
-            currentBook = el('bookSelector').value;
-            el('curBookDisplay').textContent = currentBook === 'all' ? "ALLE LIEDJES" : currentBook.toUpperCase();
+        function finalizeSwitch() {
+            el('curBookDisplay').textContent = currentBook === 'all' ? "HOOFDBIBLIOTHEEK" : currentBook.toUpperCase();
             el('addSongsBtn').style.display = currentBook === 'all' ? 'none' : 'block';
             el('delBookBtn').style.display = currentBook === 'all' ? 'none' : 'block';
+            el('bookGrid').classList.remove('active');
+            updateBookGrid();
             renderIndex();
         }
 
         function createNewBook() {
-            const n = prompt("Naam van het nieuwe boek:");
+            const n = prompt("Naam boek:");
             if (n && n.trim()) {
-                const bookName = n.trim();
-                if (!books[bookName]) books[bookName] = [];
+                const bName = n.trim();
+                books[bName] = books[bName] || [];
                 localStorage.setItem('tdfBooks', JSON.stringify(books));
-                currentBook = bookName;
-                updateBookSelector();
-                switchBook();
+                currentBook = bName;
                 el('settingsOverlay').style.display = 'none';
                 if (!el('songsMenu').classList.contains('open')) toggleMenu();
+                finalizeSwitch();
                 openOrganizer();
-            }
-        }
-
-        function deleteCurrentBook() {
-            if(confirm(`"${currentBook}" verwijderen?`)) {
-                delete books[currentBook];
-                localStorage.setItem('tdfBooks', JSON.stringify(books));
-                currentBook = "all";
-                updateBookSelector();
-                switchBook();
-                el('settingsOverlay').style.display = 'none';
             }
         }
 
@@ -177,7 +161,6 @@
             const c = el('indexContent'); c.innerHTML = "";
             let list = currentBook === 'all' ? db : db.filter(s => (books[currentBook] || []).includes(s.title));
             list.sort((a,b) => a.title.localeCompare(b.title));
-
             let lastChar = "";
             list.forEach(s => {
                 const char = s.title.charAt(0).toUpperCase();
@@ -194,16 +177,14 @@
 
         function openOrganizer() {
             el('organizerOverlay').style.display = 'block';
-            el('orgTitle').textContent = `Boek: ${currentBook}`;
             const list = el('selectionList'); list.innerHTML = "";
             db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
-                const div = document.createElement('div'); div.className = 'selection-item';
-                div.style.padding = "10px"; div.style.borderBottom = "1px solid #444";
+                const div = document.createElement('div'); div.style.padding = "12px"; div.style.borderBottom = "1px solid #444";
                 const cb = document.createElement('input'); cb.type = 'checkbox';
                 cb.checked = (books[currentBook] || []).includes(s.title);
                 cb.style.transform = "scale(1.5)"; cb.style.marginRight = "15px";
-                div.append(cb, document.createTextNode(s.title));
-                div.onclick = () => { cb.checked = !cb.checked; };
+                div.append(cb, s.title);
+                div.onclick = () => cb.checked = !cb.checked;
                 cb.onclick = (e) => e.stopPropagation();
                 list.appendChild(div);
                 div.cbRef = cb; div.titleRef = s.title;
@@ -211,43 +192,15 @@
         }
 
         function saveOrganization() {
-            const items = el('selectionList').children;
             const selected = [];
-            for (let item of items) { if (item.cbRef.checked) selected.push(item.titleRef); }
+            Array.from(el('selectionList').children).forEach(div => { if(div.cbRef.checked) selected.push(div.titleRef); });
             books[currentBook] = selected;
             localStorage.setItem('tdfBooks', JSON.stringify(books));
             el('organizerOverlay').style.display = 'none';
             renderIndex();
         }
 
-        function startEdit() {
-            if(!cur) return;
-            el('lyricsArea').style.display = 'none';
-            el('saveBtn').style.display = 'block';
-            el('editorArea').style.display = 'block';
-            el('editorArea').value = cur.content;
-            setTimeout(() => el('editorArea').focus(), 100);
-        }
-
-        function finishEdit() {
-            const content = el('editorArea').value;
-            const title = content.split('\n')[0].replace(/[\[\]]/g, '').trim() || "Naamloos";
-            const idx = db.findIndex(s => s.title === cur.title);
-            db[idx] = { title, content };
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            cur = db[idx];
-            el('lyricsArea').style.display = 'block';
-            el('saveBtn').style.display = 'none';
-            el('editorArea').style.display = 'none';
-            el('displayTitle').textContent = title;
-            draw();
-        }
-
-        function loadSong(t) {
-            cur = db.find(x => x.title === t);
-            el('displayTitle').textContent = cur.title;
-            draw();
-        }
+        function loadSong(t) { cur = db.find(x => x.title === t); el('displayTitle').textContent = cur.title; draw(); }
 
         function draw() {
             const lines = cur.content.split('\n'); let h = "";
@@ -265,6 +218,21 @@
             el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
         }
 
+        function startEdit() {
+            if(!cur) return;
+            el('lyricsArea').style.display='none'; el('saveBtn').style.display='block';
+            el('editorArea').style.display='block'; el('editorArea').value = cur.content;
+        }
+
+        function finishEdit() {
+            const idx = db.findIndex(s => s.title === cur.title);
+            db[idx].content = el('editorArea').value;
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            cur = db[idx];
+            el('lyricsArea').style.display='block'; el('saveBtn').style.display='none';
+            el('editorArea').style.display='none'; draw();
+        }
+
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() {
             const s = el('scroller'); const ch = s.scrollHeight - s.clientHeight;
@@ -272,22 +240,27 @@
             if(m) dur = parseInt(m[1]) * 60 + parseInt(m[2]);
             const pMs = ch / (dur * 1000); const st = Date.now(); const sp = s.scrollTop;
             el('scrollIcon').style.fill = "#c12718";
-            sInt = setInterval(() => {
-                const elap = Date.now() - st; s.scrollTop = sp + (elap * pMs);
-                if(s.scrollTop >= ch) stopScroll();
-            }, 50);
+            sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50);
         }
         function stopScroll() { clearInterval(sInt); sInt = null; el('scrollIcon').style.fill = "#34c759"; }
 
         el('bulkImportInput').onchange = async (e) => {
             for (let f of e.target.files) {
                 const text = await f.text();
-                const title = text.split('\n')[0].replace(/[\[\]]/g, '').trim() || f.name.replace('.txt', '');
+                const title = text.split('\n')[0].replace(/[\[\]]/g, '').trim();
                 if(!db.find(s => s.title === title)) db.push({ title, content: text });
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             renderIndex();
         };
+
+        function deleteCurrentBook() {
+            if(confirm(`"${currentBook}" verwijderen?`)) {
+                delete books[currentBook];
+                localStorage.setItem('tdfBooks', JSON.stringify(books));
+                currentBook = "all"; finalizeSwitch(); el('settingsOverlay').style.display='none';
+            }
+        }
     </script>
 </body>
 </html>
