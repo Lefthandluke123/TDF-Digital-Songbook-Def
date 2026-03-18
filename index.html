@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.40</title>
+    <title>TDF Master v6.41</title>
     <style>
         :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
         
+        /* Top Bar */
         .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; }
         body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay, body.inverted .floater { filter: invert(100%) hue-rotate(180deg); }
+        
+        .top-bar-left { display: flex; align-items: center; gap: 10px; }
+        #appLogo { height: 42px; width: auto; display: block; }
         
         .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
         .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
@@ -55,7 +59,10 @@
     <input type="file" id="restoreInput" accept=".json" style="display:none;">
 
     <div class="top-bar">
-        <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
+        <div class="top-bar-left">
+            <img id="appLogo" src="logo.png" alt="Logo">
+            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
+        </div>
         <div id="displayTitle" style="color:white; font-size:1rem; font-weight:bold;">TDF Master</div>
         <div style="display:flex; gap:15px; align-items:center;">
             <svg class="top-bar-icon" onclick="startEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
