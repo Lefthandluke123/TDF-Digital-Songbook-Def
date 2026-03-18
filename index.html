@@ -3,63 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.84</title>
+    <meta name="color-scheme" content="light">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>TDF Master v6.85</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
             --header-height: calc(60px + var(--safe-top)); 
         }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
-        /* FIREFOX & BROWSER OVERRIDE SHIELD */
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0; padding: 0; 
-            forced-color-adjust: none !important; /* Blokkeert Firefox contrast aanpassingen */
-            filter: none !important;             /* Blokkeert Dark Reader filters */
-        }
-        
+        /* Structurele CSS, kleuren via JS force */
         html, body { 
             height: 100dvh; width: 100vw; 
             overflow: hidden; position: fixed; 
             font-family: sans-serif; 
-            background-color: #FFFFFF !important; 
-            color: #000000 !important; 
+            forced-color-adjust: none !important; /* Blokkeert Firefox contrast aanpassingen */
         }
 
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 10000; border-bottom: 3px solid #000; background-color: #FFFFFF !important; }
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 10000; border-bottom: 3px solid #000; }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
         
         .songs-menu { 
             position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); 
-            z-index: 9000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: #FFFFFF !important;
+            z-index: 9000; transition: left 0.3s ease; border-right: 3px solid #000;
             visibility: hidden;
         }
         .songs-menu.open { left: 0; visibility: visible; }
 
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; background-color: #FFFFFF !important; }
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #000000 !important; }
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: bold; line-height: 1.4; }
         
         .chord-row { height: 1.7rem; position: relative; color: #c12718 !important; }
         .chord-item { position: absolute; white-space: pre; font-weight: 900; }
 
-        .floater { position: fixed; border: 3px solid #000; border-radius: 12px; z-index: 11000; text-align: center; padding: 8px; background-color: #FFFFFF !important; }
-        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; background-color: #FFFFFF !important; color: #000000 !important; }
+        .floater { position: fixed; border: 3px solid #000; border-radius: 12px; z-index: 11000; text-align: center; padding: 8px; }
+        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; }
         
-        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #FFFFFF !important; font-weight: 900; cursor: pointer; padding: 5px; min-height: 40px; color: #000000 !important; }
+        .f-btn { border: 2px solid #000; border-radius: 6px; background: #fff !important; color: #000 !important; font-weight: 900; cursor: pointer; padding: 5px; min-height: 40px; }
         
         /* Navigatie Pad */
         .floating-pad { width: 115px; height: 115px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
-        .pad-btn { position: absolute; background-color: #FFFFFF !important; border: 2px solid #000; width: 36px; height: 36px; border-radius: 8px; font-weight: 900; color: #000 !important; }
+        .pad-btn { position: absolute; background: #fff !important; border: 2px solid #000; width: 36px; height: 36px; border-radius: 8px; font-weight: 900; color: #000 !important; }
         .btn-up { top: 4px; left: 40px; } .btn-down { bottom: 4px; left: 40px; } .btn-left { left: 4px; top: 40px; } .btn-right { right: 4px; top: 40px; }
-        .btn-center { left: 40px; top: 40px; width: 36px; height: 36px; background-color: #d48e3d !important; border-radius: 50%; border: 2px solid #000; color: #fff !important; }
+        .btn-center { left: 40px; top: 40px; width: 36px; height: 36px; background: #d48e3d !important; border-radius: 50%; border: 2px solid #000; color: #fff !important; }
 
         .floating-chords { width: 120px; right: 20px; bottom: 40px; padding: 8px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; }
     </style>
 </head>
-<body>
+<body style="background-color: #ffffff !important; color: #000000 !important;">
 
-    <div class="top-bar">
+    <div class="top-bar" id="js-topbar">
         <div class="top-bar-content">
             <div style="display:flex; align-items:center; gap:15px;">
                 <img id="appLogo" src="" alt="Logo" onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto; border:1px solid #000;">
@@ -73,26 +67,26 @@
         </div>
     </div>
 
-    <div class="songs-menu" id="songsMenu">
+    <div class="songs-menu" id="songsMenu" style="background-color: #ffffff !important;">
         <div style="padding:15px; border-bottom:1px solid #000;">
             <input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold; background:#fff; color:#000;">
         </div>
         <div id="menuContent" style="flex:1; overflow-y:auto; background:#fff;"></div>
     </div>
 
-    <div class="lyrics-container" id="mainContainer">
-        <div id="lyricsArea"></div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
+    <div class="lyrics-container" id="js-container" style="background-color: #ffffff !important;">
+        <div id="lyricsArea" style="background-color: #ffffff !important; color: #000000 !important;"></div>
+        <textarea id="editorArea" spellcheck="false" style="background-color: #ffffff !important; color: #000000 !important;"></textarea>
     </div>
 
-    <div class="floater" style="right:15px; top:120px; width:70px;">
-        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900; color:#000;">180s</div>
-        <button class="f-btn" onclick="adjustSpeed(-10)">+</button>
-        <button class="f-btn" onclick="adjustSpeed(10)">-</button>
+    <div class="floater" id="js-floater" style="right:15px; top:120px; width:70px; background-color: #ffffff !important;">
+        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900; color:#000 !important;">180s</div>
+        <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
+        <button class="f-btn" style="width:100%; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
         <hr style="margin:8px 0; border:1px solid #000;">
-        <button class="f-btn" onclick="transpose(1)">b+</button>
-        <button class="f-btn" onclick="transpose(-1)">b-</button>
-        <button id="playBtn" class="f-btn" style="background-color:#007aff !important; color:#ffffff !important;" onclick="toggleScroll()">▶</button>
+        <button class="f-btn" style="width:100%;" onclick="transpose(1)">b+</button>
+        <button class="f-btn" style="width:100%; margin-top:5px;" onclick="transpose(-1)">b-</button>
+        <button id="playBtn" class="f-btn" style="width:100%; margin-top:10px; background:#007aff !important; color:#fff !important;" onclick="toggleScroll()">▶</button>
     </div>
 
     <div class="floater floating-pad" id="floatPad">
@@ -104,16 +98,14 @@
     </div>
 
     <div class="floater floating-chords" id="floatChords">
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('G')">G</button>
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
+        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('G')">G</button>
     </div>
 
     <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; z-index:20000; background:rgba(255,255,255,0.98); padding:20px;">
-        <div style="max-width:400px; margin:40px auto; background:#fff; padding:30px; border:4px solid #000; text-align:center; border-radius:15px;">
-            <h2 style="margin-bottom:20px; color:#000;">BEHEER</h2>
-            <button class="f-btn" onclick="location.reload()" style="width:100%; margin:10px 0; background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS</button>
+        <div style="max-width:400px; margin:40px auto; background:#fff; padding:30px; border:4px solid #000; text-align:center; border-radius:15px; color:#000;">
+            <h2 style="margin-bottom:20px;">BEHEER</h2>
+            <button class="f-btn" onclick="location.reload()" style="width:100%; margin:10px 0; background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS APP</button>
             <button class="f-btn" onclick="downloadBackup()" style="width:100%; margin:10px 0;">💾 BACK-UP</button>
             <button class="f-btn" onclick="el('settingsOverlay').style.display='none'" style="width:100%; margin:10px 0; background:#000 !important; color:#fff !important;">SLUITEN</button>
         </div>
@@ -124,11 +116,18 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], tags = JSON.parse(localStorage.getItem('tdfTags')) || {};
         let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
 
-        window.onload = () => { 
-            document.body.style.backgroundColor = "#FFFFFF";
-            if(appLogoData) el('appLogo').src = appLogoData; 
-            renderMenu(); 
-        };
+        // FORCEER WIT-ZWART ELKE MS
+        setInterval(() => {
+            document.body.style.setProperty('background-color', '#ffffff', 'important');
+            document.body.style.setProperty('color', '#000000', 'important');
+            const forceWhiteBg = ["js-container", "js-topbar", "songsMenu", "lyricsArea", "editorArea", "js-floater", "floatPad", "floatChords"];
+            forceWhiteBg.forEach(id => { 
+                const item = el(id);
+                if(item) { item.style.setProperty('background-color', '#ffffff', 'important'); item.style.setProperty('color', '#000000', 'important'); }
+            });
+        }, 1);
+
+        window.onload = () => { if(appLogoData) el('appLogo').src = appLogoData; renderMenu(); };
 
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
         function renderMenu() {
