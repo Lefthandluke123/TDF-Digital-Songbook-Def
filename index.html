@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>TDF Master v6.76</title>
+    <title>TDF Master v6.77</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
@@ -13,80 +11,117 @@
             --griffin-orange: #d48e3d; 
             --griffin-red: #c12718;
         }
-        /* Alleen structurele CSS */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { height: 100dvh; width: 100vw; overflow: hidden; position: fixed; font-family: sans-serif; background: #fff !important; color: #000 !important; }
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 100001; border-bottom: 3px solid #000; background: #fff !important; }
+        /* KEIHARDE RESET NAAR ZWART-WIT */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; color: #000000 !important; }
+        
+        html, body { 
+            height: 100dvh; width: 100vw; 
+            background-color: #ffffff !important; 
+            overflow: hidden; position: fixed; 
+            font-family: -apple-system, system-ui, sans-serif; 
+        }
+
+        .top-bar { 
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
+            background-color: #ffffff !important; 
+            border-bottom: 3px solid #000000 !important; 
+            z-index: 100001; 
+        }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
-        .songs-menu { position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); z-index: 100000; transition: left 0.3s ease; border-right: 3px solid #000; background: #fff !important; display: flex; flex-direction: column; }
+        
+        #displayTitle { font-weight: 800; font-size: 1.1rem; text-transform: uppercase; }
+
+        .songs-menu { 
+            position: fixed; top: var(--header-height); left: -300px; width: 280px; height: calc(100dvh - var(--header-height)); 
+            background-color: #ffffff !important; 
+            z-index: 100000; transition: left 0.3s ease; border-right: 3px solid #000000; 
+        }
         .songs-menu.open { left: 0; }
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff !important; }
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.4rem; color: #000 !important; }
-        .chord-row { height: 1.6rem; color: var(--griffin-red) !important; font-weight: bold; position: relative; }
-        .chord-item { position: absolute; white-space: pre; background: rgba(255,255,255,0.8); }
-        .floater { position: fixed; background: #fff !important; border: 3px solid #000; border-radius: 12px; z-index: 10001; text-align: center; padding: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        #editorArea { display: none; width: 100%; height: 70vh; padding: 20px; font-family: monospace; font-size: 1.25rem; border: none; outline: none; background: #fff !important; color: #000 !important; }
-        .f-btn { border: 1px solid #000; border-radius: 6px; background: #fff !important; color: #000 !important; font-weight: bold; cursor: pointer; }
+        
+        #menuSearch { width: 90%; margin: 15px auto; padding: 12px; border: 3px solid #000; border-radius: 8px; font-weight: bold; }
+
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: #ffffff !important; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        
+        /* SONGTEKST CONTRAST BOOST */
+        #lyricsArea { 
+            padding: 30px; 
+            font-family: ui-monospace, "SF Mono", Menlo, monospace; 
+            font-size: 1.45rem; 
+            font-weight: 500; /* Iets dikker voor leesbaarheid */
+            line-height: 1.5;
+        }
+
+        .chord-row { height: 1.6rem; position: relative; }
+        /* Akkoorden forceren we naar Rood, ondanks de universele zwart-regel */
+        .chord-item { 
+            position: absolute; 
+            white-space: pre; 
+            color: var(--griffin-red) !important; 
+            font-weight: 800;
+            text-shadow: 1px 1px 0px #fff, -1px -1px 0px #fff; /* Wit randje om akkoord */
+        }
+
+        .floater { position: fixed; background: #ffffff !important; border: 3px solid #000; border-radius: 12px; z-index: 10001; text-align: center; padding: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .f-btn { border: 2px solid #000; border-radius: 6px; background: #ffffff !important; font-weight: 900; cursor: pointer; padding: 5px; }
+        .btn-main { background: #007aff !important; color: #ffffff !important; border: none; }
+
+        #editorArea { 
+            display: none; width: 100%; height: 75dvh; padding: 20px; 
+            font-family: monospace; font-size: 1.3rem; font-weight: 600;
+            border: none; outline: none; background: #ffffff !important; 
+        }
     </style>
 </head>
-<body style="background-color: #ffffff !important;">
+<body>
 
-    <div class="top-bar" style="background-color: #ffffff !important;">
-        <div class="top-bar-content" style="background-color: #ffffff !important;">
-            <div style="display:flex; align-items:center; gap:15px; background-color: #ffffff !important;">
-                <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto; background-color: #ffffff !important;">
-                <button onclick="toggleMenu()" style="background:none; border:none; color:#007aff; font-weight:bold; font-size:1.1rem;">MENU</button>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'" style="height:35px; width:auto;">
+                <button onclick="toggleMenu()" style="background:none; border:none; color:#007aff !important; font-weight:900;">MENU</button>
             </div>
-            <div id="displayTitle" onclick="saveFromTitle()" style="color: #000000 !important; font-weight:bold;">TDF Master</div>
-            <div style="display:flex; gap:15px; background-color: #ffffff !important;">
-                <button onclick="createNewSong()" style="background:none; border:none; color:#007aff; font-size:1.8rem;">+</button>
-                <button onclick="startEdit()" style="background:none; border:none; color:#007aff; font-size:1.4rem;">✎</button>
+            <div id="displayTitle" onclick="saveFromTitle()">TDF Master</div>
+            <div style="display:flex; gap:15px;">
+                <button onclick="createNewSong()" style="background:none; border:none; color:#007aff !important; font-size:1.8rem; font-weight:900;">+</button>
+                <button onclick="startEdit()" style="background:none; border:none; color:#007aff !important; font-size:1.4rem; font-weight:900;">✎</button>
             </div>
         </div>
     </div>
 
-    <div class="songs-menu" id="songsMenu" style="background-color: #ffffff !important;">
-        <div style="padding:15px; background-color: #ffffff !important;">
-            <input type="text" id="menuSearch" placeholder="Zoek liedje..." oninput="renderMenu()" style="width:100%; padding:12px; border:2px solid #000; border-radius:8px; background:#fff;">
-        </div>
-        <div id="menuContent" style="flex:1; overflow-y:auto; background-color: #ffffff !important;"></div>
+    <div class="songs-menu" id="songsMenu">
+        <div style="padding:10px;"><input type="text" id="menuSearch" placeholder="ZOEK LIEDJE..." oninput="renderMenu()"></div>
+        <div id="menuContent" style="flex:1; overflow-y:auto;"></div>
     </div>
 
-    <div class="lyrics-container" id="scroller" style="background-color: #ffffff !important;">
-        <div id="lyricsArea" style="background-color: #ffffff !important;"></div>
-        <textarea id="editorArea" spellcheck="false" style="background-color: #ffffff !important;"></textarea>
+    <div class="lyrics-container" id="scroller">
+        <div id="lyricsArea"></div>
+        <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div class="floater" style="right:15px; top:120px; width:65px;">
-        <div id="speedDisplay" style="font-size:0.7rem; font-weight:bold; color:#000;">180s</div>
+    <div class="floater" style="right:15px; top:130px; width:65px;">
+        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900;">180s</div>
         <button class="f-btn" style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(-10)">+</button>
         <button class="f-btn" style="width:100%; height:40px; margin-top:5px;" onclick="adjustSpeed(10)">-</button>
         <hr style="margin:8px 0; border:1px solid #000;">
         <button class="f-btn" style="width:100%; height:35px;" onclick="transpose(1)">b+</button>
         <button class="f-btn" style="width:100%; height:35px; margin-top:4px;" onclick="transpose(-1)">b-</button>
-        <button id="playBtn" class="f-btn" style="width:100%; height:45px; background:#007aff !important; color:#fff !important; margin-top:10px;" onclick="toggleScroll()">▶</button>
+        <button id="playBtn" class="f-btn btn-main" style="width:100%; height:45px; margin-top:10px;" onclick="toggleScroll()">▶</button>
     </div>
 
-    <div class="floater" id="floatPad" style="width:110px; height:110px; left:20px; bottom:40px; border-radius:50%; display:none;">
-        <button style="position:absolute; top:4px; left:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('up')">↑</button>
-        <button style="position:absolute; bottom:4px; left:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('down')">↓</button>
-        <button style="position:absolute; left:4px; top:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('left')">←</button>
-        <button style="position:absolute; right:4px; top:38px; width:34px; height:34px;" class="f-btn" onclick="moveCursor('right')">→</button>
-        <button style="position:absolute; left:38px; top:38px; width:34px; height:34px; background:var(--griffin-orange) !important; border:none; border-radius:50%;" onclick="injectChord('')">[]</button>
-    </div>
-
-    <div class="floater" id="floatChords" style="width:110px; right:20px; bottom:40px; padding:6px; display:none; grid-template-columns:1fr 1fr; gap:4px;">
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Am')">Am</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('B')">B</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('Bm')">Bm</button>
-        <button class="f-btn" style="padding:8px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:8px 0;" onclick="injectChord('D')">D</button>
+    <div class="floater" id="floatPad" style="width:115px; height:115px; left:20px; bottom:40px; border-radius:50%; display:none;">
+        <button style="position:absolute; top:4px; left:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('up')">↑</button>
+        <button style="position:absolute; bottom:4px; left:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('down')">↓</button>
+        <button style="position:absolute; left:4px; top:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('left')">←</button>
+        <button style="position:absolute; right:4px; top:40px; width:36px; height:36px;" class="f-btn" onclick="moveCursor('right')">→</button>
+        <button style="position:absolute; left:40px; top:40px; width:36px; height:36px; background:var(--griffin-orange) !important; border-radius:50%;" onclick="injectChord('')">[]</button>
     </div>
 
     <div id="settingsOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100dvh; background:rgba(255,255,255,0.98); z-index:1000001; padding:20px;">
         <div style="max-width:400px; margin:40px auto; background:#fff; padding:25px; border:3px solid #000; text-align:center; border-radius:12px;">
-            <h3 style="color:#000;">BEHEER</h3>
-            <button onclick="location.reload()" style="width:100%; padding:15px; margin:10px 0; background:#ff3b30; color:#fff; font-weight:bold; border:none; border-radius:8px;">🔄 VERVERSEN</button>
-            <button onclick="downloadBackup()" style="width:100%; padding:15px; margin:10px 0; background:#007aff; color:#fff; font-weight:bold; border:none; border-radius:8px;">💾 BACK-UP</button>
-            <button onclick="el('settingsOverlay').style.display='none'" style="width:100%; padding:15px; margin:10px 0; background:#000; color:#fff; font-weight:bold; border:none; border-radius:8px;">SLUITEN</button>
+            <h2 style="margin-bottom:20px;">BEHEER</h2>
+            <button class="modal-btn" onclick="location.reload()" style="background:#ff3b30 !important; color:#fff !important;">🔄 VERVERS APP</button>
+            <button class="modal-btn" onclick="downloadBackup()">💾 BACK-UP</button>
+            <button class="modal-btn" onclick="el('settingsOverlay').style.display='none'" style="background:#000 !important; color:#fff !important;">SLUITEN</button>
             <input type="file" id="logoInput" accept="image/*" style="display:none;">
         </div>
     </div>
@@ -97,33 +132,26 @@
         let appLogoData = localStorage.getItem('tdfLogo') || "", currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
         const chordMap = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-        window.onload = () => { 
-            document.body.style.backgroundColor = "#ffffff";
-            if(appLogoData) el('appLogo').src = appLogoData; 
-            renderMenu(); 
-        };
+        window.onload = () => { if(appLogoData) el('appLogo').src = appLogoData; renderMenu(); };
 
         function transposeChord(chord) { return chord.replace(/[A-G][#b]?/g, (match) => { let n = match; if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#"; let idx = chordMap.indexOf(n); if(idx === -1) return match; let ni = (idx + transOffset) % 12; while(ni < 0) ni += 12; return chordMap[ni]; }); }
         function transpose(d) { transOffset += d; draw(); }
-
-        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
-        function setTag(t) { currentTag = t; renderMenu(); }
 
         function renderMenu() {
             const c = el('menuContent'); c.innerHTML = "";
             const q = el('menuSearch').value.toLowerCase();
             if(!q) {
                 const all = document.createElement('div');
-                all.style.padding = "15px 20px"; all.style.fontWeight = "bold"; all.style.borderBottom = "1px solid #eee";
+                all.style.padding = "18px 20px"; all.style.fontWeight = "900"; all.style.borderBottom = "2px solid #000";
                 all.style.background = currentTag === 'ALLES' ? "var(--griffin-orange)" : "#fff";
-                all.style.color = currentTag === 'ALLES' ? "#fff" : "var(--griffin-orange)";
+                all.style.color = currentTag === 'ALLES' ? "#fff !important" : "var(--griffin-orange) !important";
                 all.textContent = "📜 ALLE LIEDJES"; all.onclick = () => { currentTag = 'ALLES'; renderMenu(); };
                 c.appendChild(all);
                 Object.keys(tags).sort().forEach(t => {
                     const b = document.createElement('div');
-                    b.style.padding = "15px 20px"; b.style.fontWeight = "bold"; b.style.borderBottom = "1px solid #eee";
+                    b.style.padding = "18px 20px"; b.style.fontWeight = "900"; b.style.borderBottom = "2px solid #000";
                     b.style.background = currentTag === t ? "var(--griffin-orange)" : "#fff";
-                    b.style.color = currentTag === t ? "#fff" : "var(--griffin-orange)";
+                    b.style.color = currentTag === t ? "#fff !important" : "var(--griffin-orange) !important";
                     b.textContent = `🏷️ ${t}`; b.onclick = () => { currentTag = t; renderMenu(); };
                     c.appendChild(b);
                 });
@@ -132,21 +160,19 @@
             if(q) f = db.filter(s => s.title.toLowerCase().includes(q));
             f.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const i = document.createElement('div');
-                i.style.padding = "15px 20px"; i.style.borderBottom = "1px solid #eee"; i.style.color = "#000"; i.style.backgroundColor = "#fff";
+                i.style.padding = "18px 20px"; i.style.borderBottom = "1px solid #000"; i.style.fontWeight = "700";
                 i.textContent = s.title; i.onclick = () => loadSong(s.title);
                 c.appendChild(i);
             });
         }
 
         function loadSong(t) { cur = db.find(x => x.title === t); transOffset = 0; el('displayTitle').textContent = t; draw(); el('songsMenu').classList.remove('open'); }
-        function draw() { if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: transposeChord(l.substring(i+1, e)) }); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`); h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px; color:#000;">${txt || ' '}</div>`; }); el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0; }
-        
-        function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid'; el('editorArea').value = cur.content; el('editorArea').focus(); }
-        function saveFromTitle() { if(el('editorArea').style.display === 'block') { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none'; draw(); }}
-        
+        function draw() { if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: transposeChord(l.substring(i+1, e)) }); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`); h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:12px;">${txt || ' '}</div>`; }); el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0; }
+        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
+        function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('editorArea').value = cur.content; el('editorArea').focus(); }
+        function saveFromTitle() { if(el('editorArea').style.display === 'block') { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; draw(); }}
         function injectChord(c) { const a = el('editorArea'), s = a.selectionStart, e = a.selectionEnd; a.value = a.value.slice(0, s) + `[${c}]` + a.value.slice(e); a.selectionStart = a.selectionEnd = s + (c ? c.length + 2 : 2); a.focus(); }
         function moveCursor(d) { const a = el('editorArea'); a.focus(); let p = a.selectionStart, v = a.value; if(d === 'left') a.selectionStart = a.selectionEnd = p - 1; else if(d === 'right') a.selectionStart = a.selectionEnd = p + 1; else { const lines = v.split('\n'), currentLineIdx = v.substr(0, p).split('\n').length - 1; const currentCol = p - v.lastIndexOf('\n', p - 1) - 1; const targetLineIdx = d === 'up' ? currentLineIdx - 1 : currentLineIdx + 1; if(targetLineIdx >= 0 && targetLineIdx < lines.length) { let np = 0; for(let i=0; i<targetLineIdx; i++) np += lines[i].length + 1; a.selectionStart = a.selectionEnd = np + Math.min(currentCol, lines[targetLineIdx].length); }}}
-        
         function adjustSpeed(d) { scrollSpeed = Math.max(10, scrollSpeed + d); el('speedDisplay').textContent = scrollSpeed + 's'; }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() { if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight; if(ch <= 0) return; const pMs = ch / (scrollSpeed * 1000), st = Date.now(), sp = s.scrollTop; el('playBtn').textContent = "■"; sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50); }
