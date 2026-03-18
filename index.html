@@ -3,63 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.14</title>
+    <title>TDF Master v6.16</title>
     <style>
-        :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; }
+        :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        /* Basis is altijd Light (Zwarte tekst op wit) */
-        html, body { 
-            height: 100dvh; width: 100vw; 
-            background-color: #ffffff; 
-            overflow: hidden; position: fixed; 
-            top: 0; left: 0; transition: filter 0.3s ease;
-        }
-
-        /* De "Nuclear" Dark Mode: alles omkeren */
+        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
-
-        .top-bar { 
-            position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
-            background: #1a1a1a; border-bottom: 1px solid #333; 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; 
-        }
-
-        /* Voorkom dat de bar en het logo ook omkeren van kleur */
-        body.inverted .top-bar { filter: invert(100%) hue-rotate(180deg); }
-
+        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 99999; }
+        body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay { filter: invert(100%) hue-rotate(180deg); }
         .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; }
         .top-bar-center { text-align: center; flex-grow: 1; }
         .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
-        .transpose-pill { display: flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 2px 10px; border-radius: 20px; }
-        .tp-btn { color: #007aff; font-weight: bold; font-size: 1.4rem; background: none; border: none; }
+        .transpose-pill { display: flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 2px 10px; border-radius: 20px; border: 1px solid #444; }
+        .tp-btn { color: #007aff; font-weight: bold; font-size: 1.4rem; background: none; border: none; cursor: pointer; }
         #tpVal { font-size: 0.9rem; color: #fff; min-width: 15px; }
-        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
-        .top-bar-icon { width: 28px; height: 28px; fill: #007aff; }
-        #appLogo { height: 42px; width: auto; max-width: 80px; display: none; }
-
-        .lyrics-container { 
-            width: 100%; height: 100dvh; padding-top: var(--header-height); 
-            background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-        }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; width: 100%; height: 100%; }
-
+        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; cursor: pointer; font-family: sans-serif; font-weight: bold; }
+        .top-bar-icon { width: 28px; height: 28px; fill: #007aff; cursor: pointer; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: #000; width: 100%; min-height: 100%; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); }
+        
+        .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100dvh; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
-        body.inverted .songs-menu { filter: invert(100%) hue-rotate(180deg); }
-
-        .index-container { width: 100%; border-bottom: 1px solid #333; background: #c12718; position: relative; }
-        .index-item { padding: 18px 20px; background: #1c1c1e; color: white; position: relative; z-index: 2; transition: transform 0.2s; }
-        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c12718; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        .chord-row { height: 1.5rem; color: var(--griffin-red); font-weight: bold; position: relative; }
-        .chord-item { position: absolute; white-space: pre; }
+        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
+        
+        .alpha-header { background: var(--gray-header); color: #aaa; padding: 5px 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #444; }
+        .index-container { position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid #333; background: #c12718; }
+        .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c12718; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
+        
+        .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; pointer-events: none; }
+        .chord-item { position: absolute; top: 0; white-space: pre; }
         .lyric-line { white-space: pre; display: block; margin-bottom: 10px; }
-
-        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; }
-        .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; }
-        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; }
+        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
+        .modal-box { max-width: 400px; margin: 30px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; position: relative; max-height: 85vh; overflow-y: auto; }
+        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; cursor: pointer; display: block; font-family: sans-serif; }
+        .book-tag { display: inline-block; background: #444; color: #fff; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 0.7rem; }
+        .book-del { color: var(--griffin-red); margin-left: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -74,32 +56,40 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF v6.14</h2>
+                <h2 id="displayTitle">TDF Master</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
                     <button class="tp-btn" onclick="transpose(1)">+</button>
                 </div>
             </div>
-            <p style="margin:0; font-size:0.7rem; color:var(--griffin-orange); font-weight:bold;">THE DOGGY FEW</p>
+            <p id="curBookDisplay" style="margin:0; font-size:0.7rem; color:var(--griffin-orange); font-weight:bold;">ALLE LIEDJES</p>
         </div>
         <div class="top-bar-right">
-            <svg class="top-bar-icon" id="scrollBtn" onclick="toggleScroll()" viewBox="0 0 24 24" style="fill:#34c759;"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="top-bar-icon" id="scrollIcon" onclick="toggleScroll()" viewBox="0 0 24 24" style="fill:#34c759;"><path d="M8 5v14l11-7z"/></svg>
             <svg class="top-bar-icon" onclick="startEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-            <svg class="top-bar-icon" onclick="el('settingsOverlay').style.display='block'" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c(0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c(0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            <svg class="top-bar-icon" onclick="el('settingsOverlay').style.display='block'; renderBooks();" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c(0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c(0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
             <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange);">GEREED</button>
         </div>
     </div>
 
     <div class="songs-menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
     <div class="songs-menu" id="songsMenu">
-        <div style="padding:15px; color:white; font-weight:bold;">SONGS</div>
+        <div style="padding:15px; color:white; font-weight:bold; background:#2c2c2e; display:flex; justify-content:space-between; align-items:center;">
+            <span>MENU</span>
+            <select id="bookFilter" onchange="renderIndex()" style="background:#444; color:white; border:none; border-radius:4px; font-size:0.7rem; padding:2px;">
+                <option value="all">Alle Boeken</option>
+            </select>
+        </div>
         <div id="indexContent" style="flex-grow:1; overflow-y:auto;"></div>
     </div>
 
     <div id="settingsOverlay" class="full-overlay">
         <div class="modal-box">
-            <h3 style="color:white; margin-bottom:15px;">Instellingen</h3>
+            <h3 style="color:white; margin-bottom:10px;">Bibliotheek</h3>
+            <div id="bookList" style="text-align:left; margin-bottom:15px; padding:10px; background:#1c1c1e; border-radius:8px;"></div>
+            <button class="modal-btn" onclick="addBook()" style="background:var(--griffin-orange);">+ NIEUW BOEK MAKEN</button>
+            <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
             <button class="modal-btn" id="themeBtn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
             <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
@@ -110,13 +100,14 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">TDF Master v6.14 Inversion Mode.</div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
+        <div id="lyricsArea">Songbook v6.16 - Kies een song.</div>
+        <textarea id="editorArea" spellcheck="false" placeholder="Titel\nBooks: Boek1, Boek2\nDuration: 3:00\n\nTekst..."></textarea>
     </div>
 
     <script>
         const el = (id) => document.getElementById(id);
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
+        let books = JSON.parse(localStorage.getItem('tdfBooks')) || [];
         let cur = null, tOff = 0, startX = 0, sInt = null;
 
         window.onload = () => {
@@ -125,6 +116,7 @@
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
             renderIndex();
+            updateBookFilter();
         };
 
         function cycleTheme() {
@@ -133,15 +125,51 @@
             updateThemeBtn();
         }
 
-        function updateThemeBtn() {
-            el('themeBtn').textContent = document.body.classList.contains('inverted') ? "🌓 NAAR LIGHT MODE" : "🌓 NAAR DARK MODE";
+        function updateThemeBtn() { el('themeBtn').textContent = document.body.classList.contains('inverted') ? "🌓 NAAR LIGHT MODE" : "🌓 NAAR DARK MODE"; }
+
+        function addBook() {
+            const n = prompt("Naam van het nieuwe boek:");
+            if(n && !books.includes(n)) {
+                books.push(n);
+                localStorage.setItem('tdfBooks', JSON.stringify(books));
+                renderBooks();
+                updateBookFilter();
+            }
+        }
+
+        function removeBook(n) {
+            if(confirm(`Boek "${n}" verwijderen? Liedjes blijven bewaard.`)) {
+                books = books.filter(b => b !== n);
+                localStorage.setItem('tdfBooks', JSON.stringify(books));
+                renderBooks();
+                updateBookFilter();
+            }
+        }
+
+        function renderBooks() {
+            const list = el('bookList');
+            list.innerHTML = books.length ? "" : "<span style='color:#666; font-size:0.8rem;'>Geen boeken gevonden.</span>";
+            books.forEach(b => {
+                const tag = document.createElement('div'); tag.className = 'book-tag';
+                tag.innerHTML = `${b} <span class="book-del" onclick="removeBook('${b}')">×</span>`;
+                list.appendChild(tag);
+            });
+        }
+
+        function updateBookFilter() {
+            const f = el('bookFilter');
+            f.innerHTML = '<option value="all">Alle Liedjes</option>';
+            books.forEach(b => {
+                const opt = document.createElement('option'); opt.value = b; opt.textContent = b;
+                f.appendChild(opt);
+            });
         }
 
         el('bulkImportInput').onchange = async (e) => {
             for (let f of e.target.files) {
                 const text = await f.text();
                 const title = text.split('\n')[0].replace(/[\[\]]/g, '').trim() || f.name.replace('.txt', '');
-                if(!db.find(s => s.title === title)) db.push({ title, content: text });
+                if(!db.find(s => s.title === title)) db.push({ title, content: text, books: [] });
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             renderIndex(); el('settingsOverlay').style.display = 'none';
@@ -149,10 +177,28 @@
 
         function renderIndex() {
             const c = el('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+            const filter = el('bookFilter').value;
+            
+            let filtered = db.filter(s => {
+                if(filter === 'all') return true;
+                return s.content.includes(`Books:`) && s.content.includes(filter);
+            });
+
+            filtered.sort((a,b) => a.title.localeCompare(b.title));
+
+            let lastChar = "";
+            filtered.forEach(s => {
+                const startChar = s.title.charAt(0).toUpperCase();
+                if(startChar !== lastChar) {
+                    const h = document.createElement('div'); h.className = 'alpha-header'; h.textContent = startChar;
+                    c.appendChild(h);
+                    lastChar = startChar;
+                }
+
                 const container = document.createElement('div'); container.className = 'index-container';
                 const del = document.createElement('div'); del.className = 'delete-btn'; del.textContent = 'Wis';
                 del.onclick = (e) => { e.stopPropagation(); db = db.filter(x => x.title !== s.title); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); };
+                
                 const item = document.createElement('div'); item.className = 'index-item'; item.textContent = s.title;
                 item.addEventListener('touchstart', (e) => startX = e.touches[0].clientX);
                 item.addEventListener('touchmove', (e) => {
@@ -166,6 +212,7 @@
                 item.onclick = () => { loadSong(s.title); toggleMenu(); };
                 container.append(del, item); c.appendChild(container);
             });
+            el('curBookDisplay').textContent = filter === 'all' ? "ALLE LIEDJES" : filter.toUpperCase();
         }
 
         function loadSong(t) { stopScroll(); cur = db.find(s => s.title === t); tOff = 0; el('tpVal').textContent = "0"; el('displayTitle').textContent = cur.title; draw(); }
@@ -186,17 +233,18 @@
             let dur = 180; const m = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
             if(m) dur = parseInt(m[1]) * 60 + parseInt(m[2]);
             const pMs = ch / (dur * 1000); const st = Date.now(); const sp = s.scrollTop;
-            el('scrollBtn').style.fill = "#c12718"; el('scrollBtn').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            el('scrollIcon').style.fill = "#c12718";
             sInt = setInterval(() => {
-                const elap = Date.now() - startT; s.scrollTop = sp + (elap * pMs);
+                const elap = Date.now() - st; s.scrollTop = sp + (elap * pMs);
                 if(s.scrollTop >= ch) stopScroll();
             }, 50);
         }
-        function stopScroll() { clearInterval(sInt); sInt = null; el('scrollBtn').style.fill = "#34c759"; el('scrollBtn').innerHTML = '<path d="M8 5v14l11-7z"/>'; }
+        function stopScroll() { clearInterval(sInt); sInt = null; el('scrollIcon').style.fill = "#34c759"; }
 
         function draw() {
             if(!cur) return; const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
+                if(l.startsWith('Books:') || l.startsWith('Duration:')) return;
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
                     if(l[i] === '[') {
@@ -217,18 +265,21 @@
             cur = db[idx]; el('lyricsArea').style.display = 'block'; el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none'; el('displayTitle').textContent = title; draw();
         }
         function toggleMenu() { const o = el('songsMenu').classList.toggle('open'); el('menuOverlay').style.display = o ? 'block' : 'none'; }
+        
         function downloadBackup() {
-            const data = JSON.stringify({date: new Date().toISOString(), data: db});
+            const data = JSON.stringify({date: new Date().toISOString(), songs: db, books: books});
             const blob = new Blob([data], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TDF_Backup.json`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TDF_Library.json`; a.click();
         }
+
         el('restoreInput').onchange = (e) => {
             const r = new FileReader(); r.onload = (ev) => {
                 const i = JSON.parse(ev.target.result);
-                if(i.data) { db = i.data; localStorage.setItem('tdfSongs', JSON.stringify(db)); location.reload(); }
+                if(i.songs) { db = i.songs; books = i.books || []; localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfBooks', JSON.stringify(books)); location.reload(); }
             };
             r.readAsDataURL(e.target.files[0]);
         };
+
         el('logoInput').onchange = (e) => {
             const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
             r.readAsDataURL(e.target.files[0]);
