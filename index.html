@@ -3,84 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.55</title>
+    <title>TDF Master v6.56</title>
     <style>
-        :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; --gray-header: #333; }
+        :root { --header-height: 65px; --griffin-orange: #d48e3d; --griffin-red: #c12718; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; }
+        html, body { height: 100dvh; width: 100vw; background-color: #ffffff; overflow: hidden; position: fixed; top: 0; left: 0; transition: filter 0.2s ease; }
         body.inverted { filter: invert(100%) hue-rotate(180deg); background-color: #000000; }
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 9999; }
+        
+        .top-bar { position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 9999; }
         body.inverted .top-bar, body.inverted .songs-menu, body.inverted .full-overlay, body.inverted .floater { filter: invert(100%) hue-rotate(180deg); }
-        .top-bar-left { display: flex; align-items: center; gap: 10px; }
-        #appLogo { height: 42px; width: auto; display: block; object-fit: contain; }
-        .top-bar-btn { background: none; border: none; color: #007aff; font-size: 1.1rem; font-weight: bold; }
-        .top-bar-icon { width: 24px; height: 24px; fill: #007aff; cursor: pointer; }
+        
+        .top-bar-left { display: flex; align-items: center; gap: 8px; }
+        #appLogo { height: 40px; width: auto; display: block; object-fit: contain; }
+        
+        .nav-icon-btn { background: none; border: none; padding: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .top-bar-icon { width: 24px; height: 24px; fill: #007aff; pointer-events: none; }
+        .icon-delete { fill: #ff3b30; }
+
         .songs-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100dvh; background: #1c1c1e; z-index: 10000; transition: left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .songs-menu.open { left: 0; }
-        .section-label { padding: 15px 15px 5px 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-        .tag-item { padding: 15px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .section-label { padding: 15px; color: #888; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .tag-item { padding: 15px 20px; background: #2c2c2e; color: var(--griffin-orange); border-bottom: 1px solid #444; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .tag-item.active { background: var(--griffin-orange); color: black; }
         .song-item { padding: 15px 20px; background: #1c1c1e; color: white; border-bottom: 1px solid #333; cursor: pointer; }
+
+        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; width: 100%; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
+        
+        .floater { position: fixed; background: rgba(26,26,26,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; z-index: 10001; touch-action: none; backdrop-filter: blur(5px); text-align: center; }
+        .scroll-floater { width: 55px; right: 15px; top: 80px; padding: 8px; }
+        .s-btn { width: 100%; height: 42px; margin-bottom: 6px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.2rem; background: rgba(68,68,68,0.8); }
+        .btn-play { background: #007aff; } .btn-play.active { background: var(--griffin-red); }
+
+        .floating-pad { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--griffin-orange); }
+        .pad-btn { position: absolute; background: #333; border: 1px solid #555; color: white; width: 34px; height: 34px; border-radius: 6px; font-weight: bold; }
+        .btn-up { top: 4px; left: 38px; } .btn-down { bottom: 4px; left: 38px; } .btn-left { left: 4px; top: 38px; } .btn-right { right: 4px; top: 38px; }
+        .btn-center { left: 38px; top: 38px; background: var(--griffin-orange); color: black; border-radius: 50%; border: none; }
+        
+        .floating-chords { width: 110px; padding: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .c-btn { padding: 10px 0; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
         .modal-box { max-width: 400px; margin: 20px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; color: white; text-align: center; }
         .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #007aff; color: white; font-weight: bold; display: block; }
-        .lyrics-container { width: 100%; height: 100dvh; padding-top: var(--header-height); background-color: inherit; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; width: 100%; min-height: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: transparent; caret-color: var(--griffin-orange); padding-bottom: 400px; }
-        .floater { position: fixed; background: rgba(26,26,26,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; z-index: 10001; touch-action: none; backdrop-filter: blur(5px); text-align: center; }
-        .scroll-floater { width: 50px; right: 15px; top: 80px; padding: 6px; }
-        .s-btn { width: 100%; height: 40px; margin-bottom: 5px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 1.1rem; }
-        .floating-pad { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--griffin-orange); }
-        .pad-btn { position: absolute; background: #333; border: 1px solid #555; color: white; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; }
-        .btn-up { top: 4px; left: 39px; } .btn-down { bottom: 4px; left: 39px; } .btn-left { left: 4px; top: 39px; } .btn-right { right: 4px; top: 39px; }
-        .btn-center { left: 39px; top: 39px; background: var(--griffin-orange); color: black; border-radius: 50%; border: none; }
-        .floating-chords { width: 100px; padding: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .c-btn { padding: 8px 0; background: #333; color: white; border: 1px solid #555; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        .btn-play { background: #007aff; } .btn-play.active { background: var(--griffin-red); }
+        
         .chord-row { height: 1.5rem; color: var(--griffin-red); font-weight: bold; position: relative; }
         .chord-item { position: absolute; white-space: pre; }
     </style>
 </head>
 <body class="inverted">
-    <input type="file" id="bulkImportInput" accept=".txt" multiple style="display:none;">
-    <input type="file" id="restoreInput" accept=".json" style="display:none;">
     <input type="file" id="logoInput" accept="image/*" style="display:none;">
+    <input type="file" id="restoreInput" accept=".json" style="display:none;">
 
     <div class="top-bar">
         <div class="top-bar-left">
-            <img id="appLogo" src="" alt=" ">
-            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
+            <img id="appLogo" src="" alt=" " onclick="el('settingsOverlay').style.display='block'">
+            <button class="top-bar-btn" style="padding:10px;" onclick="toggleMenu()">Songs</button>
         </div>
-        <div id="displayTitle" style="color:white; font-size:1rem; font-weight:bold;">TDF Master</div>
-        <div style="display:flex; gap:12px; align-items:center;">
-            <svg class="top-bar-icon" onclick="createNewSong()" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            <svg class="top-bar-icon" onclick="renameSong()" viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-2h11v2H3V8zm0 4h7v2H3v-2zm13-7.58l3.34 3.4L20.5 5.67l-3.34-3.4L16 3.42zM11 19v3h3l8.29-8.29-3-3L11 19z"/></svg>
-            <svg class="top-bar-icon" style="fill:#ff3b30;" onclick="deleteCurrentSong()" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-            <svg class="top-bar-icon" onclick="startEdit()" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
-            <svg class="top-bar-icon" onclick="el('settingsOverlay').style.display='block'" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c(0.18,0.14,0.23,0.41,0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c(0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c(0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-            <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange);">GEREED</button>
-        </div>
-    </div>
-
-    <div id="settingsOverlay" class="full-overlay">
-        <div class="modal-box">
-            <h3>Boeken & Beheer</h3>
-            <button class="modal-btn" onclick="createNewBook()" style="background:var(--griffin-orange); color:black;">📚 NIEUW BOEK MAKEN</button>
-            <button class="modal-btn" onclick="el('logoInput').click()">🖼️ LOGO UPLOADEN</button>
-            <button class="modal-btn" onclick="downloadBackup()">💾 BACK-UP DOWNLOADEN</button>
-            <button class="modal-btn" onclick="el('restoreInput').click()">🔄 BACK-UP HERSTELLEN</button>
-            <button class="modal-btn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
-            <button class="modal-btn" style="background:#444;" onclick="el('settingsOverlay').style.display='none'">SLUITEN</button>
+        <div id="displayTitle" style="color:white; font-size:0.9rem; font-weight:bold; max-width:20%; overflow:hidden;">TDF Master</div>
+        <div style="display:flex; align-items:center;">
+            <button class="nav-icon-btn" onclick="createNewSong()"><svg class="top-bar-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+            <button class="nav-icon-btn" onclick="renameSong()"><svg class="top-bar-icon" viewBox="0 0 24 24"><path d="M3 10h11v2H3v-2zm0-2h11v2H3V8zm0 4h7v2H3v-2zm13-7.58l3.34 3.4L20.5 5.67l-3.34-3.4L16 3.42zM11 19v3h3l8.29-8.29-3-3L11 19z"/></svg></button>
+            <button class="nav-icon-btn" onclick="deleteCurrentSong()"><svg class="top-bar-icon icon-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+            <button class="nav-icon-btn" onclick="startEdit()"><svg class="top-bar-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg></button>
+            <button class="top-bar-btn" id="saveBtn" onclick="finishEdit()" style="display:none; color:var(--griffin-orange); padding-left:10px;">GEREED</button>
         </div>
     </div>
-
-    <div id="tagOverlay" class="full-overlay"><div class="modal-box" id="tagModalContent"></div></div>
 
     <div class="floater scroll-floater" id="scrollFloater">
-        <span id="speedDisplay">180s</span>
-        <span id="factorDisplay">1.0x</span>
-        <button class="s-btn btn-plus" onclick="adjustSpeed(-10)">+</button>
-        <button class="s-btn btn-min" onclick="adjustSpeed(10)">-</button>
+        <span id="speedDisplay" style="color:white;font-size:0.7rem;">180s</span>
+        <span id="factorDisplay" style="color:var(--griffin-orange);font-size:0.6rem;margin-bottom:4px;">1.0x</span>
+        <button class="s-btn" onclick="adjustSpeed(-10)">+</button>
+        <button class="s-btn" onclick="adjustSpeed(10)">-</button>
         <button class="s-btn btn-play" id="playBtn" onclick="toggleScroll()">▶</button>
     </div>
 
@@ -102,6 +97,19 @@
         <button class="c-btn" onclick="injectChord('Gm')">Gm</button><button class="c-btn" onclick="injectChord('Bb')">Bb</button>
     </div>
 
+    <div id="settingsOverlay" class="full-overlay">
+        <div class="modal-box">
+            <h3>Beheer</h3>
+            <button class="modal-btn" onclick="createNewBook()">📚 NIEUW BOEK MAKEN</button>
+            <button class="modal-btn" onclick="el('logoInput').click()">🖼️ LOGO UPLOADEN</button>
+            <button class="modal-btn" onclick="downloadBackup()">💾 BACK-UP DOWNLOADEN</button>
+            <button class="modal-btn" onclick="el('restoreInput').click()">🔄 BACK-UP HERSTELLEN</button>
+            <button class="modal-btn" onclick="cycleTheme()">🌓 WISSEL THEMA</button>
+            <button class="modal-btn" style="background:#444;" onclick="el('settingsOverlay').style.display='none'">SLUITEN</button>
+        </div>
+    </div>
+
+    <div id="tagOverlay" class="full-overlay"><div class="modal-box" id="tagModalContent"></div></div>
     <div class="songs-menu" id="songsMenu"><div id="menuContent"></div></div>
     <div class="lyrics-container" id="scroller"><div id="lyricsArea"></div><textarea id="editorArea" spellcheck="false"></textarea></div>
 
@@ -114,6 +122,12 @@
             if(localStorage.getItem('tdfTheme') === 'light') document.body.classList.remove('inverted');
             if(appLogoData) el('appLogo').src = appLogoData;
             renderMenu(); makeDraggable(el('scrollFloater')); makeDraggable(el('floatPad')); makeDraggable(el('floatChords'));
+        };
+
+        el('logoInput').onchange = (e) => {
+            const reader = new FileReader(); reader.onload = (ev) => {
+                appLogoData = ev.target.result; el('appLogo').src = appLogoData; localStorage.setItem('tdfLogo', appLogoData);
+            }; reader.readAsDataURL(e.target.files[0]);
         };
 
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
@@ -130,7 +144,7 @@
             Object.keys(tags).sort().forEach(t => {
                 const btn = document.createElement('div');
                 btn.className = `tag-item ${currentTag === t ? 'active' : ''}`;
-                btn.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
+                btn.innerHTML = `<span>🏷️ ${t}</span><span style="color:#007aff; padding:5px;" onclick="event.stopPropagation(); manageBook('${t}')">⚙️</span>`;
                 btn.onclick = () => { currentTag = t; renderMenu(); };
                 c.appendChild(btn);
             });
@@ -145,8 +159,8 @@
         }
 
         function loadSong(t) { 
-            el('songsMenu').classList.remove('open');
-            setTimeout(() => { cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw(); }, 100);
+            cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw();
+            setTimeout(() => { el('songsMenu').classList.remove('open'); }, 150);
         }
 
         function draw() {
@@ -154,4 +168,99 @@
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
-                    if(l
+                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: l.substring(i+1, e) }); i = e + 1; }
+                    else { txt += l[i]; i++; }
+                }
+                let r = ""; chords.forEach(c => r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`);
+                h += `<div class="chord-row">${r}</div><div style="white-space:pre; margin-bottom:10px;">${txt || ' '}</div>`;
+            });
+            el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
+        }
+
+        function manageBook(tagName) {
+            const modal = el('tagOverlay'); const content = el('tagModalContent');
+            content.innerHTML = `<h3>${tagName}</h3><div style="text-align:left; max-height:300px; overflow-y:auto; margin:15px 0;" id="tagChecklist"></div>`;
+            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const div = document.createElement('div'); div.style.padding = '8px';
+                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'mcb_'+s.title;
+                cb.checked = (tags[tagName] || []).includes(s.title);
+                cb.onchange = () => {
+                    if(!tags[tagName]) tags[tagName] = [];
+                    if(cb.checked) tags[tagName].push(s.title);
+                    else tags[tagName] = tags[tagName].filter(x => x !== s.title);
+                    localStorage.setItem('tdfTags', JSON.stringify(tags));
+                };
+                const lb = document.createElement('label'); lb.htmlFor = 'mcb_'+s.title; lb.textContent = " " + s.title;
+                div.appendChild(cb); div.appendChild(lb); el('tagChecklist').appendChild(div);
+            });
+            const delBtn = document.createElement('button'); delBtn.className = 'modal-btn'; delBtn.style.background = '#c12718';
+            delBtn.textContent = "BOEK VERWIJDEREN";
+            delBtn.onclick = () => { if(confirm("Verwijderen?")) { delete tags[tagName]; if(currentTag === tagName) currentTag = "ALLES"; localStorage.setItem('tdfTags', JSON.stringify(tags)); modal.style.display='none'; renderMenu(); }};
+            content.appendChild(delBtn);
+            const closeBtn = document.createElement('button'); closeBtn.className = 'modal-btn'; closeBtn.style.background = '#444'; closeBtn.textContent = "KLAAR";
+            closeBtn.onclick = () => { modal.style.display = 'none'; renderMenu(); };
+            content.appendChild(closeBtn);
+            modal.style.display = 'block';
+        }
+
+        function createNewBook() {
+            const name = prompt("Naam van het nieuwe Boek:");
+            if(name && name.trim()) {
+                const n = name.trim(); tags[n] = [];
+                localStorage.setItem('tdfTags', JSON.stringify(tags));
+                el('settingsOverlay').style.display = 'none'; renderMenu(); manageBook(n);
+            }
+        }
+
+        function startEdit() { 
+            if(!cur) return; 
+            el('lyricsArea').style.display='none'; el('saveBtn').style.display='block'; 
+            el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid';
+            el('editorArea').value = cur.content; 
+        }
+
+        function finishEdit() {
+            const idx = db.findIndex(s => s.title === cur.title);
+            db[idx].content = el('editorArea').value;
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            cur = db[idx];
+            el('lyricsArea').style.display='block'; el('saveBtn').style.display='none'; 
+            el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none';
+            draw();
+        }
+
+        function injectChord(c) {
+            const area = el('editorArea'), start = area.selectionStart;
+            area.value = area.value.slice(0, start) + `[${c}]` + area.value.slice(area.selectionEnd);
+            area.selectionStart = area.selectionEnd = start + (c ? c.length + 2 : 1); area.focus();
+        }
+
+        function moveCursor(dir) {
+            const area = el('editorArea'); area.focus();
+            let pos = area.selectionStart, lines = area.value.split('\n');
+            if(dir === 'left') area.selectionStart = area.selectionEnd = pos - 1;
+            else if(dir === 'right') area.selectionStart = area.selectionEnd = pos + 1;
+            else {
+                const curLineArr = area.value.substr(0, pos).split('\n'), lineNum = curLineArr.length - 1;
+                const colNum = curLineArr[lineNum].length, targetLine = dir === 'up' ? lineNum - 1 : lineNum + 1;
+                if(targetLine >= 0 && targetLine < lines.length) {
+                    let newPos = 0; for(let i=0; i<targetLine; i++) newPos += lines[i].length + 1;
+                    area.selectionStart = area.selectionEnd = newPos + Math.min(colNum, lines[targetLine].length);
+                }
+            }
+        }
+
+        function adjustSpeed(delta) { scrollSpeed = Math.max(10, scrollSpeed + delta); el('speedDisplay').textContent = scrollSpeed + 's'; el('factorDisplay').textContent = (180 / scrollSpeed).toFixed(1) + 'x'; }
+        function toggleScroll() { sInt ? stopScroll() : startScroll(); }
+        function startScroll() { if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight; if(ch <= 0) return; const pMs = ch / (scrollSpeed * 1000), st = Date.now(), sp = s.scrollTop; el('playBtn').textContent = "■"; el('playBtn').classList.add('active'); sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50); }
+        function stopScroll() { clearInterval(sInt); sInt = null; el('playBtn').textContent = "▶"; el('playBtn').classList.remove('active'); }
+        function createNewSong() { const t = prompt("Nieuwe liedje:"); if(t && t.trim()) { const nt = t.trim(); if(db.find(s => s.title === nt)) return alert("Bestaat al."); db.push({title: nt, content: nt + "\n..."}); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderMenu(); loadSong(nt); setTimeout(startEdit, 300); }}
+        function renameSong() { if(!cur) return; const n = prompt("Nieuwe titel:", cur.title); if(n && n.trim()) { const old = cur.title; cur.title = n.trim(); db.forEach(s => { if(s.title === old) s.title = cur.title; }); Object.keys(tags).forEach(t => { tags[t] = (tags[t] || []).map(x => x === old ? cur.title : x); }); localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfTags', JSON.stringify(tags)); el('displayTitle').textContent = cur.title; renderMenu(); }}
+        function deleteCurrentSong() { if(!cur) return; if(confirm(`Verwijder "${cur.title}"?`)) { db = db.filter(s => s.title !== cur.title); localStorage.setItem('tdfSongs', JSON.stringify(db)); cur = null; el('lyricsArea').innerHTML = ""; el('displayTitle').textContent = "TDF Master"; renderMenu(); }}
+        function makeDraggable(el) { let x = 0, y = 0; el.ontouchstart = (e) => { x = e.touches[0].clientX - el.offsetLeft; y = e.touches[0].clientY - el.offsetTop; }; el.ontouchmove = (e) => { el.style.left = (e.touches[0].clientX - x) + 'px'; el.style.top = (e.touches[0].clientY - y) + 'px'; el.style.bottom = 'auto'; el.style.right = 'auto'; e.preventDefault(); }; }
+        function downloadBackup() { const data = JSON.stringify({ songs: db, tags: tags, logo: appLogoData }); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'})); a.download = `TDF_Backup.json`; a.click(); }
+        function restoreData(e) { const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); db = d.songs; tags = d.tags || {}; appLogoData = d.logo || ""; localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfTags', JSON.stringify(tags)); localStorage.setItem('tdfLogo', appLogoData); location.reload(); }; r.readAsText(e.target.files[0]); }
+        el('restoreInput').onchange = restoreData;
+    </script>
+</body>
+</html>
