@@ -1,154 +1,196 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="color-scheme" content="light">
-    <title>TDF Master v6.96</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beheeromgeving - Thema Update</title>
     <style>
-        :root { 
-            --safe-top: env(safe-area-inset-top, 20px); 
-            --header-height: calc(60px + var(--safe-top)); 
+        /* Kleurenpalet gebaseerd op logo */
+        :root {
+            --logo-red: #b3322a;
+            --logo-green: #2e5a31;
+            --bg-soft: #f0f4f1;
+            --text-dark: #2c3e50;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-soft); 
+            color: var(--text-dark); 
         }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; forced-color-adjust: none !important; }
-        
-        html, body { 
-            height: 100dvh; width: 100vw; overflow: hidden; position: fixed; 
-            background-color: #ffffff !important; color: #000000 !important; font-family: sans-serif;
+        /* Floating Sticky Header met thema-border */
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 40px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 3px solid var(--logo-green);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        .top-bar { 
-            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
-            z-index: 1000000; border-bottom: 3px solid #000; background-color: #ffffff !important; 
+        .nav-logo-img { 
+            max-width: 90px; 
+            height: auto; 
+            display: block; 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
-        .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
+        .nav-logo-img:hover { transform: scale(1.1) rotate(2deg); }
 
-        .lyrics-container { 
-            position: absolute; top: var(--header-height); bottom: 0; left: 0; right: 0;
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
-            z-index: 10; background-color: #ffffff !important;
-            pointer-events: none; 
+        .admin-nav-list { display: flex; gap: 25px; list-style: none; margin: 0; padding: 0; align-items: center; }
+        .hidden { display: none !important; }
+
+        .admin-nav-list a, .admin-nav-list label {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: 800; color: #000 !important; pointer-events: auto; }
-        #editorArea { display: none; width: 100%; height: 80vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; outline: none; background-color: #ffffff !important; color: #000 !important; pointer-events: auto; }
+        .admin-nav-list a:hover, .admin-nav-list label:hover { 
+            background: var(--bg-soft); 
+            color: var(--logo-red); 
+        }
 
-        .chord-line { color: #c12718 !important; display: block; height: 1.5rem; position: relative; }
-        .chord-span { position: absolute; white-space: pre; font-weight: 900; }
-        .text-line { display: block; margin-bottom: 15px; color: #000 !important; }
+        /* Notificatie Styling */
+        #save-toast {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 100px;
+            background: var(--logo-green);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 1001;
+            opacity: 1;
+            transition: opacity 0.4s;
+        }
 
-        .songs-menu { position: fixed; top: var(--header-height); left: -300px; width: 280px; height: 100%; z-index: 2000000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: #ffffff !important; visibility: hidden; }
-        .songs-menu.open { left: 0; visibility: visible; }
+        @media (max-width: 768px) {
+            .main-header { flex-direction: column; padding: 20px; }
+            .admin-nav-list { margin-top: 20px; width: 100%; justify-content: center; gap: 10px; }
+            .admin-nav-list a, .admin-nav-list label { font-size: 12px; padding: 8px; }
+        }
 
-        .floater { position: fixed; z-index: 2147483647 !important; background-color: #ffffff !important; border: 3px solid #000; border-radius: 12px; padding: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events: auto !important; }
-        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #ffffff !important; color: #000 !important; font-weight: 900; cursor: pointer; padding: 8px; min-width: 44px; }
+        /* Content Card */
+        .container { padding: 80px 20px; max-width: 900px; margin: 0 auto; }
+        .card { 
+            background: #ffffff; 
+            padding: 50px; 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(46, 90, 49, 0.1); 
+            border: 1px solid rgba(46, 90, 49, 0.05);
+            text-align: center;
+        }
 
-        .floating-pad { width: 130px; height: 130px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
-        .pad-btn { position: absolute; width: 42px; height: 42px; font-size: 1.2rem; }
-        .floating-chords { width: 140px; right: 20px; bottom: 40px; display: none; grid-template-columns: 1fr 1fr; gap: 8px; }
+        h1 { color: var(--logo-red); margin-bottom: 20px; }
+
+        .btn-main { 
+            background: var(--logo-red); 
+            color: white; 
+            border: none; 
+            padding: 16px 35px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            font-weight: bold; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(179, 50, 42, 0.3);
+        }
+        .btn-main:hover { 
+            background: var(--logo-green); 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 90, 49, 0.3);
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <button onclick="toggleMenu()" class="f-btn" style="color:#007aff !important;">SONGS</button>
-            <div id="displayTitle" onclick="saveFromTitle()" style="font-weight:900;">TDF MASTER</div>
-            <div style="display:flex; gap:10px;">
-                <button onclick="downloadBackup()" class="f-btn" title="Backup">💾</button>
-                <button onclick="createNewSong()" class="f-btn" style="color:#007aff !important;">+</button>
-                <button onclick="startEdit()" class="f-btn" style="color:#007aff !important;">✎</button>
-            </div>
-        </div>
+<header class="main-header">
+    <div class="nav-logo-wrapper">
+        <a href="index.html">
+            <img src="logo.png" alt="Logo" class="nav-logo-img" id="headerLogo">
+        </a>
     </div>
 
-    <div class="songs-menu" id="songsMenu">
-        <div style="padding:15px; background:#fff;"><input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold;"></div>
-        <div id="menuContent" style="background:#fff;"></div>
+    <div id="save-toast" class="hidden">✓ Logo succesvol bijgewerkt</div>
+
+    <nav id="beheerMenu" class="hidden">
+        <ul class="admin-nav-list">
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li>
+                <label for="logo-upload">📷 Logo Wijzigen</label>
+                <input type="file" id="logo-upload" accept="image/*" class="hidden" onchange="previewLogo(event)">
+            </li>
+            <li><a href="#uitloggen" onclick="toggleAdmin()" style="color: var(--logo-red);">Uitloggen</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="card">
+        <h1 id="statusTitle">Welkom bij de Beheeromgeving</h1>
+        <p id="statusText">De interface is nu volledig afgestemd op de kleuren van het Keltische logo.</p>
+        <button class="btn-main" onclick="toggleAdmin()">Start Edit Mode</button>
     </div>
+</main>
 
-    <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea"></div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
-    </div>
+<script>
+    let isAdmin = false;
 
-    <div class="floater" style="right:15px; top:120px; width:80px;">
-        <div id="speedDisplay" style="font-size:0.9rem; font-weight:900; color:#000; margin-bottom:5px;">180s</div>
-        <button class="f-btn" style="width:100%; margin-bottom:5px;" onclick="adjustSpeed(-10)">+</button>
-        <button class="f-btn" style="width:100%;" onclick="adjustSpeed(10)">-</button>
-        <hr style="margin:8px 0; border:1px solid #000;">
-        <button class="f-btn" style="width:100%; margin-bottom:5px;" onclick="transpose(1)">b+</button>
-        <button class="f-btn" style="width:100%;" onclick="transpose(-1)">b-</button>
-        <button id="playBtn" class="f-btn" style="width:100%; margin-top:10px; background:#007aff !important; color:#fff !important;" onclick="toggleScroll()">▶</button>
-    </div>
+    function toggleAdmin() {
+        isAdmin = !isAdmin;
+        const menu = document.getElementById('beheerMenu');
+        const title = document.getElementById('statusTitle');
+        const text = document.getElementById('statusText');
 
-    <div class="floater floating-pad" id="floatPad">
-        <button class="f-btn pad-btn" style="top:5px; left:44px;" onclick="moveCursor('up')">↑</button>
-        <button class="f-btn pad-btn" style="bottom:5px; left:44px;" onclick="moveCursor('down')">↓</button>
-        <button class="f-btn pad-btn" style="left:5px; top:44px;" onclick="moveCursor('left')">←</button>
-        <button class="f-btn pad-btn" style="right:5px; top:44px;" onclick="moveCursor('right')">→</button>
-        <button class="f-btn pad-btn" style="left:44px; top:44px; background:#d48e3d !important; border-radius:50%;" onclick="injectChord('')">[]</button>
-    </div>
+        if (isAdmin) {
+            menu.classList.remove('hidden');
+            title.innerText = "Beheer Modus Actief";
+            text.innerText = "Gebruik het floating menu bovenaan om wijzigingen door te voeren.";
+        } else {
+            menu.classList.add('hidden');
+            title.innerText = "Kijk Modus";
+            text.innerText = "Beheermenu is nu veilig verborgen.";
+        }
+    }
 
-    <div class="floater floating-chords" id="floatChords">
-        <button class="f-btn" onclick="injectChord('A')">A</button><button class="f-btn" onclick="injectChord('Am')">Am</button>
-        <button class="f-btn" onclick="injectChord('C')">C</button><button class="f-btn" onclick="injectChord('G')">G</button>
-        <button class="f-btn" onclick="injectChord('D')">D</button><button class="f-btn" onclick="injectChord('E')">E</button>
-    </div>
+    function previewLogo(event) {
+        const reader = new FileReader();
+        const toast = document.getElementById('save-toast');
 
-    <script>
-        const el = (id) => document.getElementById(id);
-        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
-        const chordMap = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-
-        function transposeChord(chord) { return chord.replace(/[A-G][#b]?/g, (match) => { let n = match; if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#"; let idx = chordMap.indexOf(n); if(idx === -1) return match; let ni = (idx + transOffset) % 12; while(ni < 0) ni += 12; return chordMap[ni]; }); }
+        reader.onload = function() {
+            document.getElementById('headerLogo').src = reader.result;
+            toast.classList.remove('hidden');
+            toast.style.opacity = '1';
+            
+            setTimeout(() => { 
+                toast.style.opacity = '0';
+                setTimeout(() => { toast.classList.add('hidden'); }, 400);
+            }, 2500);
+        };
         
-        function draw() {
-            if(!cur) return;
-            const lines = cur.content.split('\n');
-            let h = "";
-            lines.forEach(l => {
-                let chords = [], txt = "", i = 0;
-                while(i < l.length) {
-                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({ p: txt.length, v: transposeChord(l.substring(i+1, e)) }); i = e + 1; }
-                    else { txt += l[i]; i++; }
-                }
-                if(chords.length > 0) {
-                    let r = ""; chords.forEach(c => r += `<span class="chord-span" style="left:${c.p}ch">${c.v}</span>`);
-                    h += `<span class="chord-line">${r}</span>`;
-                }
-                h += `<span class="text-line">${txt || ' '}</span>`;
-            });
-            el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
+        if(event.target.files[0]) {
+            reader.readAsDataURL(event.target.files[0]);
         }
+    }
+</script>
 
-        function renderMenu() {
-            const c = el('menuContent'); c.innerHTML = "";
-            db.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const i = document.createElement('div');
-                i.style.padding = "20px"; i.style.borderBottom = "1px solid #000"; i.style.color = "#000";
-                i.textContent = s.title; i.onclick = () => loadSong(s.title);
-                c.appendChild(i);
-            });
-        }
-
-        function toggleMenu() { el('songsMenu').classList.toggle('open'); }
-        function loadSong(t) { cur = db.find(x => x.title === t); draw(); el('songsMenu').classList.remove('open'); }
-        function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid'; el('editorArea').value = cur.content; el('editorArea').focus(); }
-        function saveFromTitle() { if(el('editorArea').style.display === 'block') { db[db.findIndex(s => s.title === cur.title)].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none'; draw(); }}
-        function moveCursor(d) { const a = el('editorArea'); a.focus(); let p = a.selectionStart, v = a.value; if(d === 'left') a.selectionStart = a.selectionEnd = p - 1; else if(d === 'right') a.selectionStart = a.selectionEnd = p + 1; else { const lines = v.split('\n'), currentLineIdx = v.substr(0, p).split('\n').length - 1; const currentCol = p - v.lastIndexOf('\n', p - 1) - 1; const targetLineIdx = d === 'up' ? currentLineIdx - 1 : currentLineIdx + 1; if(targetLineIdx >= 0 && targetLineIdx < lines.length) { let np = 0; for(let i=0; i<targetLineIdx; i++) np += lines[i].length + 1; a.selectionStart = a.selectionEnd = np + Math.min(currentCol, lines[targetLineIdx].length); }}}
-        function injectChord(c) { const a = el('editorArea'), s = a.selectionStart; a.value = a.value.slice(0, s) + `[${c}]` + a.value.slice(s); a.selectionStart = a.selectionEnd = s + 2; a.focus(); }
-        function adjustSpeed(d) { scrollSpeed = Math.max(10, scrollSpeed + d); el('speedDisplay').textContent = scrollSpeed + 's'; }
-        function transpose(d) { transOffset += d; draw(); }
-        function toggleScroll() { sInt ? stopScroll() : startScroll(); }
-        function startScroll() { if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight; const pMs = ch / (scrollSpeed * 1000), st = Date.now(), sp = s.scrollTop; el('playBtn').textContent = "■"; sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50); }
-        function stopScroll() { clearInterval(sInt); sInt = null; el('playBtn').textContent = "▶"; }
-        function createNewSong() { const t = prompt("Titel:"); if(t) { db.push({title: t, content: t + "\n..."}); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderMenu(); loadSong(t); }}
-        function downloadBackup() { const blob = new Blob([JSON.stringify({songs: db})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_backup.json'; a.click(); }
-
-        window.onload = renderMenu;
-    </script>
 </body>
 </html>
