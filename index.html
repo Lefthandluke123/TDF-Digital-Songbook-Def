@@ -1,105 +1,72 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Master v6.94</title>
+    <meta name="color-scheme" content="light">
+    <title>TDF Master v6.96</title>
     <style>
         :root { 
             --safe-top: env(safe-area-inset-top, 20px); 
             --header-height: calc(60px + var(--safe-top)); 
-            --bg-fix: #FEFEFE; /* Net niet wit om Firefox te foppen */
         }
         
-        * { 
-            box-sizing: border-box; 
-            margin: 0; padding: 0; 
-            forced-color-adjust: none !important;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; forced-color-adjust: none !important; }
         
         html, body { 
-            height: 100%; width: 100%; 
-            overflow: hidden; position: fixed; 
-            background-color: var(--bg-fix) !important; 
-            color: #000000 !important;
-            font-family: sans-serif;
+            height: 100dvh; width: 100vw; overflow: hidden; position: fixed; 
+            background-color: #ffffff !important; color: #000000 !important; font-family: sans-serif;
         }
 
-        /* Navigatie Balk */
         .top-bar { 
             position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
-            z-index: 5000; border-bottom: 3px solid #000; 
-            background-color: var(--bg-fix) !important; 
+            z-index: 1000000; border-bottom: 3px solid #000; background-color: #ffffff !important; 
         }
         .top-bar-content { margin-top: var(--safe-top); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; }
 
-        /* De Content Container */
         .lyrics-container { 
             position: absolute; top: var(--header-height); bottom: 0; left: 0; right: 0;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
-            z-index: 10; background-color: var(--bg-fix) !important;
+            z-index: 10; background-color: #ffffff !important;
+            pointer-events: none; 
         }
 
-        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: 800; color: #000 !important; }
+        #lyricsArea { padding: 30px; font-family: monospace; font-size: 1.5rem; font-weight: 800; color: #000 !important; pointer-events: auto; }
+        #editorArea { display: none; width: 100%; height: 80vh; padding: 20px; font-family: monospace; font-size: 1.3rem; border: none; outline: none; background-color: #ffffff !important; color: #000 !important; pointer-events: auto; }
+
         .chord-line { color: #c12718 !important; display: block; height: 1.5rem; position: relative; }
-        .chord-span { position: absolute; white-space: pre; }
+        .chord-span { position: absolute; white-space: pre; font-weight: 900; }
         .text-line { display: block; margin-bottom: 15px; color: #000 !important; }
 
-        /* HET MENU */
-        .songs-menu { 
-            position: fixed; top: var(--header-height); left: -300px; width: 280px; height: 100%;
-            z-index: 10000; transition: left 0.3s ease; border-right: 3px solid #000; 
-            background-color: var(--bg-fix) !important; visibility: hidden;
-        }
+        .songs-menu { position: fixed; top: var(--header-height); left: -300px; width: 280px; height: 100%; z-index: 2000000; transition: left 0.3s ease; border-right: 3px solid #000; background-color: #ffffff !important; visibility: hidden; }
         .songs-menu.open { left: 0; visibility: visible; }
 
-        /* DE FLOATERS - MAXIMAAL BOVENOP */
-        .floater { 
-            position: fixed; z-index: 99999; 
-            background-color: var(--bg-fix) !important; 
-            border: 3px solid #000; border-radius: 12px; 
-            padding: 8px; text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            pointer-events: auto !important;
-        }
+        .floater { position: fixed; z-index: 2147483647 !important; background-color: #ffffff !important; border: 3px solid #000; border-radius: 12px; padding: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events: auto !important; }
+        .f-btn { border: 2px solid #000; border-radius: 6px; background-color: #ffffff !important; color: #000 !important; font-weight: 900; cursor: pointer; padding: 8px; min-width: 44px; }
 
-        .f-btn { 
-            border: 2px solid #000; border-radius: 6px; 
-            background-color: #ffffff !important; color: #000 !important;
-            font-weight: 900; cursor: pointer; padding: 5px;
-        }
-
-        #editorArea { 
-            display: none; width: 100%; height: 80%; padding: 20px; 
-            font-family: monospace; font-size: 1.3rem; border: none; 
-            background-color: var(--bg-fix) !important; color: #000 !important;
-        }
-
-        /* Pad & Chords */
-        .floating-pad { width: 120px; height: 120px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
-        .pad-btn { position: absolute; width: 40px; height: 40px; font-weight: 900; }
-        .floating-chords { width: 130px; right: 20px; bottom: 40px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .floating-pad { width: 130px; height: 130px; left: 20px; bottom: 40px; border-radius: 50%; display: none; }
+        .pad-btn { position: absolute; width: 42px; height: 42px; font-size: 1.2rem; }
+        .floating-chords { width: 140px; right: 20px; bottom: 40px; display: none; grid-template-columns: 1fr 1fr; gap: 8px; }
     </style>
 </head>
-<body style="background-color: #FEFEFE !important;">
+<body>
 
     <div class="top-bar">
         <div class="top-bar-content">
-            <div style="display:flex; gap:15px;">
-                <button onclick="toggleMenu()" class="f-btn" style="color:#007aff !important;">SONGS</button>
-            </div>
-            <div id="displayTitle" onclick="saveFromTitle()" style="font-weight:900; color:#000;">TDF MASTER</div>
+            <button onclick="toggleMenu()" class="f-btn" style="color:#007aff !important;">SONGS</button>
+            <div id="displayTitle" onclick="saveFromTitle()" style="font-weight:900;">TDF MASTER</div>
             <div style="display:flex; gap:10px;">
-                <button onclick="createNewSong()" class="f-btn" style="color:#007aff !important; font-size:1.5rem;">+</button>
+                <button onclick="downloadBackup()" class="f-btn" title="Backup">💾</button>
+                <button onclick="createNewSong()" class="f-btn" style="color:#007aff !important;">+</button>
                 <button onclick="startEdit()" class="f-btn" style="color:#007aff !important;">✎</button>
             </div>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
-        <div style="padding:15px;"><input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold;"></div>
-        <div id="menuContent"></div>
+        <div style="padding:15px; background:#fff;"><input type="text" id="menuSearch" placeholder="Zoek..." oninput="renderMenu()" style="width:100%; padding:10px; border:2px solid #000; font-weight:bold;"></div>
+        <div id="menuContent" style="background:#fff;"></div>
     </div>
 
     <div class="lyrics-container" id="scroller">
@@ -107,37 +74,34 @@
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div class="floater" style="right:15px; top:120px; width:75px;">
-        <div id="speedDisplay" style="font-size:0.8rem; font-weight:900; color:#000;">180s</div>
-        <button class="f-btn" style="width:100%; margin:5px 0;" onclick="adjustSpeed(-10)">+</button>
+    <div class="floater" style="right:15px; top:120px; width:80px;">
+        <div id="speedDisplay" style="font-size:0.9rem; font-weight:900; color:#000; margin-bottom:5px;">180s</div>
+        <button class="f-btn" style="width:100%; margin-bottom:5px;" onclick="adjustSpeed(-10)">+</button>
         <button class="f-btn" style="width:100%;" onclick="adjustSpeed(10)">-</button>
         <hr style="margin:8px 0; border:1px solid #000;">
-        <button class="f-btn" style="width:100%;" onclick="transpose(1)">b+</button>
-        <button class="f-btn" style="width:100%; margin-top:5px;" onclick="transpose(-1)">b-</button>
+        <button class="f-btn" style="width:100%; margin-bottom:5px;" onclick="transpose(1)">b+</button>
+        <button class="f-btn" style="width:100%;" onclick="transpose(-1)">b-</button>
         <button id="playBtn" class="f-btn" style="width:100%; margin-top:10px; background:#007aff !important; color:#fff !important;" onclick="toggleScroll()">▶</button>
     </div>
 
     <div class="floater floating-pad" id="floatPad">
-        <button class="f-btn pad-btn" style="top:5px; left:40px;" onclick="moveCursor('up')">↑</button>
-        <button class="f-btn pad-btn" style="bottom:5px; left:40px;" onclick="moveCursor('down')">↓</button>
-        <button class="f-btn pad-btn" style="left:5px; top:40px;" onclick="moveCursor('left')">←</button>
-        <button class="f-btn pad-btn" style="right:5px; top:40px;" onclick="moveCursor('right')">→</button>
-        <button class="f-btn pad-btn" style="left:40px; top:40px; background:#d48e3d !important; border-radius:50%;" onclick="injectChord('')">[]</button>
+        <button class="f-btn pad-btn" style="top:5px; left:44px;" onclick="moveCursor('up')">↑</button>
+        <button class="f-btn pad-btn" style="bottom:5px; left:44px;" onclick="moveCursor('down')">↓</button>
+        <button class="f-btn pad-btn" style="left:5px; top:44px;" onclick="moveCursor('left')">←</button>
+        <button class="f-btn pad-btn" style="right:5px; top:44px;" onclick="moveCursor('right')">→</button>
+        <button class="f-btn pad-btn" style="left:44px; top:44px; background:#d48e3d !important; border-radius:50%;" onclick="injectChord('')">[]</button>
     </div>
 
     <div class="floater floating-chords" id="floatChords">
-        <button class="f-btn" style="padding:10px 0;" onclick="injectChord('A')">A</button><button class="f-btn" style="padding:10px 0;" onclick="injectChord('Am')">Am</button>
-        <button class="f-btn" style="padding:10px 0;" onclick="injectChord('C')">C</button><button class="f-btn" style="padding:10px 0;" onclick="injectChord('G')">G</button>
-        <button class="f-btn" style="padding:10px 0;" onclick="injectChord('D')">D</button><button class="f-btn" style="padding:10px 0;" onclick="injectChord('E')">E</button>
+        <button class="f-btn" onclick="injectChord('A')">A</button><button class="f-btn" onclick="injectChord('Am')">Am</button>
+        <button class="f-btn" onclick="injectChord('C')">C</button><button class="f-btn" onclick="injectChord('G')">G</button>
+        <button class="f-btn" onclick="injectChord('D')">D</button><button class="f-btn" onclick="injectChord('E')">E</button>
     </div>
 
     <script>
         const el = (id) => document.getElementById(id);
-        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], tags = JSON.parse(localStorage.getItem('tdfTags')) || {};
-        let currentTag = "ALLES", cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
+        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [], cur = null, sInt = null, scrollSpeed = 180, transOffset = 0;
         const chordMap = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-
-        window.onload = () => { renderMenu(); };
 
         function transposeChord(chord) { return chord.replace(/[A-G][#b]?/g, (match) => { let n = match; if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#"; let idx = chordMap.indexOf(n); if(idx === -1) return match; let ni = (idx + transOffset) % 12; while(ni < 0) ni += 12; return chordMap[ni]; }); }
         
@@ -164,14 +128,14 @@
             const c = el('menuContent'); c.innerHTML = "";
             db.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const i = document.createElement('div');
-                i.style.padding = "15px"; i.style.borderBottom = "1px solid #000"; i.style.color = "#000";
+                i.style.padding = "20px"; i.style.borderBottom = "1px solid #000"; i.style.color = "#000";
                 i.textContent = s.title; i.onclick = () => loadSong(s.title);
                 c.appendChild(i);
             });
         }
 
         function toggleMenu() { el('songsMenu').classList.toggle('open'); }
-        function loadSong(t) { cur = db.find(x => x.title === t); el('displayTitle').textContent = t; draw(); el('songsMenu').classList.remove('open'); }
+        function loadSong(t) { cur = db.find(x => x.title === t); draw(); el('songsMenu').classList.remove('open'); }
         function startEdit() { if(!cur) return; el('lyricsArea').style.display='none'; el('editorArea').style.display='block'; el('floatPad').style.display='block'; el('floatChords').style.display='grid'; el('editorArea').value = cur.content; el('editorArea').focus(); }
         function saveFromTitle() { if(el('editorArea').style.display === 'block') { db[db.findIndex(s => s.title === cur.title)].content = el('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); el('lyricsArea').style.display='block'; el('editorArea').style.display='none'; el('floatPad').style.display='none'; el('floatChords').style.display='none'; draw(); }}
         function moveCursor(d) { const a = el('editorArea'); a.focus(); let p = a.selectionStart, v = a.value; if(d === 'left') a.selectionStart = a.selectionEnd = p - 1; else if(d === 'right') a.selectionStart = a.selectionEnd = p + 1; else { const lines = v.split('\n'), currentLineIdx = v.substr(0, p).split('\n').length - 1; const currentCol = p - v.lastIndexOf('\n', p - 1) - 1; const targetLineIdx = d === 'up' ? currentLineIdx - 1 : currentLineIdx + 1; if(targetLineIdx >= 0 && targetLineIdx < lines.length) { let np = 0; for(let i=0; i<targetLineIdx; i++) np += lines[i].length + 1; a.selectionStart = a.selectionEnd = np + Math.min(currentCol, lines[targetLineIdx].length); }}}
@@ -182,6 +146,9 @@
         function startScroll() { if(!cur) return; const s = el('scroller'), ch = s.scrollHeight - s.clientHeight; const pMs = ch / (scrollSpeed * 1000), st = Date.now(), sp = s.scrollTop; el('playBtn').textContent = "■"; sInt = setInterval(() => { s.scrollTop = sp + ((Date.now() - st) * pMs); if(s.scrollTop >= ch) stopScroll(); }, 50); }
         function stopScroll() { clearInterval(sInt); sInt = null; el('playBtn').textContent = "▶"; }
         function createNewSong() { const t = prompt("Titel:"); if(t) { db.push({title: t, content: t + "\n..."}); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderMenu(); loadSong(t); }}
+        function downloadBackup() { const blob = new Blob([JSON.stringify({songs: db})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_backup.json'; a.click(); }
+
+        window.onload = renderMenu;
     </script>
 </body>
 </html>
