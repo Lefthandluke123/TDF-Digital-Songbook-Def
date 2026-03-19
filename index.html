@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Firefox Flyer v6.07</title>
+    <title>TDF Control v6.08</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,7 +17,6 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
-        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -37,14 +36,12 @@
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
-        /* Content */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
         /* Floating Units */
         .floating-unit { position: fixed; z-index: 10000; display: none; touch-action: none; }
-        
         #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 400px; }
         .chord-bar { 
             display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.9); 
@@ -59,21 +56,20 @@
             gap: 6px; background: rgba(44, 44, 46, 0.9); padding: 12px; border-radius: 50%;
             border: 2px solid var(--griffin-orange); box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
-        
         .tool-btn { 
             width: 50px; height: 50px; background: #3a3a3c; color: white; border: none; 
             border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
         .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.4rem; }
-        .nav-btn:active { background: var(--griffin-orange); }
-        .drag-handle { 
-            grid-column: 2; grid-row: 2; background: var(--griffin-orange); 
-            border-radius: 50%; opacity: 0.9; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: black; font-weight: bold;
-        }
-        
+        .drag-handle { grid-column: 2; grid-row: 2; background: var(--griffin-orange); border-radius: 50%; opacity: 0.9; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: black; font-weight: bold; }
         .chord-item-btn { min-width: 52px; color: var(--griffin-orange); font-family: monospace; font-size: 1.15rem; }
 
-        /* Lists */
+        /* Song Menu - Reset to 33% / 85% */
+        .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
+        .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .songs-menu.open { left: 0; }
+        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
+        
         .index-container { position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); }
         .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
@@ -84,7 +80,7 @@
 
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
         .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; font-family: sans-serif; }
-        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: var(--griffin-orange); color: white; font-weight: bold; }
+        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: var(--griffin-orange); color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body data-theme="light">
@@ -99,7 +95,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Flyer v6.07</h2>
+                <h2 id="displayTitle">Control v6.08</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin">−</button>
                     <span id="tpVal">0</span>
@@ -158,9 +154,9 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.07";
+        const APP_VERSION = "6.08";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0, sInt = null, navInt = null;
+        let cur = null, tOff = 0, navInt = null;
         const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
 
         window.onload = () => {
@@ -169,10 +165,7 @@
                 location.reload(true);
             }
             const logo = localStorage.getItem('tdfLogo');
-            if(logo) { 
-                const img = document.getElementById('appLogo');
-                img.src = logo; img.style.display = 'block'; 
-            }
+            if(logo) { document.getElementById('appLogo').src = logo; document.getElementById('appLogo').style.display = 'block'; }
             renderIndex();
             initChordBar();
             makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"));
@@ -204,10 +197,7 @@
             });
         }
 
-        function startNav(dir) {
-            moveCursor(dir);
-            navInt = setInterval(() => moveCursor(dir), 120);
-        }
+        function startNav(dir) { moveCursor(dir); navInt = setInterval(() => moveCursor(dir), 120); }
         function stopNav() { clearInterval(navInt); }
 
         function moveCursor(dir) {
@@ -220,20 +210,15 @@
                 curChar += lines[i].length + 1;
             }
             const col = start - curChar;
-
             if(dir === 'Left') area.setSelectionRange(start - 1, start - 1);
             else if(dir === 'Right') area.setSelectionRange(start + 1, start + 1);
             else if(dir === 'Up' && curLine > 0) {
-                let newPos = 0;
-                for(let i=0; i<curLine-1; i++) newPos += lines[i].length + 1;
-                newPos += Math.min(col, lines[curLine-1].length);
-                area.setSelectionRange(newPos, newPos);
+                let newPos = 0; for(let i=0; i<curLine-1; i++) newPos += lines[i].length + 1;
+                newPos += Math.min(col, lines[curLine-1].length); area.setSelectionRange(newPos, newPos);
             }
             else if(dir === 'Down' && curLine < lines.length - 1) {
-                let newPos = 0;
-                for(let i=0; i<=curLine; i++) newPos += lines[i].length + 1;
-                newPos += Math.min(col, lines[curLine+1].length);
-                area.setSelectionRange(newPos, newPos);
+                let newPos = 0; for(let i=0; i<=curLine; i++) newPos += lines[i].length + 1;
+                newPos += Math.min(col, lines[curLine+1].length); area.setSelectionRange(newPos, newPos);
             }
         }
 
@@ -242,29 +227,41 @@
             const s = area.selectionStart, e = area.selectionEnd;
             area.value = area.value.substring(0, s) + text + area.value.substring(e);
             area.focus();
-            const p = s + text.length - offset;
-            area.setSelectionRange(p, p);
+            const p = s + text.length - offset; area.setSelectionRange(p, p);
         }
 
-        document.getElementById('bulkImportInput').onchange = async (e) => {
-            let added = 0, skipped = 0;
+        // Verbeterde Bulk Import voor iPad Firefox
+        document.getElementById('bulkImportInput').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
-            for (let f of files) {
-                const text = await f.text();
-                const title = text.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt', '');
-                if(!db.find(s => s.title.toLowerCase() === title.toLowerCase())) {
-                    db.push({ title, content: text });
-                    added++;
-                } else { skipped++; }
-            }
+            if(files.length === 0) return;
+            let added = 0, skipped = 0;
+            
+            const filePromises = files.map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const text = ev.target.result;
+                        const title = text.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || file.name.replace('.txt', '');
+                        if(!db.find(s => s.title.toLowerCase() === title.toLowerCase())) {
+                            db.push({ title, content: text });
+                            added++;
+                        } else { skipped++; }
+                        resolve();
+                    };
+                    reader.readAsText(file);
+                });
+            });
+
+            await Promise.all(filePromises);
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             renderIndex();
-            alert(`Resultaat:\n- ${added} liedjes toegevoegd\n- ${skipped} duplicaten overgeslagen`);
+            alert(`Import klaar!\nNieuw: ${added}\nDuplicaat overgeslagen: ${skipped}`);
             document.getElementById('settingsOverlay').style.display = 'none';
-        };
+            e.target.value = ''; 
+        });
 
         function startEdit() {
-            if(!cur) return; stopScroll();
+            if(!cur) return; 
             document.getElementById('lyricsArea').style.display = 'none'; document.getElementById('editIcon').style.display = 'none';
             document.getElementById('saveBtn').style.display = 'block'; document.getElementById('editorArea').style.display = 'block';
             document.getElementById('joyUnit').style.display = 'block'; document.getElementById('chordUnit').style.display = 'block';
@@ -285,8 +282,8 @@
         }
 
         function loadSong(t) {
-            stopScroll(); cur = db.find(s => s.title === t);
-            tOff = 0; document.getElementById('tpVal').textContent = "0";
+            cur = db.find(s => s.title === t); tOff = 0; 
+            document.getElementById('tpVal').textContent = "0";
             document.getElementById('displayTitle').textContent = cur.title; draw();
         }
 
@@ -365,7 +362,7 @@
             const blob = new Blob([data], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `Flyer_Backup.json`;
+            a.download = `TDF_Backup.json`;
             a.click();
         }
 
