@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.19</title>
+    <title>TDF Stage Pilot v6.20</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -23,7 +23,6 @@
             display: flex; align-items: center; justify-content: space-between; 
             padding: 0 15px; z-index: 99999; 
         }
-        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; }
         .top-bar-center { text-align: center; flex-grow: 1; }
         .title-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
         .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
@@ -40,39 +39,32 @@
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
+        /* Floating Units */
         .floating-unit { position: fixed; z-index: 200000; display: none; touch-action: none; }
         #chordUnit { top: 100px; left: 10px; transition: width 0.2s, height 0.2s; }
-        .chord-bar { 
-            display: flex; gap: 6px; background: rgba(28, 28, 30, 0.96); 
-            padding: 8px; border-radius: 12px; border: 1px solid #555; backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
+        .chord-bar { display: flex; gap: 6px; background: rgba(28, 28, 30, 0.96); padding: 8px; border-radius: 12px; border: 1px solid #555; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .chord-bar.vertical { flex-direction: column; max-height: 70vh; overflow-y: auto; }
         .chord-bar.horizontal { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
 
         #joyUnit { bottom: 40px; right: 20px; }
-        .nav-joypad {
-            display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 34px);
-            gap: 4px; background: rgba(44, 44, 46, 0.96); padding: 8px; border-radius: 50%;
-            border: 2px solid var(--griffin-orange); box-shadow: 0 8px 25px rgba(0,0,0,0.6);
-        }
+        .nav-joypad { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 34px); gap: 4px; background: rgba(44, 44, 46, 0.96); padding: 8px; border-radius: 50%; border: 2px solid var(--griffin-orange); box-shadow: 0 8px 25px rgba(0,0,0,0.6); }
         .tool-btn { width: 32px; height: 32px; background: #3a3a3c; color: white; border: none; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; }
         .nav-btn { background: #48484a; border-radius: 50%; font-size: 1rem; }
         .drag-handle { grid-column: 2; grid-row: 2; background: var(--griffin-orange); border-radius: 50%; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: black; box-shadow: 0 0 8px var(--griffin-orange); }
 
+        /* Menu met Swipe Logica */
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         
-        .index-container { position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); }
-        .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
+        .index-container { position: relative; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); overflow: hidden; height: 60px; }
+        .index-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: transform 0.2s ease-out; }
+        .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; cursor: pointer; }
 
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
         .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; font-family: sans-serif; }
         .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: var(--griffin-orange); color: white; font-weight: bold; cursor: pointer; }
-
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--griffin-orange); color: black; padding: 12px 25px; border-radius: 25px; font-weight: bold; z-index: 2000000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
         .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; pointer-events: none; }
@@ -93,7 +85,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Stage Pilot v6.19</h2>
+                <h2 id="displayTitle">Stage Pilot v6.20</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -124,7 +116,6 @@
             <h3 style="color:white; margin:0 0 10px 0;">Beheer</h3>
             <button class="modal-btn" onclick="toggleTheme()">🌓 WISSEL THEMA</button>
             <button class="modal-btn" onclick="startImportSession()">📂 BESTAND(EN) TOEVOEGEN</button>
-            <div style="color: #aaa; font-size: 0.75rem; margin-bottom: 15px;">iPad: Menu blijft open voor bulk selectie.</div>
             <button class="modal-btn" onclick="downloadBackup()">💾 BACKUP OPSLAAN</button>
             <button class="modal-btn" onclick="document.getElementById('restoreInput').click()">🔄 BACKUP HERSTELLEN</button>
             <button class="modal-btn" onclick="document.getElementById('logoInput').click()">🖼️ PNG LOGO UPLOADEN</button>
@@ -153,7 +144,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.19";
+        const APP_VERSION = "6.20";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, navInt = null, sInt = null;
         const commonChords = ["A", "Am", "Bm", "C", "D", "Dm", "E", "Em", "F", "F#m", "G"];
@@ -168,72 +159,71 @@
             renderIndex(); initChordBar();
             makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"), false);
             makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"), true);
-
-            // Controleer of we in een import-sessie zitten
-            if(sessionStorage.getItem('tdfImportActive') === 'true') {
-                document.getElementById('settingsOverlay').style.display = 'block';
-            }
+            if(sessionStorage.getItem('tdfImportActive') === 'true') document.getElementById('settingsOverlay').style.display = 'block';
         };
 
-        function startImportSession() {
-            sessionStorage.setItem('tdfImportActive', 'true');
-            document.getElementById('bulkFiles').click();
-        }
-
-        function stopImportSession() {
-            sessionStorage.removeItem('tdfImportActive');
-            closeSettings();
-        }
-
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            t.textContent = m; t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 2500);
-        }
+        function startImportSession() { sessionStorage.setItem('tdfImportActive', 'true'); document.getElementById('bulkFiles').click(); }
+        function stopImportSession() { sessionStorage.removeItem('tdfImportActive'); closeSettings(); }
+        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 2500); }
 
         document.getElementById('bulkFiles').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
             if(files.length === 0) return;
-            
             for(let f of files) {
                 const t = await f.text();
                 const title = t.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt','');
                 const exists = db.findIndex(x => x.title.toLowerCase() === title.toLowerCase());
-                
-                if(exists === -1) {
-                    db.push({title, content: t});
-                    showToast(`✅ ${title} toegevoegd`);
-                } else {
-                    db[exists] = {title, content: t};
-                    showToast(`🔄 ${title} bijgewerkt`);
-                }
+                if(exists === -1) { db.push({title, content: t}); showToast(`✅ ${title} toegevoegd`); }
+                else { db[exists] = {title, content: t}; showToast(`🔄 ${title} bijgewerkt`); }
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex();
-            this.value = '';
+            renderIndex(); this.value = '';
         });
 
         function makeDraggable(el, handle, isChordBar) {
             let px = 0, py = 0, ix, iy;
-            handle.addEventListener("touchstart", (e) => {
-                ix = e.touches[0].clientX - px; iy = e.touches[0].clientY - py;
-                el.style.transition = "none";
-            }, {passive:false});
+            handle.addEventListener("touchstart", (e) => { ix = e.touches[0].clientX - px; iy = e.touches[0].clientY - py; el.style.transition = "none"; }, {passive:false});
             handle.addEventListener("touchmove", (e) => {
-                e.preventDefault();
-                px = e.touches[0].clientX - ix; py = e.touches[0].clientY - iy;
+                e.preventDefault(); px = e.touches[0].clientX - ix; py = e.touches[0].clientY - iy;
                 el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
                 if(isChordBar) {
                     const rect = el.getBoundingClientRect();
-                    const bar = document.getElementById('chordRow');
-                    const customBtn = document.getElementById('customChordBtn');
-                    if(rect.left < 60 || rect.right > window.innerWidth - 60) {
-                        bar.classList.replace('horizontal', 'vertical'); customBtn.style.display = 'none';
-                    } else {
-                        bar.classList.replace('vertical', 'horizontal'); customBtn.style.display = 'flex';
-                    }
+                    const bar = document.getElementById('chordRow'), btn = document.getElementById('customChordBtn');
+                    if(rect.left < 60 || rect.right > window.innerWidth - 60) { bar.classList.replace('horizontal', 'vertical'); btn.style.display = 'none'; }
+                    else { bar.classList.replace('vertical', 'horizontal'); btn.style.display = 'flex'; }
                 }
             }, {passive:false});
+        }
+
+        // Swipe-to-Delete Logica
+        function initSwipe(item) {
+            let startX, currentX;
+            item.addEventListener('touchstart', e => { startX = e.touches[0].clientX; item.style.transition = 'none'; });
+            item.addEventListener('touchmove', e => {
+                currentX = e.touches[0].clientX;
+                let diff = currentX - startX;
+                if(diff < 0) item.style.transform = `translateX(${Math.max(diff, -80)}px)`;
+                if(diff > 0) item.style.transform = `translateX(0px)`;
+            });
+            item.addEventListener('touchend', () => {
+                item.style.transition = 'transform 0.2s ease-out';
+                let diff = currentX - startX;
+                if(diff < -40) item.style.transform = 'translateX(-80px)';
+                else item.style.transform = 'translateX(0px)';
+            });
+        }
+
+        function renderIndex() {
+            const c = document.getElementById('indexContent'); c.innerHTML = "";
+            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const container = document.createElement('div'); container.className = 'index-container';
+                const del = document.createElement('div'); del.className = 'delete-btn'; del.textContent = 'Wis';
+                del.onclick = (e) => { e.stopPropagation(); if(confirm(`Wis ${s.title}?`)) { db = db.filter(x => x.title !== s.title); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } };
+                const item = document.createElement('div'); item.className = 'index-item'; item.textContent = s.title;
+                item.onclick = () => { loadSong(s.title); toggleMenu(); };
+                initSwipe(item);
+                container.append(del, item); c.appendChild(container);
+            });
         }
 
         function initChordBar() {
@@ -247,7 +237,6 @@
 
         function startNav(d) { moveCursor(d); navInt = setInterval(() => moveCursor(d), 120); }
         function stopNav() { clearInterval(navInt); }
-
         function moveCursor(d) {
             const a = document.getElementById('editorArea'); a.focus();
             const s = a.selectionStart, l = a.value.split('\n');
@@ -256,33 +245,11 @@
             const col = s - cC;
             if(d==='Left') a.setSelectionRange(s-1, s-1);
             else if(d==='Right') a.setSelectionRange(s+1, s+1);
-            else if(d==='Up' && cL > 0) {
-                let nP = 0; for(let i=0; i<cL-1; i++) nP += l[i].length+1;
-                nP += Math.min(col, l[cL-1].length); a.setSelectionRange(nP, nP);
-            }
-            else if(d==='Down' && cL < l.length-1) {
-                let nP = 0; for(let i=0; i<=cL; i++) nP += l[i].length+1;
-                nP += Math.min(col, l[cL+1].length); a.setSelectionRange(nP, nP);
-            }
+            else if(d==='Up' && cL > 0) { let nP = 0; for(let i=0; i<cL-1; i++) nP += l[i].length+1; nP += Math.min(col, l[cL-1].length); a.setSelectionRange(nP, nP); }
+            else if(d==='Down' && cL < l.length-1) { let nP = 0; for(let i=0; i<=cL; i++) nP += l[i].length+1; nP += Math.min(col, l[cL+1].length); a.setSelectionRange(nP, nP); }
         }
 
-        function insertText(t, o = 0) {
-            const a = document.getElementById('editorArea');
-            const s = a.selectionStart, e = a.selectionEnd;
-            a.value = a.value.substring(0,s)+t+a.value.substring(e);
-            a.focus(); const p = s+t.length-o; a.setSelectionRange(p,p);
-        }
-
-        function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
-                const div = document.createElement('div'); div.className = 'index-container';
-                div.innerHTML = `<div class="delete-btn" onclick="event.stopPropagation();if(confirm('Wis ${s.title}?')){db=db.filter(x=>x.title!=='${s.title}');localStorage.setItem('tdfSongs',JSON.stringify(db));renderIndex();}">Wis</div><div class="index-item">${s.title}</div>`;
-                div.querySelector('.index-item').onclick = () => { loadSong(s.title); toggleMenu(); };
-                c.appendChild(div);
-            });
-        }
-
+        function insertText(t, o = 0) { const a = document.getElementById('editorArea'); const s = a.selectionStart, e = a.selectionEnd; a.value = a.value.substring(0,s)+t+a.value.substring(e); a.focus(); const p = s+t.length-o; a.setSelectionRange(p,p); }
         function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('tpVal').textContent = "0"; document.getElementById('displayTitle').textContent = cur.title; draw(); }
         function draw() {
             if(!cur) return; const lines = cur.content.split('\n'); let h = "";
