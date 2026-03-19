@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Core v6.10</title>
+    <title>TDF Stage Pilot v6.12</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -91,7 +91,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF Core v6.10</h2>
+                <h2 id="displayTitle">TDF Stage Pilot v6.12</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin">−</button>
                     <span id="tpVal">0</span>
@@ -150,7 +150,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.10";
+        const APP_VERSION = "6.12";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, navInt = null;
         const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
@@ -194,7 +194,7 @@
                 }
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex(); alert(added + " songs toegevoegd.");
+            renderIndex(); alert(added + " liedjes verwerkt.");
             document.getElementById('settingsOverlay').style.display = 'none';
             this.value = '';
         });
@@ -210,8 +210,14 @@
             const col = s - cC;
             if(d==='Left') a.setSelectionRange(s-1, s-1);
             else if(d==='Right') a.setSelectionRange(s+1, s+1);
-            else if(d==='Up' && cL > 0) { let nP = 0; for(let i=0; i<cL-1; i++) nP += l[i].length+1; nP += Math.min(col, l[cL-1].length); a.setSelectionRange(nP, nP); }
-            else if(d==='Down' && cL < l.length-1) { let nP = 0; for(let i=0; i<=cL; i++) nP += l[i].length+1; nP += Math.min(col, l[cL+1].length); a.setSelectionRange(nP, nP); }
+            else if(d==='Up' && cL > 0) {
+                let nP = 0; for(let i=0; i<cL-1; i++) nP += l[i].length+1;
+                nP += Math.min(col, l[cL-1].length); a.setSelectionRange(nP, nP);
+            }
+            else if(d==='Down' && cL < l.length-1) {
+                let nP = 0; for(let i=0; i<=cL; i++) nP += l[i].length+1;
+                nP += Math.min(col, l[cL+1].length); a.setSelectionRange(nP, nP);
+            }
         }
 
         function insertText(t, o = 0) {
@@ -250,17 +256,6 @@
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() { if(!cur) return; const c = document.getElementById('scroller'), h = c.scrollHeight - c.clientHeight; let d = 180; const m = cur.content.match(/Duration:\s*(\d+):(\d+)/i); if(m) d = parseInt(m[1])*60 + parseInt(m[2]); const s = h/(d*1000), t = Date.now(), p = c.scrollTop; document.getElementById('scrollBtn').style.fill = 'var(--griffin-red)'; sInt = setInterval(() => { c.scrollTop = p + ((Date.now()-t)*s); if(c.scrollTop >= h) stopScroll(); }, 50); }
         function stopScroll() { clearInterval(sInt); sInt = null; document.getElementById('scrollBtn').style.fill = "#34c759"; }
-        function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme')==='dark'?'light':'dark'); }
+        function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme')==='dark'?'light' : 'dark'); }
         function downloadBackup() { const d = JSON.stringify({date: new Date().toISOString(), data: db}), b = new Blob([d], {type: 'application/json'}), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `TDF_Backup.json`; a.click(); }
-        document.getElementById('logoInput').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); }; r.readAsDataURL(e.target.files[0]); };
-        document.getElementById('restoreInput').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { const i = JSON.parse(ev.target.result); if(i.data) { db = i.data; localStorage.setItem('tdfSongs', JSON.stringify(db)); location.reload(); } }; r.readAsText(e.target.files[0]); };
-        document.getElementById('settingsIcon').onclick = () => document.getElementById('settingsOverlay').style.display='block';
-        document.getElementById('editIcon').onclick = startEdit;
-        document.getElementById('saveBtn').onclick = finishEdit;
-        document.getElementById('scrollBtn').onclick = toggleScroll;
-        document.getElementById('themeBtn').onclick = toggleTheme;
-        document.getElementById('tpPlus').onclick = () => transpose(1);
-        document.getElementById('tpMin').onclick = () => transpose(-1);
-    </script>
-</body>
-</html>
+        document.getElementById('logoInput').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.
