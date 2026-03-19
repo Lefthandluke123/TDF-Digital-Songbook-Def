@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Navigator v6.05</title>
+    <title>TDF Firefox Flyer v6.07</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,6 +17,7 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
+        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -36,49 +37,45 @@
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
+        /* Content */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
-        /* Floating UI */
+        /* Floating Units */
         .floating-unit { position: fixed; z-index: 10000; display: none; touch-action: none; }
         
         #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 400px; }
         .chord-bar { 
             display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.9); 
-            padding: 10px; border-radius: 12px; border: 1px solid #444; backdrop-filter: blur(10px);
+            padding: 10px; border-radius: 12px; border: 2px solid #444; backdrop-filter: blur(10px);
             scrollbar-width: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
         .chord-bar::-webkit-scrollbar { display: none; }
 
         #joyUnit { bottom: 50px; right: 20px; }
         .nav-joypad {
-            display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px);
-            gap: 5px; background: rgba(44, 44, 46, 0.9); padding: 10px; border-radius: 50%;
-            border: 2px solid var(--griffin-orange); box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px);
+            gap: 6px; background: rgba(44, 44, 46, 0.9); padding: 12px; border-radius: 50%;
+            border: 2px solid var(--griffin-orange); box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
         
         .tool-btn { 
-            width: 48px; height: 48px; background: #3a3a3c; color: white; border: none; 
-            border-radius: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            width: 50px; height: 50px; background: #3a3a3c; color: white; border: none; 
+            border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
-        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.2rem; }
+        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.4rem; }
         .nav-btn:active { background: var(--griffin-orange); }
         .drag-handle { 
             grid-column: 2; grid-row: 2; background: var(--griffin-orange); 
-            border-radius: 50%; opacity: 0.7; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: black; font-weight: bold;
+            border-radius: 50%; opacity: 0.9; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: black; font-weight: bold;
         }
         
-        .chord-item-btn { min-width: 50px; color: var(--griffin-orange); font-family: monospace; font-size: 1.1rem; }
+        .chord-item-btn { min-width: 52px; color: var(--griffin-orange); font-family: monospace; font-size: 1.15rem; }
 
-        /* Menu & Modals */
-        .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
-        .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
-        .songs-menu.open { left: 0; }
-        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
-        
+        /* Lists */
         .index-container { position: relative; overflow: hidden; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); }
-        .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; transition: transform 0.2s ease; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .index-item { position: relative; padding: 18px 20px; background: #1c1c1e; color: white; cursor: pointer; font-family: sans-serif; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .delete-btn { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; pointer-events: none; }
@@ -87,7 +84,7 @@
 
         .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000000; padding: 20px; }
         .modal-box { max-width: 400px; margin: 50px auto; background: #2c2c2e; padding: 20px; border-radius: 12px; text-align: center; font-family: sans-serif; }
-        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: var(--griffin-orange); color: white; font-weight: bold; cursor: pointer; }
+        .modal-btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: var(--griffin-orange); color: white; font-weight: bold; }
     </style>
 </head>
 <body data-theme="light">
@@ -98,11 +95,11 @@
     <div class="top-bar">
         <div class="top-bar-left">
             <img id="appLogo" alt="Logo">
-            <button class="top-bar-btn" id="songsMenuBtn">Songs</button>
+            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Navigator v6.05</h2>
+                <h2 id="displayTitle">Flyer v6.07</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin">−</button>
                     <span id="tpVal">0</span>
@@ -133,10 +130,10 @@
             <h3 style="color:white; margin-top:0;">Instellingen</h3>
             <button class="modal-btn" id="themeBtn">🌓 WISSEL THEMA</button>
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
-            <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
-            <button class="modal-btn" onclick="el('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
-            <button class="modal-btn" onclick="el('bulkImportInput').click()">📂 LIEDJES (BULK) IMPORTEREN</button>
-            <button class="modal-btn" style="background:#444;" onclick="el('settingsOverlay').style.display='none'">SLUITEN</button>
+            <button class="modal-btn" onclick="document.getElementById('restoreInput').click()">🔄 RESTORE BACKUP</button>
+            <button class="modal-btn" onclick="document.getElementById('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
+            <button class="modal-btn" onclick="document.getElementById('bulkImportInput').click()">📂 SELECTEER BESTANDEN (.TXT)</button>
+            <button class="modal-btn" style="background:#444;" onclick="document.getElementById('settingsOverlay').style.display='none'">SLUITEN</button>
         </div>
     </div>
 
@@ -147,26 +144,24 @@
 
     <div id="chordUnit" class="floating-unit">
         <div class="chord-bar" id="chordRow"></div>
-        <button class="tool-btn" style="width: 100%; margin-top: 5px; border-radius: 8px; color: var(--griffin-orange);" onmousedown="insertText('[]', 1)" ontouchstart="event.preventDefault(); insertText('[]', 1)">[ AKKOORD ]</button>
+        <div class="tool-btn" style="width: 100%; margin-top: 5px; border-radius: 8px; color: var(--griffin-orange);" ontouchstart="event.preventDefault(); insertText('[]', 1)">[ AKKOORD ]</div>
     </div>
 
     <div id="joyUnit" class="floating-unit">
         <div class="nav-joypad">
-            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" onmousedown="startNav('Up')" ontouchstart="event.preventDefault(); startNav('Up')" onmouseup="stopNav()" ontouchend="stopNav()">↑</div>
-            <div class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" onmousedown="startNav('Left')" ontouchstart="event.preventDefault(); startNav('Left')" onmouseup="stopNav()" ontouchend="stopNav()">←</div>
-            <div class="drag-handle" id="joyDrag">DRAG</div>
-            <div class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" onmousedown="startNav('Right')" ontouchstart="event.preventDefault(); startNav('Right')" onmouseup="stopNav()" ontouchend="stopNav()">→</div>
-            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" onmousedown="startNav('Down')" ontouchstart="event.preventDefault(); startNav('Down')" onmouseup="stopNav()" ontouchend="stopNav()">↓</div>
+            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" ontouchstart="event.preventDefault(); startNav('Up')" ontouchend="stopNav()">↑</div>
+            <div class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" ontouchstart="event.preventDefault(); startNav('Left')" ontouchend="stopNav()">←</div>
+            <div class="drag-handle" id="joyDrag">MOVE</div>
+            <div class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" ontouchstart="event.preventDefault(); startNav('Right')" ontouchend="stopNav()">→</div>
+            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" ontouchstart="event.preventDefault(); startNav('Down')" ontouchend="stopNav()">↓</div>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.05";
+        const APP_VERSION = "6.07";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, navInt = null;
         const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
-
-        const el = (id) => document.getElementById(id);
 
         window.onload = () => {
             if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
@@ -174,11 +169,14 @@
                 location.reload(true);
             }
             const logo = localStorage.getItem('tdfLogo');
-            if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
+            if(logo) { 
+                const img = document.getElementById('appLogo');
+                img.src = logo; img.style.display = 'block'; 
+            }
             renderIndex();
             initChordBar();
-            makeDraggable(el("joyUnit"), el("joyDrag"));
-            makeDraggable(el("chordUnit"), el("chordUnit"));
+            makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"));
+            makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"));
         };
 
         function makeDraggable(element, handle) {
@@ -186,7 +184,6 @@
             handle.addEventListener("touchstart", (e) => {
                 initialX = e.touches[0].clientX - posX;
                 initialY = e.touches[0].clientY - posY;
-                element.style.transition = "none";
             }, {passive: false});
             handle.addEventListener("touchmove", (e) => {
                 e.preventDefault();
@@ -197,17 +194,16 @@
         }
 
         function initChordBar() {
-            const row = el('chordRow'); row.innerHTML = '';
+            const row = document.getElementById('chordRow'); row.innerHTML = '';
             commonChords.forEach(c => {
                 const btn = document.createElement('div');
                 btn.className = 'tool-btn chord-item-btn';
                 btn.textContent = c;
-                btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
+                btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 row.appendChild(btn);
             });
         }
 
-        // Navigation Repeat Logic
         function startNav(dir) {
             moveCursor(dir);
             navInt = setInterval(() => moveCursor(dir), 120);
@@ -215,7 +211,7 @@
         function stopNav() { clearInterval(navInt); }
 
         function moveCursor(dir) {
-            const area = el('editorArea'); area.focus();
+            const area = document.getElementById('editorArea'); area.focus();
             const start = area.selectionStart;
             const lines = area.value.split('\n');
             let curChar = 0, curLine = 0;
@@ -242,7 +238,7 @@
         }
 
         function insertText(text, offset = 0) {
-            const area = el('editorArea');
+            const area = document.getElementById('editorArea');
             const s = area.selectionStart, e = area.selectionEnd;
             area.value = area.value.substring(0, s) + text + area.value.substring(e);
             area.focus();
@@ -250,53 +246,48 @@
             area.setSelectionRange(p, p);
         }
 
-        // Bulk Import
-        el('bulkImportInput').onchange = async (e) => {
-            let count = 0;
-            for (let f of e.target.files) {
+        document.getElementById('bulkImportInput').onchange = async (e) => {
+            let added = 0, skipped = 0;
+            const files = Array.from(e.target.files);
+            for (let f of files) {
                 const text = await f.text();
-                const lines = text.split('\n');
-                // Pak de eerste regel als titel, haal [] weg als die er staan
-                const title = lines[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt', '');
-                if(!db.find(s => s.title === title)) {
+                const title = text.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt', '');
+                if(!db.find(s => s.title.toLowerCase() === title.toLowerCase())) {
                     db.push({ title, content: text });
-                    count++;
-                }
+                    added++;
+                } else { skipped++; }
             }
-            if(count > 0) {
-                localStorage.setItem('tdfSongs', JSON.stringify(db));
-                renderIndex();
-                alert(`${count} liedjes toegevoegd.`);
-            }
-            el('settingsOverlay').style.display = 'none';
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            renderIndex();
+            alert(`Resultaat:\n- ${added} liedjes toegevoegd\n- ${skipped} duplicaten overgeslagen`);
+            document.getElementById('settingsOverlay').style.display = 'none';
         };
 
-        // Standard Functions
         function startEdit() {
             if(!cur) return; stopScroll();
-            el('lyricsArea').style.display = 'none'; el('editIcon').style.display = 'none';
-            el('saveBtn').style.display = 'block'; el('editorArea').style.display = 'block';
-            el('joyUnit').style.display = 'block'; el('chordUnit').style.display = 'block';
-            el('editorArea').value = cur.content;
-            setTimeout(() => { el('editorArea').focus(); }, 100);
+            document.getElementById('lyricsArea').style.display = 'none'; document.getElementById('editIcon').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'block'; document.getElementById('editorArea').style.display = 'block';
+            document.getElementById('joyUnit').style.display = 'block'; document.getElementById('chordUnit').style.display = 'block';
+            document.getElementById('editorArea').value = cur.content;
+            setTimeout(() => { document.getElementById('editorArea').focus(); }, 100);
         }
 
         function finishEdit() {
-            const content = el('editorArea').value;
+            const content = document.getElementById('editorArea').value;
             const title = content.split('\n')[0].replace(/[\[\]]/g, '') || "Naamloos";
             const idx = db.findIndex(s => s.title === cur.title);
             if(idx === -1) db.push({title, content}); else db[idx] = { title, content };
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             renderIndex(); loadSong(title);
-            el('lyricsArea').style.display = 'block'; el('editIcon').style.display = 'block';
-            el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none';
-            el('joyUnit').style.display = 'none'; el('chordUnit').style.display = 'none';
+            document.getElementById('lyricsArea').style.display = 'block'; document.getElementById('editIcon').style.display = 'block';
+            document.getElementById('saveBtn').style.display = 'none'; document.getElementById('editorArea').style.display = 'none';
+            document.getElementById('joyUnit').style.display = 'none'; document.getElementById('chordUnit').style.display = 'none';
         }
 
         function loadSong(t) {
             stopScroll(); cur = db.find(s => s.title === t);
-            tOff = 0; el('tpVal').textContent = "0";
-            el('displayTitle').textContent = cur.title; draw();
+            tOff = 0; document.getElementById('tpVal').textContent = "0";
+            document.getElementById('displayTitle').textContent = cur.title; draw();
         }
 
         function draw() {
@@ -316,11 +307,11 @@
                 let r = ""; chords.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
                 h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`;
             });
-            el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
+            document.getElementById('lyricsArea').innerHTML = h; document.getElementById('scroller').scrollTop = 0;
         }
 
-        const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         function tpChord(chord, off) {
+            const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
             return chord.replace(/[A-G][#b]?/g, (m) => {
                 let n = m;
                 if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#";
@@ -329,22 +320,13 @@
             });
         }
 
-        el('songsMenuBtn').onclick = toggleMenu;
-        el('settingsIcon').onclick = () => el('settingsOverlay').style.display = 'block';
-        el('editIcon').onclick = startEdit;
-        el('saveBtn').onclick = finishEdit;
-        el('scrollBtn').onclick = toggleScroll;
-        el('themeBtn').onclick = toggleTheme;
-        el('tpPlus').onclick = () => transpose(1);
-        el('tpMin').onclick = () => transpose(-1);
-
         function toggleMenu() {
-            const open = el('songsMenu').classList.toggle('open');
-            el('menuOverlay').style.display = open ? 'block' : 'none';
+            const open = document.getElementById('songsMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').style.display = open ? 'block' : 'none';
         }
 
         function renderIndex() {
-            const c = el('indexContent'); c.innerHTML = "";
+            const c = document.getElementById('indexContent'); c.innerHTML = "";
             db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
                 const container = document.createElement('div'); container.className = 'index-container';
                 const del = document.createElement('div'); del.className = 'delete-btn'; del.textContent = 'Wis';
@@ -355,24 +337,24 @@
             });
         }
 
-        function transpose(dir) { if(!cur) return; tOff += dir; el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
+        function transpose(dir) { if(!cur) return; tOff += dir; document.getElementById('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() {
             if(!cur) return;
-            const container = el('scroller');
+            const container = document.getElementById('scroller');
             const h = container.scrollHeight - container.clientHeight;
             let dur = 180;
             const match = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
             if(match) dur = parseInt(match[1]) * 60 + parseInt(match[2]);
             const speed = h / (dur * 1000);
             const startT = Date.now(), startP = container.scrollTop;
-            el('scrollBtn').style.fill = 'var(--griffin-red)';
+            document.getElementById('scrollBtn').style.fill = 'var(--griffin-red)';
             sInt = setInterval(() => {
                 container.scrollTop = startP + ((Date.now() - startT) * speed);
                 if(container.scrollTop >= h) stopScroll();
             }, 50);
         }
-        function stopScroll() { clearInterval(sInt); sInt = null; el('scrollBtn').style.fill = "#34c759"; }
+        function stopScroll() { clearInterval(sInt); sInt = null; document.getElementById('scrollBtn').style.fill = "#34c759"; }
         function toggleTheme() {
             const b = document.body;
             b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -383,17 +365,17 @@
             const blob = new Blob([data], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `Navigator_Backup.json`;
+            a.download = `Flyer_Backup.json`;
             a.click();
         }
 
-        el('logoInput').onchange = (e) => {
+        document.getElementById('logoInput').onchange = (e) => {
             const r = new FileReader();
             r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
             r.readAsDataURL(e.target.files[0]);
         };
 
-        el('restoreInput').onchange = (e) => {
+        document.getElementById('restoreInput').onchange = (e) => {
             const r = new FileReader();
             r.onload = (ev) => {
                 const imported = JSON.parse(ev.target.result);
@@ -401,6 +383,14 @@
             };
             r.readAsText(e.target.files[0]);
         };
+
+        document.getElementById('settingsIcon').onclick = () => document.getElementById('settingsOverlay').style.display = 'block';
+        document.getElementById('editIcon').onclick = startEdit;
+        document.getElementById('saveBtn').onclick = finishEdit;
+        document.getElementById('scrollBtn').onclick = toggleScroll;
+        document.getElementById('themeBtn').onclick = toggleTheme;
+        document.getElementById('tpPlus').onclick = () => transpose(1);
+        document.getElementById('tpMin').onclick = () => transpose(-1);
     </script>
 </body>
 </html>
