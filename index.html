@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.03</title>
+    <title>TDF Horizon v6.04</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,6 +17,7 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
+        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -29,44 +30,52 @@
         .title-row h2 { margin: 0; font-size: 1.1rem; color: white; font-family: sans-serif; }
         
         .transpose-pill { display: flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 2px 10px; border-radius: 20px; border: 1px solid #444; }
-        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.4rem; background: none; border: none; cursor: pointer; }
+        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.4rem; background: none; border: none; }
         #tpVal { font-size: 0.9rem; color: #fff; min-width: 15px; }
 
-        .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; cursor: pointer; font-family: sans-serif; font-weight: bold; }
-        .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
+        .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; }
+        .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
+        /* Content */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 300px; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
-        /* Floating Editor Tools */
-        .editor-tools { 
-            display: none; position: fixed; bottom: 80px; right: 20px; 
-            z-index: 10000; flex-direction: column; gap: 12px; touch-action: none;
-        }
+        /* Floating UI Elements */
+        .floating-unit { position: fixed; z-index: 10000; display: none; touch-action: none; }
+        
+        /* Chord Bar - Moveable */
+        #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 400px; }
         .chord-bar { 
-            display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.95); 
-            padding: 10px; border-radius: 14px; border: 1px solid #444; backdrop-filter: blur(10px);
-            width: 85vw; max-width: 380px; align-self: center; scrollbar-width: none;
+            display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.9); 
+            padding: 10px; border-radius: 12px; border: 1px solid #444; backdrop-filter: blur(10px);
+            scrollbar-width: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
         .chord-bar::-webkit-scrollbar { display: none; }
 
+        /* Joypad - Moveable */
+        #joyUnit { bottom: 50px; right: 20px; }
         .nav-joypad {
-            display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px);
-            gap: 5px; background: rgba(44, 44, 46, 0.9); padding: 12px; border-radius: 30px;
-            border: 2px solid var(--griffin-orange); align-self: flex-end; box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px);
+            gap: 5px; background: rgba(44, 44, 46, 0.9); padding: 10px; border-radius: 50%;
+            border: 2px solid var(--griffin-orange); box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
+        
         .tool-btn { 
-            width: 52px; height: 52px; background: #3a3a3c; color: white; border: none; 
-            border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            width: 48px; height: 48px; background: #3a3a3c; color: white; border: none; 
+            border-radius: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
-        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.4rem; color: white; }
+        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.2rem; }
+        .nav-btn:active { background: var(--griffin-orange); }
         .drag-handle { 
             grid-column: 2; grid-row: 2; background: var(--griffin-orange); 
-            border-radius: 50%; opacity: 0.8; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; opacity: 0.7; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;
         }
+        
+        .chord-item-btn { min-width: 50px; color: var(--griffin-orange); font-family: monospace; font-size: 1.1rem; }
 
+        /* Menu & Modals */
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
@@ -97,7 +106,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Stage Pilot v6.03</h2>
+                <h2 id="displayTitle">Horizon v6.04</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin">−</button>
                     <span id="tpVal">0</span>
@@ -136,67 +145,59 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Stage Pilot geladen.</div>
-        <textarea id="editorArea" spellcheck="false" placeholder="Typ hier..."></textarea>
+        <div id="lyricsArea">Songbook geladen.</div>
+        <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div id="editorTools" class="editor-tools">
+    <div id="chordUnit" class="floating-unit">
         <div class="chord-bar" id="chordRow"></div>
-        <div class="nav-joypad" id="joypad">
+        <button class="tool-btn" style="width: 100%; margin-top: 5px; border-radius: 8px;" onclick="insertText('[]', 1)">[ ]</button>
+    </div>
+
+    <div id="joyUnit" class="floating-unit">
+        <div class="nav-joypad">
             <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" onmousedown="moveCursor('Up')" ontouchstart="moveCursor('Up')">↑</button>
             <button class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" onmousedown="moveCursor('Left')" ontouchstart="moveCursor('Left')">←</button>
-            <div class="drag-handle" id="joyHandle">::</div>
+            <div class="drag-handle" id="joyDrag">MOVE</div>
             <button class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" onmousedown="moveCursor('Right')" ontouchstart="moveCursor('Right')">→</button>
             <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" onmousedown="moveCursor('Down')" ontouchstart="moveCursor('Down')">↓</button>
         </div>
-        <button class="tool-btn" style="width: 100%; border-radius: 14px; background: var(--griffin-orange); color: white;" onmousedown="insertText('[]', 1)" ontouchstart="insertText('[]', 1)">[ ] AKKOORD</button>
     </div>
 
     <script>
-        const APP_VERSION = "6.03";
+        const APP_VERSION = "6.04";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, startX = 0, sInt = null;
-        const commonChords = ["C", "G", "D", "A", "E", "Am", "Em", "Dm", "F", "Bb", "G7", "C7", "D7"];
+        const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
 
         const el = (id) => document.getElementById(id);
 
         window.onload = () => {
-            checkVersion();
-            const logo = localStorage.getItem('tdfLogo');
-            if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
-            renderIndex();
-            initChordBar();
-            initDraggable();
-        };
-
-        function checkVersion() {
             if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
                 localStorage.setItem('tdfVersion', APP_VERSION);
                 location.reload(true);
             }
-        }
+            const logo = localStorage.getItem('tdfLogo');
+            if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
+            renderIndex();
+            initChordBar();
+            makeDraggable(el("joyUnit"), el("joyDrag"));
+            makeDraggable(el("chordUnit"), el("chordUnit"));
+        };
 
-        // Draggable Logic
-        let isDragging = false, currentX = 0, currentY = 0, initialX, initialY, xOff = 0, yOff = 0;
-        function initDraggable() {
-            const tool = el("editorTools");
-            const handle = el("joyHandle");
-            tool.addEventListener("touchstart", (e) => {
-                if(e.target === handle || e.target === el('joypad')) {
-                    initialX = e.touches[0].clientX - xOff;
-                    initialY = e.touches[0].clientY - yOff;
-                    isDragging = true;
-                }
+        function makeDraggable(element, handle) {
+            let posX = 0, posY = 0, initialX, initialY;
+            handle.addEventListener("touchstart", (e) => {
+                initialX = e.touches[0].clientX - posX;
+                initialY = e.touches[0].clientY - posY;
+                element.style.transition = "none";
             }, {passive: false});
-            window.addEventListener("touchend", () => { isDragging = false; initialX = currentX; initialY = currentY; });
-            window.addEventListener("touchmove", (e) => {
-                if (isDragging) {
-                    e.preventDefault();
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                    xOff = currentX; yOff = currentY;
-                    tool.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-                }
+
+            handle.addEventListener("touchmove", (e) => {
+                e.preventDefault();
+                posX = e.touches[0].clientX - initialX;
+                posY = e.touches[0].clientY - initialY;
+                element.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
             }, {passive: false});
         }
 
@@ -204,7 +205,7 @@
             const row = el('chordRow'); row.innerHTML = '';
             commonChords.forEach(c => {
                 const btn = document.createElement('button');
-                btn.className = 'tool-btn'; btn.style.minWidth = '55px'; btn.style.color = 'var(--griffin-orange)';
+                btn.className = 'tool-btn chord-item-btn';
                 btn.textContent = c;
                 btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 row.appendChild(btn);
@@ -223,26 +224,55 @@
         function moveCursor(dir) {
             const area = el('editorArea'); area.focus();
             const start = area.selectionStart;
+            const lines = area.value.split('\n');
+            let curChar = 0, curLine = 0;
+            
+            for(let i=0; i<lines.length; i++) {
+                if(start <= curChar + lines[i].length) {
+                    curLine = i; break;
+                }
+                curChar += lines[i].length + 1;
+            }
+            const col = start - curChar;
+
             if(dir === 'Left') area.setSelectionRange(start - 1, start - 1);
             else if(dir === 'Right') area.setSelectionRange(start + 1, start + 1);
-            else {
-                // Emuleer Arrow keys voor verticale navigatie
-                const lines = area.value.substring(0, start).split('\n');
-                const curLine = lines.length - 1;
-                const curCol = lines[curLine].length;
-                const allLines = area.value.split('\n');
-                
-                let targetLine = dir === 'Up' ? curLine - 1 : curLine + 1;
-                if(targetLine >= 0 && targetLine < allLines.length) {
-                    let newPos = 0;
-                    for(let i=0; i < targetLine; i++) newPos += allLines[i].length + 1;
-                    newPos += Math.min(curCol, allLines[targetLine].length);
-                    area.setSelectionRange(newPos, newPos);
-                }
+            else if(dir === 'Up' && curLine > 0) {
+                let newPos = 0;
+                for(let i=0; i<curLine-1; i++) newPos += lines[i].length + 1;
+                newPos += Math.min(col, lines[curLine-1].length);
+                area.setSelectionRange(newPos, newPos);
+            }
+            else if(dir === 'Down' && curLine < lines.length - 1) {
+                let newPos = 0;
+                for(let i=0; i<=curLine; i++) newPos += lines[i].length + 1;
+                newPos += Math.min(col, lines[curLine+1].length);
+                area.setSelectionRange(newPos, newPos);
             }
         }
 
-        // Song Handling
+        // Interface
+        function startEdit() {
+            if(!cur) return; stopScroll();
+            el('lyricsArea').style.display = 'none'; el('editIcon').style.display = 'none';
+            el('saveBtn').style.display = 'block'; el('editorArea').style.display = 'block';
+            el('joyUnit').style.display = 'block'; el('chordUnit').style.display = 'block';
+            el('editorArea').value = cur.content;
+            setTimeout(() => { el('editorArea').focus(); }, 100);
+        }
+
+        function finishEdit() {
+            const content = el('editorArea').value;
+            const title = content.split('\n')[0].replace(/[\[\]]/g, '') || "Naamloos";
+            const idx = db.findIndex(s => s.title === cur.title);
+            if(idx === -1) db.push({title, content}); else db[idx] = { title, content };
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            renderIndex(); loadSong(title);
+            el('lyricsArea').style.display = 'block'; el('editIcon').style.display = 'block';
+            el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none';
+            el('joyUnit').style.display = 'none'; el('chordUnit').style.display = 'none';
+        }
+
         function loadSong(t) {
             stopScroll(); cur = db.find(s => s.title === t);
             tOff = 0; el('tpVal').textContent = "0";
@@ -284,7 +314,7 @@
             });
         }
 
-        // Interface toggles
+        // Standard functions
         el('songsMenuBtn').onclick = toggleMenu;
         el('settingsIcon').onclick = () => el('settingsOverlay').style.display = 'block';
         el('editIcon').onclick = startEdit;
@@ -293,27 +323,6 @@
         el('themeBtn').onclick = toggleTheme;
         el('tpPlus').onclick = () => transpose(1);
         el('tpMin').onclick = () => transpose(-1);
-
-        function startEdit() {
-            if(!cur) return; stopScroll();
-            el('lyricsArea').style.display = 'none'; el('editIcon').style.display = 'none';
-            el('saveBtn').style.display = 'block'; el('editorArea').style.display = 'block';
-            el('editorTools').style.display = 'flex';
-            el('editorArea').value = cur.content;
-            setTimeout(() => { el('editorArea').focus(); }, 100);
-        }
-
-        function finishEdit() {
-            const content = el('editorArea').value;
-            const title = content.split('\n')[0].replace(/[\[\]]/g, '') || "Naamloos";
-            const idx = db.findIndex(s => s.title === cur.title);
-            if(idx === -1) db.push({title, content}); else db[idx] = { title, content };
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex(); loadSong(title);
-            el('lyricsArea').style.display = 'block'; el('editIcon').style.display = 'block';
-            el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none';
-            el('editorTools').style.display = 'none';
-        }
 
         function toggleMenu() {
             const open = el('songsMenu').classList.toggle('open');
@@ -359,7 +368,7 @@
             const blob = new Blob([data], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `StagePilot_Backup.json`;
+            a.download = `Horizon_Backup.json`;
             a.click();
         }
 
