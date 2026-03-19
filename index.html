@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.15</title>
+    <title>TDF Stage Pilot v6.16</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -40,14 +40,19 @@
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
+        /* Floating Units */
         .floating-unit { position: fixed; z-index: 200000; display: none; touch-action: none; }
         
-        #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 450px; }
+        /* Adaptive Chord Unit */
+        #chordUnit { top: 100px; left: 10px; transition: width 0.2s, height 0.2s; }
         .chord-bar { 
-            display: flex; gap: 6px; overflow-x: auto; background: rgba(28, 28, 30, 0.96); 
+            display: flex; gap: 6px; background: rgba(28, 28, 30, 0.96); 
             padding: 8px; border-radius: 12px; border: 1px solid #555; backdrop-filter: blur(10px);
-            scrollbar-width: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 90vw;
         }
+        .chord-bar.vertical { flex-direction: column; max-height: 70vh; overflow-y: auto; }
+        .chord-bar.horizontal { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
         .chord-bar::-webkit-scrollbar { display: none; }
 
         #joyUnit { bottom: 40px; right: 20px; }
@@ -97,7 +102,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Stage Pilot v6.15</h2>
+                <h2 id="displayTitle">Stage Pilot v6.16</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -141,8 +146,8 @@
     </div>
 
     <div id="chordUnit" class="floating-unit">
-        <div class="chord-bar" id="chordRow"></div>
-        <div class="tool-btn" style="width:100%; margin-top:5px; border-radius:8px; color:var(--griffin-orange); height: 36px;" ontouchstart="event.preventDefault(); insertText('[]', 1)">[ ] AKKOORD</div>
+        <div class="chord-bar horizontal" id="chordRow"></div>
+        <div id="customChordBtn" class="tool-btn" style="width:100%; margin-top:5px; border-radius:8px; color:var(--griffin-orange); height: 36px;" ontouchstart="event.preventDefault(); insertText('[]', 1)">[ ]</div>
     </div>
 
     <div id="joyUnit" class="floating-unit">
@@ -156,16 +161,11 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.15";
+        const APP_VERSION = "6.16";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, navInt = null, sInt = null;
         
-        // Volledige akkoordenlijst
-        const commonChords = [
-            "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B",
-            "Cm", "C#m", "Dm", "Ebm", "Em", "Fm", "F#m", "Gm", "Abm", "Am", "Bbm", "Bm",
-            "C7", "D7", "E7", "F7", "G7", "A7", "B7", "sus4", "add9", "maj7"
-        ];
+        const commonChords = ["A", "Am", "Bm", "C", "D", "Dm", "E", "Em", "F", "F#m", "G"];
 
         window.onload = () => {
             if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
@@ -175,22 +175,37 @@
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { document.getElementById('appLogo').src = logo; document.getElementById('appLogo').style.display = 'block'; }
             renderIndex(); initChordBar();
-            makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"));
-            makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"));
+            makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"), false);
+            makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"), true);
         };
 
-        function makeDraggable(el, handle) {
+        function makeDraggable(el, handle, isChordBar) {
             let px = 0, py = 0, ix, iy;
             handle.addEventListener("touchstart", (e) => {
                 ix = e.touches[0].clientX - px;
                 iy = e.touches[0].clientY - py;
                 el.style.transition = "none";
             }, {passive:false});
+
             handle.addEventListener("touchmove", (e) => {
                 e.preventDefault();
                 px = e.touches[0].clientX - ix;
                 py = e.touches[0].clientY - iy;
                 el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+
+                if(isChordBar) {
+                    const rect = el.getBoundingClientRect();
+                    const bar = document.getElementById('chordRow');
+                    const customBtn = document.getElementById('customChordBtn');
+                    // Als de bar in de buurt van de linker of rechter rand is (< 60px)
+                    if(rect.left < 60 || rect.right > window.innerWidth - 60) {
+                        bar.classList.replace('horizontal', 'vertical');
+                        customBtn.style.display = 'none'; // Ruimte besparen in verticale stand
+                    } else {
+                        bar.classList.replace('vertical', 'horizontal');
+                        customBtn.style.display = 'flex';
+                    }
+                }
             }, {passive:false});
         }
 
