@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.18</title>
+    <title>TDF Stage Pilot v6.19</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -93,7 +93,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Stage Pilot v6.18</h2>
+                <h2 id="displayTitle">Stage Pilot v6.19</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -123,12 +123,12 @@
         <div class="modal-box">
             <h3 style="color:white; margin:0 0 10px 0;">Beheer</h3>
             <button class="modal-btn" onclick="toggleTheme()">🌓 WISSEL THEMA</button>
-            <button class="modal-btn" onclick="document.getElementById('bulkFiles').click()">📂 BESTAND(EN) TOEVOEGEN</button>
-            <div style="color: #aaa; font-size: 0.75rem; margin-bottom: 15px; padding: 0 10px;">Selecteer je liedjes. Het menu blijft open voor de volgende.</div>
+            <button class="modal-btn" onclick="startImportSession()">📂 BESTAND(EN) TOEVOEGEN</button>
+            <div style="color: #aaa; font-size: 0.75rem; margin-bottom: 15px;">iPad: Menu blijft open voor bulk selectie.</div>
             <button class="modal-btn" onclick="downloadBackup()">💾 BACKUP OPSLAAN</button>
             <button class="modal-btn" onclick="document.getElementById('restoreInput').click()">🔄 BACKUP HERSTELLEN</button>
             <button class="modal-btn" onclick="document.getElementById('logoInput').click()">🖼️ PNG LOGO UPLOADEN</button>
-            <button class="modal-btn" style="background:#444;" onclick="closeSettings()">SLUITEN</button>
+            <button class="modal-btn" style="background:#444;" onclick="stopImportSession()">SLUITEN</button>
         </div>
     </div>
 
@@ -153,7 +153,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.18";
+        const APP_VERSION = "6.19";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, navInt = null, sInt = null;
         const commonChords = ["A", "Am", "Bm", "C", "D", "Dm", "E", "Em", "F", "F#m", "G"];
@@ -168,7 +168,22 @@
             renderIndex(); initChordBar();
             makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"), false);
             makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"), true);
+
+            // Controleer of we in een import-sessie zitten
+            if(sessionStorage.getItem('tdfImportActive') === 'true') {
+                document.getElementById('settingsOverlay').style.display = 'block';
+            }
         };
+
+        function startImportSession() {
+            sessionStorage.setItem('tdfImportActive', 'true');
+            document.getElementById('bulkFiles').click();
+        }
+
+        function stopImportSession() {
+            sessionStorage.removeItem('tdfImportActive');
+            closeSettings();
+        }
 
         function showToast(m) {
             const t = document.getElementById('toast');
@@ -195,7 +210,6 @@
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             renderIndex();
-            // Belangrijk voor iPad: reset de input maar sluit het menu niet
             this.value = '';
         });
 
