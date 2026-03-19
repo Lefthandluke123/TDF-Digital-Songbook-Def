@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.13</title>
+    <title>TDF Stage Pilot v6.14</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -40,26 +40,31 @@
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
-        .floating-unit { position: fixed; z-index: 10000; display: none; touch-action: none; }
+        /* Floating Units - Verhoogde Z-index */
+        .floating-unit { position: fixed; z-index: 200000; display: none; touch-action: none; }
+        
         #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 400px; }
         .chord-bar { 
-            display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.9); 
-            padding: 10px; border-radius: 12px; border: 1px solid #444; backdrop-filter: blur(10px);
+            display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.95); 
+            padding: 10px; border-radius: 12px; border: 2px solid #444; backdrop-filter: blur(10px);
             scrollbar-width: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
-        #joyUnit { bottom: 50px; right: 20px; }
+
+        /* Vernieuwde Compacte Joypad */
+        #joyUnit { bottom: 40px; right: 20px; }
         .nav-joypad {
-            display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px);
-            gap: 6px; background: rgba(44, 44, 46, 0.9); padding: 12px; border-radius: 50%;
+            display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px);
+            gap: 4px; background: rgba(44, 44, 46, 0.95); padding: 8px; border-radius: 50%;
             border: 2px solid var(--griffin-orange); box-shadow: 0 8px 25px rgba(0,0,0,0.5);
         }
         .tool-btn { 
-            width: 50px; height: 50px; background: #3a3a3c; color: white; border: none; 
-            border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            width: 38px; height: 38px; background: #3a3a3c; color: white; border: none; 
+            border-radius: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.4rem; }
-        .drag-handle { grid-column: 2; grid-row: 2; background: var(--griffin-orange); border-radius: 50%; opacity: 0.9; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: black; font-weight: bold; }
+        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.1rem; }
+        .drag-handle { grid-column: 2; grid-row: 2; background: var(--griffin-orange); border-radius: 50%; opacity: 1; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: black; }
 
+        /* Menu Breedte Fix */
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
         .songs-menu.open { left: 0; }
@@ -90,7 +95,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">TDF Stage Pilot v6.13</h2>
+                <h2 id="displayTitle">Stage Pilot v6.14</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin" onclick="transpose(-1)">−</button>
                     <span id="tpVal">0</span>
@@ -142,14 +147,14 @@
         <div class="nav-joypad">
             <div class="tool-btn nav-btn" style="grid-column:2; grid-row:1;" ontouchstart="event.preventDefault(); startNav('Up')" ontouchend="stopNav()">↑</div>
             <div class="tool-btn nav-btn" style="grid-column:1; grid-row:2;" ontouchstart="event.preventDefault(); startNav('Left')" ontouchend="stopNav()">←</div>
-            <div class="drag-handle" id="joyDrag">MOVE</div>
+            <div class="drag-handle" id="joyDrag">●</div>
             <div class="tool-btn nav-btn" style="grid-column:3; grid-row:2;" ontouchstart="event.preventDefault(); startNav('Right')" ontouchend="stopNav()">→</div>
             <div class="tool-btn nav-btn" style="grid-column:2; grid-row:3;" ontouchstart="event.preventDefault(); startNav('Down')" ontouchend="stopNav()">↓</div>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.13";
+        const APP_VERSION = "6.14";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, navInt = null, sInt = null;
         const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
@@ -162,41 +167,34 @@
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { document.getElementById('appLogo').src = logo; document.getElementById('appLogo').style.display = 'block'; }
             renderIndex(); initChordBar();
+            // Sleutel voor beweeglijkheid:
             makeDraggable(document.getElementById("joyUnit"), document.getElementById("joyDrag"));
             makeDraggable(document.getElementById("chordUnit"), document.getElementById("chordUnit"));
         };
 
         function makeDraggable(el, handle) {
             let px = 0, py = 0, ix, iy;
-            handle.addEventListener("touchstart", (e) => { ix = e.touches[0].clientX - px; iy = e.touches[0].clientY - py; }, {passive:false});
-            handle.addEventListener("touchmove", (e) => { e.preventDefault(); px = e.touches[0].clientX - ix; py = e.touches[0].clientY - iy; el.style.transform = `translate3d(${px}px, ${py}px, 0)`; }, {passive:false});
+            handle.addEventListener("touchstart", (e) => {
+                ix = e.touches[0].clientX - px;
+                iy = e.touches[0].clientY - py;
+                el.style.transition = "none";
+            }, {passive:false});
+            handle.addEventListener("touchmove", (e) => {
+                e.preventDefault();
+                px = e.touches[0].clientX - ix;
+                py = e.touches[0].clientY - iy;
+                el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+            }, {passive:false});
         }
 
         function initChordBar() {
             const row = document.getElementById('chordRow'); row.innerHTML = '';
             commonChords.forEach(c => {
-                const btn = document.createElement('div'); btn.className = 'tool-btn'; btn.style.minWidth = '52px'; btn.style.color = 'var(--griffin-orange)';
+                const btn = document.createElement('div'); btn.className = 'tool-btn'; btn.style.minWidth = '48px'; btn.style.color = 'var(--griffin-orange)';
                 btn.textContent = c; btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 row.appendChild(btn);
             });
         }
-
-        document.getElementById('bulkFiles').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files);
-            if(files.length === 0) return;
-            let added = 0;
-            for(let f of files) {
-                const t = await f.text();
-                const title = t.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt','');
-                if(!db.find(x => x.title.toLowerCase() === title.toLowerCase())) {
-                    db.push({title, content: t}); added++;
-                }
-            }
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex(); alert(added + " liedjes toegevoegd.");
-            closeSettings();
-            this.value = '';
-        });
 
         function startNav(d) { moveCursor(d); navInt = setInterval(() => moveCursor(d), 120); }
         function stopNav() { clearInterval(navInt); }
@@ -225,6 +223,23 @@
             a.value = a.value.substring(0,s)+t+a.value.substring(e);
             a.focus(); const p = s+t.length-o; a.setSelectionRange(p,p);
         }
+
+        document.getElementById('bulkFiles').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if(files.length === 0) return;
+            let added = 0;
+            for(let f of files) {
+                const t = await f.text();
+                const title = t.split('\n')[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt','');
+                if(!db.find(x => x.title.toLowerCase() === title.toLowerCase())) {
+                    db.push({title, content: t}); added++;
+                }
+            }
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            renderIndex(); alert(added + " liedjes toegevoegd.");
+            closeSettings();
+            this.value = '';
+        });
 
         function renderIndex() {
             const c = document.getElementById('indexContent'); c.innerHTML = "";
