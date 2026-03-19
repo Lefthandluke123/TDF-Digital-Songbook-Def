@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Horizon v6.04</title>
+    <title>TDF Navigator v6.05</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,7 +17,6 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
-        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -37,15 +36,13 @@
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
-        /* Content */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 400px; }
 
-        /* Floating UI Elements */
+        /* Floating UI */
         .floating-unit { position: fixed; z-index: 10000; display: none; touch-action: none; }
         
-        /* Chord Bar - Moveable */
         #chordUnit { top: 100px; left: 10px; width: 90vw; max-width: 400px; }
         .chord-bar { 
             display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.9); 
@@ -54,7 +51,6 @@
         }
         .chord-bar::-webkit-scrollbar { display: none; }
 
-        /* Joypad - Moveable */
         #joyUnit { bottom: 50px; right: 20px; }
         .nav-joypad {
             display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px);
@@ -70,7 +66,7 @@
         .nav-btn:active { background: var(--griffin-orange); }
         .drag-handle { 
             grid-column: 2; grid-row: 2; background: var(--griffin-orange); 
-            border-radius: 50%; opacity: 0.7; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;
+            border-radius: 50%; opacity: 0.7; cursor: move; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: black; font-weight: bold;
         }
         
         .chord-item-btn { min-width: 50px; color: var(--griffin-orange); font-family: monospace; font-size: 1.1rem; }
@@ -106,7 +102,7 @@
         </div>
         <div class="top-bar-center">
             <div class="title-row">
-                <h2 id="displayTitle">Horizon v6.04</h2>
+                <h2 id="displayTitle">Navigator v6.05</h2>
                 <div class="transpose-pill">
                     <button class="tp-btn" id="tpMin">−</button>
                     <span id="tpVal">0</span>
@@ -139,7 +135,7 @@
             <button class="modal-btn" onclick="downloadBackup()">💾 DOWNLOAD BACKUP (.JSON)</button>
             <button class="modal-btn" onclick="el('restoreInput').click()">🔄 RESTORE BACKUP</button>
             <button class="modal-btn" onclick="el('logoInput').click()">🖼️ UPLOAD PNG LOGO</button>
-            <button class="modal-btn" onclick="el('bulkImportInput').click()">📂 LIEDJES IMPORTEREN</button>
+            <button class="modal-btn" onclick="el('bulkImportInput').click()">📂 LIEDJES (BULK) IMPORTEREN</button>
             <button class="modal-btn" style="background:#444;" onclick="el('settingsOverlay').style.display='none'">SLUITEN</button>
         </div>
     </div>
@@ -151,23 +147,23 @@
 
     <div id="chordUnit" class="floating-unit">
         <div class="chord-bar" id="chordRow"></div>
-        <button class="tool-btn" style="width: 100%; margin-top: 5px; border-radius: 8px;" onclick="insertText('[]', 1)">[ ]</button>
+        <button class="tool-btn" style="width: 100%; margin-top: 5px; border-radius: 8px; color: var(--griffin-orange);" onmousedown="insertText('[]', 1)" ontouchstart="event.preventDefault(); insertText('[]', 1)">[ AKKOORD ]</button>
     </div>
 
     <div id="joyUnit" class="floating-unit">
         <div class="nav-joypad">
-            <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" onmousedown="moveCursor('Up')" ontouchstart="moveCursor('Up')">↑</button>
-            <button class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" onmousedown="moveCursor('Left')" ontouchstart="moveCursor('Left')">←</button>
-            <div class="drag-handle" id="joyDrag">MOVE</div>
-            <button class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" onmousedown="moveCursor('Right')" ontouchstart="moveCursor('Right')">→</button>
-            <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" onmousedown="moveCursor('Down')" ontouchstart="moveCursor('Down')">↓</button>
+            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" onmousedown="startNav('Up')" ontouchstart="event.preventDefault(); startNav('Up')" onmouseup="stopNav()" ontouchend="stopNav()">↑</div>
+            <div class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" onmousedown="startNav('Left')" ontouchstart="event.preventDefault(); startNav('Left')" onmouseup="stopNav()" ontouchend="stopNav()">←</div>
+            <div class="drag-handle" id="joyDrag">DRAG</div>
+            <div class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" onmousedown="startNav('Right')" ontouchstart="event.preventDefault(); startNav('Right')" onmouseup="stopNav()" ontouchend="stopNav()">→</div>
+            <div class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" onmousedown="startNav('Down')" ontouchstart="event.preventDefault(); startNav('Down')" onmouseup="stopNav()" ontouchend="stopNav()">↓</div>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.04";
+        const APP_VERSION = "6.05";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0, startX = 0, sInt = null;
+        let cur = null, tOff = 0, sInt = null, navInt = null;
         const commonChords = ["C", "G", "D", "A", "E", "F", "Am", "Em", "Dm", "Bb", "B7", "G7", "D7"];
 
         const el = (id) => document.getElementById(id);
@@ -192,7 +188,6 @@
                 initialY = e.touches[0].clientY - posY;
                 element.style.transition = "none";
             }, {passive: false});
-
             handle.addEventListener("touchmove", (e) => {
                 e.preventDefault();
                 posX = e.touches[0].clientX - initialX;
@@ -204,7 +199,7 @@
         function initChordBar() {
             const row = el('chordRow'); row.innerHTML = '';
             commonChords.forEach(c => {
-                const btn = document.createElement('button');
+                const btn = document.createElement('div');
                 btn.className = 'tool-btn chord-item-btn';
                 btn.textContent = c;
                 btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
@@ -212,25 +207,20 @@
             });
         }
 
-        function insertText(text, offset = 0) {
-            const area = el('editorArea');
-            const s = area.selectionStart, e = area.selectionEnd;
-            area.value = area.value.substring(0, s) + text + area.value.substring(e);
-            area.focus();
-            const p = s + text.length - offset;
-            area.setSelectionRange(p, p);
+        // Navigation Repeat Logic
+        function startNav(dir) {
+            moveCursor(dir);
+            navInt = setInterval(() => moveCursor(dir), 120);
         }
+        function stopNav() { clearInterval(navInt); }
 
         function moveCursor(dir) {
             const area = el('editorArea'); area.focus();
             const start = area.selectionStart;
             const lines = area.value.split('\n');
             let curChar = 0, curLine = 0;
-            
             for(let i=0; i<lines.length; i++) {
-                if(start <= curChar + lines[i].length) {
-                    curLine = i; break;
-                }
+                if(start <= curChar + lines[i].length) { curLine = i; break; }
                 curChar += lines[i].length + 1;
             }
             const col = start - curChar;
@@ -251,7 +241,37 @@
             }
         }
 
-        // Interface
+        function insertText(text, offset = 0) {
+            const area = el('editorArea');
+            const s = area.selectionStart, e = area.selectionEnd;
+            area.value = area.value.substring(0, s) + text + area.value.substring(e);
+            area.focus();
+            const p = s + text.length - offset;
+            area.setSelectionRange(p, p);
+        }
+
+        // Bulk Import
+        el('bulkImportInput').onchange = async (e) => {
+            let count = 0;
+            for (let f of e.target.files) {
+                const text = await f.text();
+                const lines = text.split('\n');
+                // Pak de eerste regel als titel, haal [] weg als die er staan
+                const title = lines[0].replace(/[\[\]\r]/g, '').trim() || f.name.replace('.txt', '');
+                if(!db.find(s => s.title === title)) {
+                    db.push({ title, content: text });
+                    count++;
+                }
+            }
+            if(count > 0) {
+                localStorage.setItem('tdfSongs', JSON.stringify(db));
+                renderIndex();
+                alert(`${count} liedjes toegevoegd.`);
+            }
+            el('settingsOverlay').style.display = 'none';
+        };
+
+        // Standard Functions
         function startEdit() {
             if(!cur) return; stopScroll();
             el('lyricsArea').style.display = 'none'; el('editIcon').style.display = 'none';
@@ -299,11 +319,6 @@
             el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
         }
 
-        function transpose(dir) {
-            if(!cur) return; tOff += dir;
-            el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw();
-        }
-
         const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         function tpChord(chord, off) {
             return chord.replace(/[A-G][#b]?/g, (m) => {
@@ -314,7 +329,6 @@
             });
         }
 
-        // Standard functions
         el('songsMenuBtn').onclick = toggleMenu;
         el('settingsIcon').onclick = () => el('settingsOverlay').style.display = 'block';
         el('editIcon').onclick = startEdit;
@@ -341,6 +355,7 @@
             });
         }
 
+        function transpose(dir) { if(!cur) return; tOff += dir; el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() {
             if(!cur) return;
@@ -368,7 +383,7 @@
             const blob = new Blob([data], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `Horizon_Backup.json`;
+            a.download = `Navigator_Backup.json`;
             a.click();
         }
 
@@ -376,15 +391,6 @@
             const r = new FileReader();
             r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
             r.readAsDataURL(e.target.files[0]);
-        };
-
-        el('bulkImportInput').onchange = async (e) => {
-            for (let f of e.target.files) {
-                const t = await f.text();
-                const title = t.split('\n')[0].replace(/[\[\]]/g, '') || f.name.replace('.txt', '');
-                if(!db.find(s => s.title === title)) db.push({ title, content: t });
-            }
-            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); el('settingsOverlay').style.display = 'none';
         };
 
         el('restoreInput').onchange = (e) => {
