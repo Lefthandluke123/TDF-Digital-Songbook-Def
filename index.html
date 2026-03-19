@@ -10,7 +10,6 @@
             --griffin-orange: #d48e3d; --griffin-red: #c12718; 
             --header-height: 65px;
             --lyric-bg: #ffffff; --lyric-text: #000000;
-            --ui-accent: #444;
         }
         [data-theme="dark"] { --lyric-bg: #000000; --lyric-text: #ffffff; }
 
@@ -39,25 +38,34 @@
 
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; z-index: 1; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace !important; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; min-height: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 200px; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); caret-color: var(--griffin-orange); padding-bottom: 300px; }
 
+        /* Floating Editor Tools */
         .editor-tools { 
-            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            width: 95%; max-width: 500px; z-index: 10000; flex-direction: column; gap: 8px; 
+            display: none; position: fixed; bottom: 80px; right: 20px; 
+            z-index: 10000; flex-direction: column; gap: 12px; touch-action: none;
         }
-        .tool-row { 
-            display: flex; gap: 6px; overflow-x: auto; background: rgba(28, 28, 30, 0.95); 
+        .chord-bar { 
+            display: flex; gap: 8px; overflow-x: auto; background: rgba(28, 28, 30, 0.95); 
             padding: 10px; border-radius: 14px; border: 1px solid #444; backdrop-filter: blur(10px);
-            scrollbar-width: none;
+            width: 85vw; max-width: 380px; align-self: center; scrollbar-width: none;
         }
-        .tool-row::-webkit-scrollbar { display: none; }
+        .chord-bar::-webkit-scrollbar { display: none; }
+
+        .nav-joypad {
+            display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px);
+            gap: 5px; background: rgba(44, 44, 46, 0.9); padding: 12px; border-radius: 30px;
+            border: 2px solid var(--griffin-orange); align-self: flex-end; box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+        }
         .tool-btn { 
-            flex: 0 0 48px; height: 48px; background: #3a3a3c; color: white; border: none; 
-            border-radius: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            width: 52px; height: 52px; background: #3a3a3c; color: white; border: none; 
+            border-radius: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .tool-btn:active { background: var(--griffin-orange); }
-        .chord-btn { min-width: 55px; font-family: ui-monospace; color: var(--griffin-orange); font-size: 1.1rem; }
-        .nav-btn { background: #48484a; font-size: 1.2rem; }
+        .nav-btn { background: #48484a; border-radius: 50%; font-size: 1.4rem; color: white; }
+        .drag-handle { 
+            grid-column: 2; grid-row: 2; background: var(--griffin-orange); 
+            border-radius: 50%; opacity: 0.8; display: flex; align-items: center; justify-content: center;
+        }
 
         .songs-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90000; }
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; }
@@ -101,7 +109,7 @@
         <div class="top-bar-right">
             <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" style="fill:#34c759;"><path d="M8 5v14l11-7z"/></svg>
             <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-            <svg class="top-bar-icon" id="settingsIcon" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c(0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            <svg class="top-bar-icon" id="settingsIcon" viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41l-0.36,2.54c-0.59,0.24-1.13,0.57-1.62,0.94L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.84,9.48l2.03,1.58C4.82,11.36,4.8,11.68,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
             <button class="top-bar-btn" id="saveBtn" style="display:none;">GEREED</button>
         </div>
     </div>
@@ -133,13 +141,15 @@
     </div>
 
     <div id="editorTools" class="editor-tools">
-        <div class="tool-row" id="chordRow"></div>
-        <div class="tool-row" id="navRow">
-            <button class="tool-btn nav-btn" onclick="moveCursor('Left')">←</button>
-            <button class="tool-btn nav-btn" onclick="moveCursor('Right')">→</button>
-            <button class="tool-btn nav-btn" style="flex-grow:1; font-size: 0.9rem;" onclick="insertText(' ')">SPATIE</button>
-            <button class="tool-btn nav-btn" style="min-width: 60px;" onclick="insertText('[]', 1)">[ ]</button>
+        <div class="chord-bar" id="chordRow"></div>
+        <div class="nav-joypad" id="joypad">
+            <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 1;" onmousedown="moveCursor('Up')" ontouchstart="moveCursor('Up')">↑</button>
+            <button class="tool-btn nav-btn" style="grid-column: 1; grid-row: 2;" onmousedown="moveCursor('Left')" ontouchstart="moveCursor('Left')">←</button>
+            <div class="drag-handle" id="joyHandle">::</div>
+            <button class="tool-btn nav-btn" style="grid-column: 3; grid-row: 2;" onmousedown="moveCursor('Right')" ontouchstart="moveCursor('Right')">→</button>
+            <button class="tool-btn nav-btn" style="grid-column: 2; grid-row: 3;" onmousedown="moveCursor('Down')" ontouchstart="moveCursor('Down')">↓</button>
         </div>
+        <button class="tool-btn" style="width: 100%; border-radius: 14px; background: var(--griffin-orange); color: white;" onmousedown="insertText('[]', 1)" ontouchstart="insertText('[]', 1)">[ ] AKKOORD</button>
     </div>
 
     <script>
@@ -152,168 +162,91 @@
 
         window.onload = () => {
             checkVersion();
-            if(db.length > 0) localStorage.setItem('tdfSongs_backup', JSON.stringify({date: new Date().toISOString(), data: db}));
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { el('appLogo').src = logo; el('appLogo').style.display = 'block'; }
             renderIndex();
             initChordBar();
+            initDraggable();
         };
 
         function checkVersion() {
-            const savedVer = localStorage.getItem('tdfVersion');
-            if (savedVer !== APP_VERSION) {
+            if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
                 localStorage.setItem('tdfVersion', APP_VERSION);
                 location.reload(true);
             }
         }
 
+        // Draggable Logic
+        let isDragging = false, currentX = 0, currentY = 0, initialX, initialY, xOff = 0, yOff = 0;
+        function initDraggable() {
+            const tool = el("editorTools");
+            const handle = el("joyHandle");
+            tool.addEventListener("touchstart", (e) => {
+                if(e.target === handle || e.target === el('joypad')) {
+                    initialX = e.touches[0].clientX - xOff;
+                    initialY = e.touches[0].clientY - yOff;
+                    isDragging = true;
+                }
+            }, {passive: false});
+            window.addEventListener("touchend", () => { isDragging = false; initialX = currentX; initialY = currentY; });
+            window.addEventListener("touchmove", (e) => {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                    xOff = currentX; yOff = currentY;
+                    tool.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+                }
+            }, {passive: false});
+        }
+
         function initChordBar() {
-            const row = el('chordRow');
-            row.innerHTML = '';
+            const row = el('chordRow'); row.innerHTML = '';
             commonChords.forEach(c => {
                 const btn = document.createElement('button');
-                btn.className = 'tool-btn chord-btn';
+                btn.className = 'tool-btn'; btn.style.minWidth = '55px'; btn.style.color = 'var(--griffin-orange)';
                 btn.textContent = c;
-                btn.onclick = () => insertText(`[${c}]`);
+                btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 row.appendChild(btn);
             });
         }
 
-        function insertText(text, cursorOffset = 0) {
+        function insertText(text, offset = 0) {
             const area = el('editorArea');
-            const start = area.selectionStart;
-            const end = area.selectionEnd;
-            area.value = area.value.substring(0, start) + text + area.value.substring(end);
+            const s = area.selectionStart, e = area.selectionEnd;
+            area.value = area.value.substring(0, s) + text + area.value.substring(e);
             area.focus();
-            const newPos = start + text.length - cursorOffset;
-            area.setSelectionRange(newPos, newPos);
+            const p = s + text.length - offset;
+            area.setSelectionRange(p, p);
         }
 
         function moveCursor(dir) {
-            const area = el('editorArea');
-            const pos = area.selectionStart;
-            area.focus();
-            if(dir === 'Left') area.setSelectionRange(pos - 1, pos - 1);
-            if(dir === 'Right') area.setSelectionRange(pos + 1, pos + 1);
-        }
-
-        el('songsMenuBtn').onclick = toggleMenu;
-        el('settingsIcon').onclick = () => el('settingsOverlay').style.display = 'block';
-        el('editIcon').onclick = startEdit;
-        el('saveBtn').onclick = finishEdit;
-        el('scrollBtn').onclick = toggleScroll;
-        el('themeBtn').onclick = toggleTheme;
-        el('tpPlus').onclick = () => transpose(1);
-        el('tpMin').onclick = () => transpose(-1);
-
-        el('logoInput').onchange = (e) => {
-            const r = new FileReader();
-            r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
-            r.readAsDataURL(e.target.files[0]);
-        };
-
-        el('bulkImportInput').onchange = async (e) => {
-            for (let f of e.target.files) {
-                const t = await f.text();
-                const title = t.split('\n')[0].replace(/[\[\]]/g, '') || f.name.replace('.txt', '');
-                if(!db.find(s => s.title === title)) db.push({ title, content: t });
+            const area = el('editorArea'); area.focus();
+            const start = area.selectionStart;
+            if(dir === 'Left') area.setSelectionRange(start - 1, start - 1);
+            else if(dir === 'Right') area.setSelectionRange(start + 1, start + 1);
+            else {
+                // Emuleer Arrow keys voor verticale navigatie
+                const lines = area.value.substring(0, start).split('\n');
+                const curLine = lines.length - 1;
+                const curCol = lines[curLine].length;
+                const allLines = area.value.split('\n');
+                
+                let targetLine = dir === 'Up' ? curLine - 1 : curLine + 1;
+                if(targetLine >= 0 && targetLine < allLines.length) {
+                    let newPos = 0;
+                    for(let i=0; i < targetLine; i++) newPos += allLines[i].length + 1;
+                    newPos += Math.min(curCol, allLines[targetLine].length);
+                    area.setSelectionRange(newPos, newPos);
+                }
             }
-            saveDb(); renderIndex(); el('settingsOverlay').style.display = 'none';
-        };
-
-        el('restoreInput').onchange = (e) => {
-            const r = new FileReader();
-            r.onload = (ev) => {
-                const imported = JSON.parse(ev.target.result);
-                if(imported.data) { db = imported.data; saveDb(); location.reload(); }
-            };
-            r.readAsText(e.target.files[0]);
-        };
-
-        function downloadBackup() {
-            const data = JSON.stringify({date: new Date().toISOString(), data: db});
-            const blob = new Blob([data], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `StagePilot_Backup_${new Date().toLocaleDateString()}.json`;
-            a.click();
         }
 
-        function saveDb() { localStorage.setItem('tdfSongs', JSON.stringify(db)); }
-        function toggleTheme() {
-            const b = document.body;
-            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        }
-        function toggleMenu() {
-            const open = el('songsMenu').classList.toggle('open');
-            el('menuOverlay').style.display = open ? 'block' : 'none';
-        }
-
-        function renderIndex() {
-            const c = el('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
-                const container = document.createElement('div'); container.className = 'index-container';
-                const del = document.createElement('div'); del.className = 'delete-btn'; del.textContent = 'Wis';
-                del.onclick = (e) => { e.stopPropagation(); if(confirm('Wissen?')) { db = db.filter(x => x.title !== s.title); saveDb(); renderIndex(); } };
-                const item = document.createElement('div'); item.className = 'index-item'; item.textContent = s.title;
-                item.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
-                item.addEventListener('touchmove', (e) => {
-                    let d = startX - e.touches[0].clientX;
-                    if (d > 0 && d < 100) item.style.transform = `translateX(-${d}px)`;
-                });
-                item.addEventListener('touchend', (e) => {
-                    let d = startX - e.changedTouches[0].clientX;
-                    item.style.transform = d > 50 ? 'translateX(-80px)' : 'translateX(0)';
-                });
-                item.onclick = () => { loadSong(s.title); toggleMenu(); };
-                container.append(del, item); c.appendChild(container);
-            });
-        }
-
+        // Song Handling
         function loadSong(t) {
             stopScroll(); cur = db.find(s => s.title === t);
             tOff = 0; el('tpVal').textContent = "0";
             el('displayTitle').textContent = cur.title; draw();
-        }
-
-        function transpose(dir) {
-            if(!cur) return; tOff += dir;
-            el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw();
-        }
-
-        const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-        function tpChord(chord, off) {
-            return chord.replace(/[A-G][#b]?/g, (m) => {
-                let n = m;
-                if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#";
-                let idx = notes.indexOf(n); if(idx === -1) return m;
-                let newIdx = (idx + off) % 12; while(newIdx < 0) newIdx += 12; return notes[newIdx];
-            });
-        }
-
-        function toggleScroll() { sInt ? stopScroll() : startScroll(); }
-        function startScroll() {
-            if(!cur) return;
-            const container = el('scroller');
-            const contentHeight = container.scrollHeight - container.clientHeight;
-            let duration = 180;
-            const match = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
-            if(match) duration = parseInt(match[1]) * 60 + parseInt(match[2]);
-            const pixelsPerMs = contentHeight / (duration * 1000);
-            const startT = Date.now(); const startP = container.scrollTop;
-            el('scrollBtn').style.fill = 'var(--griffin-red)';
-            el('scrollBtn').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-            sInt = setInterval(() => {
-                const elapsed = Date.now() - startT;
-                container.scrollTop = startP + (elapsed * pixelsPerMs);
-                if(container.scrollTop >= contentHeight) stopScroll();
-            }, 50);
-        }
-
-        function stopScroll() {
-            clearInterval(sInt); sInt = null;
-            el('scrollBtn').style.fill = "#34c759";
-            el('scrollBtn').innerHTML = '<path d="M8 5v14l11-7z"/>';
         }
 
         function draw() {
@@ -336,16 +269,38 @@
             el('lyricsArea').innerHTML = h; el('scroller').scrollTop = 0;
         }
 
+        function transpose(dir) {
+            if(!cur) return; tOff += dir;
+            el('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw();
+        }
+
+        const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        function tpChord(chord, off) {
+            return chord.replace(/[A-G][#b]?/g, (m) => {
+                let n = m;
+                if(n === "Bb") n = "A#"; if(n === "Eb") n = "D#"; if(n === "Ab") n = "G#"; if(n === "Db") n = "C#"; if(n === "Gb") n = "F#";
+                let idx = notes.indexOf(n); if(idx === -1) return m;
+                let newIdx = (idx + off) % 12; while(newIdx < 0) newIdx += 12; return notes[newIdx];
+            });
+        }
+
+        // Interface toggles
+        el('songsMenuBtn').onclick = toggleMenu;
+        el('settingsIcon').onclick = () => el('settingsOverlay').style.display = 'block';
+        el('editIcon').onclick = startEdit;
+        el('saveBtn').onclick = finishEdit;
+        el('scrollBtn').onclick = toggleScroll;
+        el('themeBtn').onclick = toggleTheme;
+        el('tpPlus').onclick = () => transpose(1);
+        el('tpMin').onclick = () => transpose(-1);
+
         function startEdit() {
             if(!cur) return; stopScroll();
             el('lyricsArea').style.display = 'none'; el('editIcon').style.display = 'none';
             el('saveBtn').style.display = 'block'; el('editorArea').style.display = 'block';
             el('editorTools').style.display = 'flex';
             el('editorArea').value = cur.content;
-            setTimeout(() => { 
-                el('editorArea').focus();
-                el('editorArea').setSelectionRange(el('editorArea').value.length, el('editorArea').value.length);
-            }, 100);
+            setTimeout(() => { el('editorArea').focus(); }, 100);
         }
 
         function finishEdit() {
@@ -353,13 +308,84 @@
             const title = content.split('\n')[0].replace(/[\[\]]/g, '') || "Naamloos";
             const idx = db.findIndex(s => s.title === cur.title);
             if(idx === -1) db.push({title, content}); else db[idx] = { title, content };
-            saveDb(); renderIndex();
-            cur = db.find(s => s.title === title);
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            renderIndex(); loadSong(title);
             el('lyricsArea').style.display = 'block'; el('editIcon').style.display = 'block';
             el('saveBtn').style.display = 'none'; el('editorArea').style.display = 'none';
             el('editorTools').style.display = 'none';
-            el('displayTitle').textContent = title; draw();
         }
+
+        function toggleMenu() {
+            const open = el('songsMenu').classList.toggle('open');
+            el('menuOverlay').style.display = open ? 'block' : 'none';
+        }
+
+        function renderIndex() {
+            const c = el('indexContent'); c.innerHTML = "";
+            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const container = document.createElement('div'); container.className = 'index-container';
+                const del = document.createElement('div'); del.className = 'delete-btn'; del.textContent = 'Wis';
+                del.onclick = (e) => { e.stopPropagation(); if(confirm('Wissen?')) { db = db.filter(x => x.title !== s.title); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } };
+                const item = document.createElement('div'); item.className = 'index-item'; item.textContent = s.title;
+                item.onclick = () => { loadSong(s.title); toggleMenu(); };
+                container.append(del, item); c.appendChild(container);
+            });
+        }
+
+        function toggleScroll() { sInt ? stopScroll() : startScroll(); }
+        function startScroll() {
+            if(!cur) return;
+            const container = el('scroller');
+            const h = container.scrollHeight - container.clientHeight;
+            let dur = 180;
+            const match = cur.content.match(/Duration:\s*(\d+):(\d+)/i);
+            if(match) dur = parseInt(match[1]) * 60 + parseInt(match[2]);
+            const speed = h / (dur * 1000);
+            const startT = Date.now(), startP = container.scrollTop;
+            el('scrollBtn').style.fill = 'var(--griffin-red)';
+            sInt = setInterval(() => {
+                container.scrollTop = startP + ((Date.now() - startT) * speed);
+                if(container.scrollTop >= h) stopScroll();
+            }, 50);
+        }
+        function stopScroll() { clearInterval(sInt); sInt = null; el('scrollBtn').style.fill = "#34c759"; }
+        function toggleTheme() {
+            const b = document.body;
+            b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }
+
+        function downloadBackup() {
+            const data = JSON.stringify({date: new Date().toISOString(), data: db});
+            const blob = new Blob([data], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `StagePilot_Backup.json`;
+            a.click();
+        }
+
+        el('logoInput').onchange = (e) => {
+            const r = new FileReader();
+            r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
+            r.readAsDataURL(e.target.files[0]);
+        };
+
+        el('bulkImportInput').onchange = async (e) => {
+            for (let f of e.target.files) {
+                const t = await f.text();
+                const title = t.split('\n')[0].replace(/[\[\]]/g, '') || f.name.replace('.txt', '');
+                if(!db.find(s => s.title === title)) db.push({ title, content: t });
+            }
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); el('settingsOverlay').style.display = 'none';
+        };
+
+        el('restoreInput').onchange = (e) => {
+            const r = new FileReader();
+            r.onload = (ev) => {
+                const imported = JSON.parse(ev.target.result);
+                if(imported.data) { db = imported.data; localStorage.setItem('tdfSongs', JSON.stringify(db)); location.reload(); }
+            };
+            r.readAsText(e.target.files[0]);
+        };
     </script>
 </body>
 </html>
