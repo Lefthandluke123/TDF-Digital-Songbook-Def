@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.37</title>
+    <title>TDF Stage Pilot v6.38</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -27,16 +27,16 @@
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
-        /* Menu Structuur */
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         
         .menu-header { padding: 15px; display: flex; justify-content: space-between; background: #1a1a1a; border-bottom: 1px solid #333; align-items: center; }
-        .action-bar { padding: 10px 15px; background: #242426; border-bottom: 1px solid #444; display: flex; gap: 10px; }
-        #tagBar { display: flex; gap: 8px; overflow-x: auto; padding: 10px; background: #1c1c1e; border-bottom: 1px solid #333; scrollbar-width: none; }
-        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.75rem; white-space: nowrap; cursor: pointer; }
-        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; }
+        .action-bar { padding: 10px 15px; background: #242426; border-bottom: 1px solid #444; }
+        
+        #tagBar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 15px; background: #1c1c1e; border-bottom: 1px solid #333; scrollbar-width: none; flex-shrink: 0; }
+        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.75rem; white-space: nowrap; cursor: pointer; border: 1px solid transparent; }
+        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; border-color: white; }
 
         #indexContent { flex-grow: 1; overflow-y: auto; scroll-behavior: smooth; }
         .index-container { position: relative; width: 100%; border-bottom: 1px solid #282828; background: #333; height: 55px; flex-shrink: 0; }
@@ -67,8 +67,8 @@
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.37</h2>
-            <div class="transpose-pill" style="margin-top:5px;">
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.38</h2>
+            <div class="transpose-pill" style="margin-top:5px; display:inline-flex;">
                 <button class="tp-btn" onclick="transpose(-1)">−</button>
                 <span id="tpVal">0</span>
                 <button class="tp-btn" onclick="transpose(1)">+</button>
@@ -78,26 +78,26 @@
             <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" style="fill:#34c759;" onclick="toggleScroll()"><path d="M8 5v14l11-7z"/></svg>
             <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24" onclick="startEdit()"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
             <button class="top-bar-btn" id="saveBtn" style="display:none;" onclick="finishEdit()">GEREED</button>
+            <svg class="top-bar-icon" viewBox="0 0 24 24" onclick="document.getElementById('bulkFiles').click()" style="margin-left:5px;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
         <div class="menu-header">
-            <span style="color:white; font-weight:bold; letter-spacing:1px;">SONGBOOK</span>
+            <span style="color:white; font-weight:bold;">SONGBOOK</span>
             <button class="top-bar-btn" style="font-size: 0.9rem;" onclick="toggleMenu()">SLUIT</button>
         </div>
         
         <div class="action-bar">
-            <button class="top-bar-btn" style="flex:1; border: 2px solid var(--griffin-orange); border-radius: 8px; padding: 10px; font-size: 0.85rem;" id="tagModeBtn" onclick="toggleTagMode()">TAGS BEHEREN</button>
-            <button class="top-bar-btn" style="flex:1; background: #444; color:white; border-radius: 8px; font-size: 0.85rem;" onclick="document.getElementById('bulkFiles').click()">IMPORT .TXT</button>
+            <button class="top-bar-btn" style="width:100%; border: 2px solid var(--griffin-orange); border-radius: 8px; padding: 10px; font-size: 0.85rem;" id="tagModeBtn" onclick="toggleTagMode()">TAGS BEHEREN</button>
         </div>
 
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:12px; border-radius:8px;" placeholder="Tagnaam (bv: iers)">
-            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:12px; border-radius:8px;" onclick="applyBulkTag(true)">TAG TOEVOEGEN</button>
+            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:12px; border-radius:8px;" placeholder="Naam (bv: iers)">
+            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:12px; border-radius:8px;" onclick="applyBulkTag(true)">VOEG TAG TOE</button>
         </div>
     </div>
 
@@ -107,7 +107,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.37";
+        const APP_VERSION = "6.38";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
 
@@ -132,7 +132,7 @@
             songs.forEach(s => {
                 const container = document.createElement('div'); container.className = 'index-container';
                 container.innerHTML = `
-                    <div class="swipe-action rename-btn" onclick="renameSong('${s.title.replace(/'/g, "\\'")}')">Hernoem</div>
+                    <div class="swipe-action rename-btn" onclick="renameSong('${s.title.replace(/'/g, "\\'")}')">Naam</div>
                     <div class="swipe-action delete-btn" onclick="deleteSong('${s.title.replace(/'/g, "\\'")}')">Wis</div>
                     <div class="index-item">
                         <input type="checkbox" class="tag-checkbox" data-title="${s.title}" style="display:${tagMode ? 'block' : 'none'}; width:22px; height:22px;">
@@ -144,28 +144,24 @@
             });
         }
 
+        function renderTagBar() {
+            const bar = document.getElementById('tagBar');
+            let tags = new Set();
+            db.forEach(s => { 
+                const m = s.content.match(/#(\w+)/g); 
+                if(m) m.forEach(t => tags.add(t.substring(1).toLowerCase())); 
+            });
+            bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" onclick="filterTag(null)">ALLES</div>`;
+            Array.from(tags).sort().forEach(t => {
+                bar.innerHTML += `<div class="tag-pill ${activeTag === t ? 'active' : ''}" onclick="filterTag('${t}')">${t.toUpperCase()}</div>`;
+            });
+        }
+
         function toggleTagMode() {
             tagMode = !tagMode;
             document.getElementById('tagModeBtn').textContent = tagMode ? "KLAAR" : "TAGS BEHEREN";
-            document.getElementById('tagModeBtn').style.background = tagMode ? "var(--griffin-orange)" : "none";
-            document.getElementById('tagModeBtn').style.color = tagMode ? "black" : "var(--griffin-orange)";
             document.getElementById('bulkActions').style.display = tagMode ? "flex" : "none";
             renderIndex();
-        }
-
-        function deleteSong(t) {
-            db = db.filter(s => s.title !== t);
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex(); renderTagBar();
-        }
-
-        function renameSong(o) {
-            const n = prompt("Nieuwe naam:", o);
-            if(n && n !== o) {
-                const i = db.findIndex(s => s.title === o);
-                db[i].title = n; localStorage.setItem('tdfSongs', JSON.stringify(db));
-                renderIndex(); if(cur && cur.title === o) loadSong(n);
-            }
         }
 
         function applyBulkTag(add) {
@@ -177,21 +173,16 @@
             });
             localStorage.setItem('tdfSongs', JSON.stringify(db));
             document.getElementById('bulkTagInput').value = "";
-            toggleTagMode(); renderTagBar();
-        }
-
-        function renderTagBar() {
-            const bar = document.getElementById('tagBar');
-            let tags = new Set();
-            db.forEach(s => { const m = s.content.match(/#(\w+)/g); if(m) m.forEach(t => tags.add(t.substring(1).toLowerCase())); });
-            bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" onclick="filterTag(null)">ALLES</div>`;
-            Array.from(tags).sort().forEach(t => {
-                bar.innerHTML += `<div class="tag-pill ${activeTag === t ? 'active' : ''}" onclick="filterTag('${t}')">${t.toUpperCase()}</div>`;
-            });
+            tagMode = false;
+            document.getElementById('tagModeBtn').textContent = "TAGS BEHEREN";
+            document.getElementById('bulkActions').style.display = "none";
+            renderTagBar();
+            renderIndex();
         }
 
         function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
         function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('tpVal').textContent = "0"; document.getElementById('displayTitle').textContent = cur.title; draw(); }
+        
         function draw() {
             if(!cur) return; const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
@@ -208,6 +199,8 @@
             document.getElementById('lyricsArea').innerHTML = h; document.getElementById('scroller').scrollTop = 0;
         }
 
+        function deleteSong(t) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
+        function renameSong(o) { const n = prompt("Nieuwe naam:", o); if(n && n !== o) { const i = db.findIndex(s => s.title === o); db[i].title = n; localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); if(cur && cur.title === o) loadSong(n); } }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
         function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; }
         function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs',JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('editorArea').style.display='none'; draw(); renderTagBar(); renderIndex(); }
