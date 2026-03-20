@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.39</title>
+    <title>TDF Stage Pilot v6.41</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
             --griffin-orange: #d48e3d; --griffin-red: #c12718; 
-            --header-height: 85px;
+            --header-height: 80px;
             --lyric-bg: #ffffff; --lyric-text: #000000;
         }
         [data-theme="dark"] { --lyric-bg: #000000; --lyric-text: #ffffff; }
@@ -17,22 +17,28 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
+        /* Herstelde Top Bar Layout */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
             display: flex; align-items: flex-end; justify-content: space-between; 
             padding: 0 15px 12px 15px; z-index: 99999; 
         }
+        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 15px; min-width: 120px; }
+        .top-bar-center { text-align: center; flex-grow: 1; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
+        .top-bar-icon { width: 30px; height: 30px; fill: var(--griffin-orange); cursor: pointer; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
+        .transpose-pill { display: inline-flex; align-items: center; gap: 10px; background: #2c2c2e; padding: 4px 12px; border-radius: 20px; border: 1px solid #444; }
+        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 5px; }
+
+        /* Menu */
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         
-        .menu-header { padding: 20px 15px 10px 15px; display: flex; justify-content: space-between; background: #1a1a1a; border-bottom: 1px solid #333; align-items: center; }
-        .action-bar { padding: 12px 15px; background: #242426; border-bottom: 1px solid #444; }
-        
+        .menu-header { padding: 15px; display: flex; justify-content: space-between; background: #1a1a1a; border-bottom: 1px solid #333; align-items: center; }
         #tagBar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 15px; background: #1c1c1e; border-bottom: 1px solid #333; scrollbar-width: none; flex-shrink: 0; }
         .tag-pill { padding: 8px 16px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.8rem; white-space: nowrap; cursor: pointer; border: 1px solid transparent; text-transform: uppercase; }
         .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; border-color: white; }
@@ -41,12 +47,13 @@
         .index-container { position: relative; width: 100%; border-bottom: 1px solid #282828; background: #333; height: 60px; flex-shrink: 0; }
         .index-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0 15px; background: #1c1c1e; color: #eee; cursor: pointer; z-index: 2; display: flex; align-items: center; transition: transform 0.2s; gap: 12px; }
         
-        .swipe-action { position: absolute; top: 0; bottom: 0; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; font-size: 0.85rem; }
+        .swipe-action { position: absolute; top: 0; bottom: 0; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; font-size: 0.85rem; cursor: pointer; }
         .delete-btn { right: 0; width: 85px; background: var(--griffin-red); }
         .rename-btn { right: 85px; width: 85px; background: var(--griffin-orange); color: black; }
 
-        #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; padding-bottom: env(safe-area-inset-bottom); }
+        #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
 
+        /* Reader */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-bottom: 400px; }
@@ -62,50 +69,45 @@
 
     <div class="top-bar">
         <div class="top-bar-left">
+            <img id="appLogo" alt="Logo">
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
-        <div class="top-bar-center" style="text-align:center;">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.39</h2>
-            <div class="transpose-pill" style="margin-top:5px; display:inline-flex; align-items:center; gap:10px; background:#2c2c2e; padding:2px 10px; border-radius:15px;">
-                <button class="top-bar-btn" style="font-size:1.4rem;" onclick="transpose(-1)">−</button>
+        <div class="top-bar-center">
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.41</h2>
+            <div class="transpose-pill" style="margin-top:5px;">
+                <button class="tp-btn" onclick="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
-                <button class="top-bar-btn" style="font-size:1.4rem;" onclick="transpose(1)">+</button>
+                <button class="tp-btn" onclick="transpose(1)">+</button>
             </div>
         </div>
-        <div class="top-bar-right" style="display:flex; align-items:center; gap:12px;">
+        <div class="top-bar-right">
             <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" style="fill:#34c759;" onclick="toggleScroll()"><path d="M8 5v14l11-7z"/></svg>
             <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24" onclick="startEdit()"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
             <button class="top-bar-btn" id="saveBtn" style="display:none;" onclick="finishEdit()">GEREED</button>
-            <svg class="top-bar-icon" viewBox="0 0 24 24" onclick="document.getElementById('bulkFiles').click()"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <svg class="top-bar-icon" viewBox="0 0 24 24" onclick="document.getElementById('bulkFiles').click()" style="margin-left:5px;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
         <div class="menu-header">
-            <span style="color:white; font-weight:bold; letter-spacing:1px;">SONGBOOK</span>
-            <button class="top-bar-btn" style="font-size: 0.9rem;" onclick="toggleMenu()">SLUIT</button>
+            <button class="top-bar-btn" style="font-size: 0.8rem; border: 1px solid #444; padding: 8px 12px; border-radius: 8px;" id="tagModeBtn" onclick="toggleTagMode()">TAGS BEHEREN</button>
+            <button class="top-bar-btn" style="font-size: 0.8rem;" onclick="toggleMenu()">SLUIT</button>
         </div>
-        
-        <div class="action-bar">
-            <button class="top-bar-btn" style="width:100%; border: 2px solid var(--griffin-orange); border-radius: 8px; padding: 12px; font-size: 0.9rem;" id="tagModeBtn" onclick="toggleTagMode()">TAGS BEHEREN</button>
-        </div>
-
         <div id="tagBar"></div>
         <div id="indexContent"></div>
-        
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:8px; font-size:1rem;" placeholder="Nieuwe tag (bv: iers)">
-            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:8px; width:100%;" onclick="applyBulkTag()">VOEG TAG TOE</button>
+            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:8px; font-size:1rem;" placeholder="Tagnaam (bv: iers)">
+            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:8px; width:100%;" onclick="applyBulkTag()">TAG TOEVOEGEN</button>
         </div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Selecteer een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.39";
+        const APP_VERSION = "6.41";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
 
@@ -114,47 +116,31 @@
                 localStorage.setItem('tdfVersion', APP_VERSION);
                 location.reload(true);
             }
+            const logo = localStorage.getItem('tdfLogo');
+            if(logo) { document.getElementById('appLogo').src = logo; document.getElementById('appLogo').style.display = 'block'; }
             renderIndex(); renderTagBar();
         };
 
+        function extractTags(text) {
+            if (!text) return [];
+            const matches = text.match(/#(\w+)/g);
+            return matches ? matches.map(m => m.substring(1).toLowerCase()) : [];
+        }
+
         function renderTagBar() {
             const bar = document.getElementById('tagBar');
-            let tags = new Set();
-            db.forEach(s => { 
-                const m = s.content.match(/#(\w+)/g); 
-                if(m) m.forEach(t => tags.add(t.substring(1).toLowerCase())); 
-            });
+            let tagsSet = new Set();
+            db.forEach(s => extractTags(s.content).forEach(t => tagsSet.add(t)));
             bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" onclick="filterTag(null)">ALLES</div>`;
-            Array.from(tags).sort().forEach(t => {
+            Array.from(tagsSet).sort().forEach(t => {
                 bar.innerHTML += `<div class="tag-pill ${activeTag === t ? 'active' : ''}" onclick="filterTag('${t}')">${t}</div>`;
             });
         }
 
-        function applyBulkTag() {
-            const tag = document.getElementById('bulkTagInput').value.trim().toLowerCase();
-            if(!tag) return;
-            const checks = document.querySelectorAll('.tag-checkbox:checked');
-            checks.forEach(cb => {
-                const s = db.find(x => x.title === cb.dataset.title);
-                if(s) {
-                    if(!s.content.includes("#" + tag)) s.content += "\n#" + tag;
-                }
-            });
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            document.getElementById('bulkTagInput').value = "";
-            toggleTagMode(); 
-            renderTagBar(); // Forceer refresh van de filterknoppen
-        }
-
-        function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
-
         function renderIndex() {
             const c = document.getElementById('indexContent'); c.innerHTML = "";
             let songs = [...db].sort((a,b) => a.title.localeCompare(b.title));
-            if (activeTag) songs = songs.filter(s => {
-                const m = s.content.match(/#(\w+)/g);
-                return m && m.map(tag => tag.substring(1).toLowerCase()).includes(activeTag);
-            });
+            if (activeTag) songs = songs.filter(s => extractTags(s.content).includes(activeTag));
 
             songs.forEach(s => {
                 const container = document.createElement('div'); container.className = 'index-container';
@@ -171,28 +157,48 @@
             });
         }
 
-        function toggleTagMode() {
-            tagMode = !tagMode;
-            document.getElementById('tagModeBtn').textContent = tagMode ? "KLAAR" : "TAGS BEHEREN";
-            document.getElementById('bulkActions').style.display = tagMode ? "flex" : "none";
-            renderIndex();
+        function applyBulkTag() {
+            const tag = document.getElementById('bulkTagInput').value.trim().toLowerCase();
+            if(!tag) return;
+            document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
+                const s = db.find(x => x.title === cb.dataset.title);
+                if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
+            });
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            document.getElementById('bulkTagInput').value = "";
+            toggleTagMode(); renderTagBar(); renderIndex();
         }
 
+        function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
+        function toggleTagMode() { tagMode = !tagMode; document.getElementById('tagModeBtn').textContent = tagMode ? "KLAAR" : "TAGS BEHEREN"; document.getElementById('bulkActions').style.display = tagMode ? "flex" : "none"; renderIndex(); }
         function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('tpVal').textContent = "0"; document.getElementById('displayTitle').textContent = cur.title; draw(); }
+        
         function draw() {
-            if(!cur) return; const lines = cur.content.split('\n'); let h = "";
+            if(!cur) return;
+            const contentClean = cur.content.replace(/#\w+/g, '').trim();
+            const lines = contentClean.split('\n'); let h = "";
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
                     if(l[i] === '[') {
                         let end = l.indexOf(']', i); if(end === -1) { txt += l[i]; i++; continue; }
-                        chords.push({ p: txt.length, v: l.substring(i+1, end) }); i = end + 1;
+                        let c = l.substring(i+1, end); if(tOff !== 0) c = tpChord(c, tOff);
+                        chords.push({ p: txt.length, v: c }); i = end + 1;
                     } else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
                 h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`;
             });
             document.getElementById('lyricsArea').innerHTML = h; document.getElementById('scroller').scrollTop = 0;
+        }
+
+        function tpChord(c, o) {
+            const n = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+            return c.replace(/[A-G][#b]?/g, (m) => {
+                let x = m; if(x==="Bb")x="A#"; if(x==="Eb")x="D#"; if(x==="Ab")x="G#"; if(x==="Db")x="C#"; if(x==="Gb")x="F#";
+                let i = n.indexOf(x); if(i===-1) return m;
+                let j = (i+o)%12; while(j<0)j+=12; return n[j];
+            });
         }
 
         function deleteSong(t) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
@@ -211,6 +217,7 @@
             for(let f of files) {
                 const t = await f.text();
                 let fl = t.split('\n')[0].replace(/[\[\]\r]/g, '').trim();
+                if (fl.length > 60) fl = fl.substring(0, 50) + "...";
                 db.push({title: fl || f.name.replace('.txt',''), content: t});
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db));
