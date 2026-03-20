@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v6.78</title>
+    <title>TDF Stage Pilot v6.79</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -18,16 +18,17 @@
 
         /* Top Bar */
         .top-bar { 
-            position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
             display: flex; align-items: flex-end; justify-content: space-between; 
             padding: 0 15px 12px 15px; z-index: 20000; 
         }
+        .top-bar-left { display: flex; align-items: center; gap: 10px; }
         #appLogo { height: 42px; width: 42px; object-fit: contain; cursor: pointer; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; overflow: hidden; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
 
-        /* Menu Structure */
+        /* Menu & Settings */
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
             background: #1c1c1e; z-index: 30000; transition: left 0.3s ease; 
@@ -35,11 +36,9 @@
         }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
-        
         .menu-nav-section { padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
-        
         #settingsPanel { display: none; padding: 15px; background: #2c2c2e; border-bottom: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
-        .admin-btn { width: 100%; padding: 12px; background: #444; color: white; border: 1px solid #666; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; text-align: center; text-decoration: none; }
+        .admin-btn { width: 100%; padding: 12px; background: #444; color: white; border: 1px solid #666; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; text-align: center; }
 
         .search-container { padding: 10px 15px; background: #1c1c1e; }
         #songSearch { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #121212; color: white; font-size: 1rem; }
@@ -50,25 +49,31 @@
 
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; -webkit-overflow-scrolling: touch; }
         .index-item { width: 100%; border-bottom: 1px solid #222; padding: 18px 20px; background: #1c1c1e; color: #eee; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-        
-        /* Floating Toolbar */
+
+        /* Floating Editor Toolbar (Zwevend paneel) */
         #editorToolbar { 
-            display: none; position: fixed; top: var(--header-height); left: 0; width: 100%; 
-            background: rgba(26, 26, 26, 0.90); border-bottom: 2px solid var(--griffin-orange); z-index: 25000;
+            display: none; position: fixed; top: calc(var(--header-height) + 15px); left: 10px; right: 10px;
+            background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(212, 142, 61, 0.5); border-radius: 15px;
+            z-index: 25000; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
-        .chord-bar { display: flex; overflow-x: auto; padding: 10px; gap: 8px; }
-        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 8px 14px; border-radius: 6px; font-weight: bold; }
-        .joystick-container { display: flex; justify-content: center; padding: 12px; gap: 30px; }
-        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 42px; height: 42px; border-radius: 10px; font-weight: bold; }
+        .chord-bar { display: flex; overflow-x: auto; padding: 12px; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .chord-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; font-weight: bold; min-width: 55px; }
+        .joystick-container { display: flex; justify-content: center; padding: 12px; gap: 35px; align-items: center; }
+        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 44px; height: 44px; border-radius: 12px; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-        /* Display */
-        .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
-        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; width: 100%; color: #000; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: #fff; min-height: 100%; padding-top: 200px; padding-bottom: 400px; }
+        /* Editor Area */
+        .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; position: relative; }
+        #editorArea { 
+            display: none; width: 100%; height: 100%; padding: 220px 30px 400px 30px; 
+            font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; 
+            border: none; outline: none; background: #fff; color: #000; overflow-y: auto; 
+        }
+        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; width: 100%; }
 
-        .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
-        .chord-item { position: absolute; white-space: pre; font-size: 1.1rem; }
-        .lyric-line { white-space: pre; display: block; margin-bottom: 15px; min-height: 1.2rem; }
+        .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
+        .chord-item { position: absolute; white-space: pre; font-size: 1.15rem; }
+        .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.2rem; }
     </style>
 </head>
 <body>
@@ -78,10 +83,10 @@
     <div class="top-bar">
         <div class="top-bar-left">
             <div id="appLogo" onclick="document.getElementById('logoInput').click()">🖼️</div>
-            <button class="top-bar-btn" id="btnShowMenu" onclick="toggleMenu()">Songs</button>
+            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.78</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.79</h2>
             <div style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" onclick="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -101,38 +106,31 @@
             <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
             <svg class="top-bar-icon" onclick="toggleSettings()" viewBox="0 0 24 24" style="width:24px; height:24px;"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
         </div>
-
         <div id="settingsPanel">
             <button class="admin-btn" style="background:var(--griffin-orange); color:black;" onclick="toggleTagMode()">TAGS BEHEREN</button>
-            <button class="admin-btn" id="backupBtn" onclick="exportLibrary()">📥 OPSLAAN IN BESTANDEN (.JSON)</button>
-            
+            <button class="admin-btn" onclick="exportLibrary()">📥 OPSLAAN IN BESTANDEN (.JSON)</button>
             <div id="bulkActions" style="display:none; flex-direction:column; gap:8px;">
-                <input type="text" id="bulkTagInput" placeholder="Nieuwe tagnaam..." style="background:#121212; color:white; border:1px solid #444; padding:10px; border-radius:5px; width:100%;">
+                <input type="text" id="bulkTagInput" placeholder="Nieuwe tag..." style="background:#121212; color:white; border:1px solid #444; padding:10px; border-radius:5px;">
                 <button class="admin-btn" onclick="applyBulkTag(document.getElementById('bulkTagInput').value)">VOEG TAG TOE</button>
                 <button class="admin-btn" style="background:var(--griffin-red);" onclick="clearSelectionTags()">WIS SELECTIE TAGS</button>
             </div>
         </div>
-
-        <div class="search-container">
-            <input type="text" id="songSearch" placeholder="Zoek op titel..." oninput="renderIndex()">
-        </div>
-
+        <div class="search-container"><input type="text" id="songSearch" placeholder="Zoek op titel..." oninput="renderIndex()"></div>
         <div id="tagBar"></div>
         <div id="indexContent"></div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Kies een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
-    </div>
-
-    <div id="editorToolbar">
-        <div class="chord-bar" id="chordBar"></div>
-        <div class="joystick-container">
-            <button class="joy-btn" onclick="moveCursor(-1)">←</button>
-            <button class="joy-btn" onclick="moveLine(-1)">↑</button>
-            <button class="joy-btn" onclick="moveLine(1)">↓</button>
-            <button class="joy-btn" onclick="moveCursor(1)">→</button>
+        <div id="editorToolbar">
+            <div class="chord-bar" id="chordBar"></div>
+            <div class="joystick-container">
+                <button class="joy-btn" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
+                <button class="joy-btn" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
+                <button class="joy-btn" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
+                <button class="joy-btn" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
+            </div>
         </div>
     </div>
 
@@ -148,39 +146,20 @@
         };
 
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        function toggleSettings() {
-            const p = document.getElementById('settingsPanel');
-            p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
-        }
-
+        function toggleSettings() { const p = document.getElementById('settingsPanel'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; }
+        
         function exportLibrary() {
             const data = localStorage.getItem('tdfSongs');
-            if(!data || data === "[]") return alert("Geen data gevonden om op te slaan.");
-            
-            try {
-                const blob = new Blob([data], {type: 'application/json'});
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'tdf_backup.json';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 100);
-                alert("Bestand gegenereerd. Kies 'Download' of 'Opslaan in Bestanden' in het menu van je iPad.");
-            } catch (e) {
-                alert("Fout bij opslaan: " + e);
-            }
+            const blob = new Blob([data], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = 'tdf_backup.json'; a.click();
         }
 
         function buildChordBar() {
             const bar = document.getElementById('chordBar');
             chordsList.forEach(c => {
                 const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
-                b.onclick = (e) => { e.preventDefault(); insertText(`[${c}]`); };
+                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 bar.appendChild(b);
             });
         }
@@ -188,8 +167,7 @@
         function insertText(t) {
             const ed = document.getElementById('editorArea'), p = ed.selectionStart;
             ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd);
-            ed.selectionStart = ed.selectionEnd = p + t.length;
-            ed.focus();
+            ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus();
         }
 
         function moveCursor(d) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + d; ed.focus(); }
@@ -197,30 +175,19 @@
             const ed = document.getElementById('editorArea'), lines = ed.value.split('\n'), pos = ed.selectionStart;
             let curL = ed.value.substr(0, pos).split('\n').length - 1;
             let targetL = Math.max(0, Math.min(lines.length - 1, curL + d));
-            let newPos = 0;
-            for(let i=0; i<targetL; i++) newPos += lines[i].length + 1;
+            let newPos = 0; for(let i=0; i<targetL; i++) newPos += lines[i].length + 1;
             ed.selectionStart = ed.selectionEnd = newPos; ed.focus();
         }
 
-        function renderTagBar() {
-            const bar = document.getElementById('tagBar'); let tags = new Set();
-            db.forEach(s => { const m = s.content.match(/#([a-zA-Z0-9]+)/g); if(m) m.forEach(t => tags.add(t.substring(1).toLowerCase())); });
-            bar.innerHTML = `<div class="tag-pill ${!activeTag?'active':''}" onclick="filterTag(null)">ALLES</div>`;
-            Array.from(tags).sort().forEach(t => {
-                const p = document.createElement('div'); p.className = `tag-pill ${activeTag===t?'active':''}`;
-                p.textContent = t.toUpperCase(); p.onclick = () => filterTag(t); bar.appendChild(p);
-            });
-        }
-
         function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
-            const q = document.getElementById('songSearch').value.toLowerCase();
+            const c = document.getElementById('indexContent'), q = document.getElementById('songSearch').value.toLowerCase();
+            c.innerHTML = "";
             let s = [...db].sort((a,b) => a.title.localeCompare(b.title));
             if(activeTag) s = s.filter(x => x.content.toLowerCase().includes("#"+activeTag));
             if(q) s = s.filter(x => x.title.toLowerCase().includes(q));
             s.forEach((x, i) => {
                 const div = document.createElement('div');
-                div.innerHTML = `<div class="index-item" onclick="handleItemClick(this, '${x.title.replace(/'/g,"\\'")}')">
+                div.innerHTML = `<div class="index-item" onclick="handleItemClick(this)">
                     <input type="checkbox" class="tag-checkbox" data-title="${x.title}" ${tagMode?'':'style="display:none"'} onclick="event.stopPropagation()">
                     <span>${x.title}</span><div style="color:var(--griffin-orange)">⋮</div>
                 </div>
@@ -259,29 +226,34 @@
             document.getElementById('lyricsArea').innerHTML = h;
         }
 
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorToolbar').style.display='block'; document.getElementById('editorArea').value=cur.content; }
-        function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; saveRefresh(); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('editorToolbar').style.display='none'; draw(); }
+        function startEdit() { 
+            if(!cur) return; 
+            document.getElementById('lyricsArea').style.display='none'; 
+            document.getElementById('editorArea').style.display='block'; 
+            document.getElementById('editorToolbar').style.display='block'; 
+            document.getElementById('editorArea').value=cur.content; 
+        }
+        function finishEdit() { 
+            const i = db.findIndex(s=>s.title===cur.title); 
+            db[i].content = document.getElementById('editorArea').value; saveRefresh(); 
+            document.getElementById('lyricsArea').style.display='block'; 
+            document.getElementById('editorArea').style.display='none'; 
+            document.getElementById('editorToolbar').style.display='none'; draw(); 
+        }
+
         function toggleScroll() { sInt ? (clearInterval(sInt), sInt=null) : sInt = setInterval(() => { document.getElementById('scroller').scrollTop += 1; }, 50); }
 
         document.getElementById('logoInput').onchange = (e) => {
-            const r = new FileReader();
-            r.onload = (ev) => {
-                localStorage.setItem('tdfLogo', ev.target.result);
-                updateLogoUI(ev.target.result);
-            };
+            const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); updateLogoUI(ev.target.result); };
             r.readAsDataURL(e.target.files[0]);
         };
-        function updateLogoUI(src) {
-            const l = document.getElementById('appLogo');
-            l.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;">`;
-            l.style.background = "none";
-        }
+        function updateLogoUI(src) { const l = document.getElementById('appLogo'); l.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;">`; l.style.background = "none"; }
 
         document.getElementById('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
                 const t = await f.text();
-                if(f.name.endsWith('.json')) { db = JSON.parse(t); saveRefresh(); }
-                else { db.push({title: f.name.replace('.txt',''), content: t}); }
+                if(f.name.endsWith('.json')) db = JSON.parse(t);
+                else db.push({title: f.name.replace('.txt',''), content: t});
             }
             saveRefresh();
         };
