@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.47</title>
+    <title>TDF Stage Pilot v6.48</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -23,17 +23,16 @@
             display: flex; align-items: flex-end; justify-content: space-between; 
             padding: 0 15px 12px 15px; z-index: 99999; 
         }
-        .top-bar-left { display: flex; align-items: center; gap: 10px; min-width: 140px; }
-        .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 140px; justify-content: flex-end; }
+        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 120px; }
         .top-bar-center { text-align: center; flex-grow: 1; }
-        
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
-        #appLogo { height: 45px; width: auto; max-width: 90px; object-fit: contain; display: none; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
-        .transpose-pill { display: inline-flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 3px 10px; border-radius: 20px; border: 1px solid #444; }
-        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.3rem; background: none; border: none; }
+        .transpose-pill { display: inline-flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 4px 10px; border-radius: 20px; border: 1px solid #444; }
+        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.4rem; background: none; border: none; }
 
+        /* Menu */
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
             background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; 
@@ -42,16 +41,20 @@
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         
-        .menu-nav-section { padding: 20px 15px 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; }
-        .manage-btn { width: 100%; padding: 15px; background: none; border: 2px solid var(--griffin-orange); color: var(--griffin-orange); border-radius: 10px; font-weight: bold; }
+        .menu-nav-section { padding: 35px 15px 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .manage-btn { width: 100%; padding: 12px; background: none; border: 2px solid var(--griffin-orange); color: var(--griffin-orange); border-radius: 10px; font-weight: bold; margin-bottom: 10px; }
 
-        /* Tags over meerdere regels (Wrap) */
-        #tagBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 15px; background: #242426; border-bottom: 1px solid #444; max-height: 200px; overflow-y: auto; }
-        .tag-pill { padding: 6px 12px; border-radius: 15px; background: #333; color: #aaa; font-size: 0.75rem; cursor: pointer; border: 1px solid transparent; text-transform: uppercase; }
-        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; border-color: white; }
+        /* Tag balk: compact en scrolbaar indien nodig */
+        #tagBar { 
+            display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 15px; 
+            background: #242426; border-bottom: 1px solid #444; 
+            max-height: 120px; overflow-y: auto; flex-shrink: 0;
+        }
+        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; }
+        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; }
 
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
-        .index-container { position: relative; width: 100%; border-bottom: 1px solid #222; height: 65px; }
+        .index-container { position: relative; width: 100%; border-bottom: 1px solid #222; height: 60px; }
         .index-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0 20px; background: #1c1c1e; color: #eee; cursor: pointer; z-index: 2; display: flex; align-items: center; transition: transform 0.2s; gap: 15px; }
         
         .swipe-action { position: absolute; top: 0; bottom: 0; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; font-size: 0.9rem; width: 90px; }
@@ -61,25 +64,26 @@
         #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
 
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
-        #lyricsArea, #editorArea { padding: 35px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: var(--lyric-text); width: 100%; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-bottom: 400px; }
 
-        .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; pointer-events: none; }
-        .chord-item { position: absolute; white-space: pre; font-size: 1.2rem; }
-        .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.3rem; }
+        .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; pointer-events: none; }
+        .chord-item { position: absolute; white-space: pre; font-size: 1.1rem; }
+        .lyric-line { white-space: pre; display: block; margin-bottom: 15px; min-height: 1.2rem; }
     </style>
 </head>
 <body data-theme="light">
+    <div id="toast" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--griffin-orange); padding:10px 20px; border-radius:20px; display:none; z-index:1000000; font-weight:bold; color:black;"></div>
     <input type="file" id="bulkFiles" accept=".txt" multiple style="display:none;">
     <input type="file" id="logoInput" accept="image/png" style="display:none;">
 
     <div class="top-bar">
         <div class="top-bar-left">
-            <img id="appLogo" alt="Logo" onclick="document.getElementById('logoInput').click()">
+            <img id="appLogo" alt="Logo" onclick="$('logoInput').click()">
             <button class="top-bar-btn" id="songsBtn">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.47</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.48</h2>
             <div class="transpose-pill" style="margin-top:4px;">
                 <button class="tp-btn" id="tpDec">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -97,7 +101,7 @@
     <div class="songs-menu" id="songsMenu">
         <div class="menu-nav-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span style="color:white; font-weight:bold;">SONGBOOK</span>
+                <span style="color:white; font-weight:bold; font-size:1.2rem;">SONGBOOK</span>
                 <button class="top-bar-btn" id="closeMenuBtn">SLUIT</button>
             </div>
             <button class="manage-btn" id="tagModeBtn">TAGS BEHEREN</button>
@@ -105,19 +109,19 @@
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" class="bulk-input" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag...">
+            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag...">
             <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:10px; width:100%; margin-top:10px;" id="saveBulkBtn">VOEG TOE</button>
             <div id="tagEditorList"></div>
         </div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje.</div>
+        <div id="lyricsArea">Kies een liedje uit het menu.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.47";
+        const APP_VERSION = "6.48";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -229,7 +233,7 @@
 
         function transpose(o) { if(!cur) return; tOff += o; $('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
         function toggleMenu() { $('songsMenu').classList.toggle('open'); }
-        function deleteSong(t) { if(confirm("Wis "+t+"?")) { db = db.filter(s => s.title !== t); saveRefresh(); } }
+        function deleteSong(t) { db = db.filter(s => s.title !== t); saveRefresh(); }
         function renameSong(o) { const n = prompt("Nieuwe naam:", o); if(n) { const i = db.findIndex(s => s.title === o); db[i].title = n; saveRefresh(); if(cur && cur.title === o) loadSong(n); } }
         function startEdit() { if(!cur) return; $('lyricsArea').style.display='none'; $('editIcon').style.display='none'; $('saveBtn').style.display='block'; $('editorArea').style.display='block'; $('editorArea').value=cur.content; }
         function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = $('editorArea').value; saveRefresh(); $('lyricsArea').style.display='block'; $('editIcon').style.display='block'; $('saveBtn').style.display='none'; $('editorArea').style.display='none'; draw(); }
