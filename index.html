@@ -2,231 +2,108 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v6.93</title>
+    <title>TheaterMode-Prototype v1.0</title>
     <style>
-        :root { 
-            --bg-dark: #121212; --top-bar-bg: #1a1a1a;
-            --griffin-orange: #d48e3d; --griffin-red: #c12718; 
-            --header-height: 85px;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
-        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
-
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; }
-        .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-
-        .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: calc(40px + env(safe-area-inset-top)); }
-        .songs-menu.open { left: 0; }
-        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
-        #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
-        .index-item { width: 100%; border-bottom: 1px solid #222; padding: 15px 20px; background: #1c1c1e; color: #eee; cursor: pointer; }
-
-        /* Draggable UI Elements */
-        .draggable-box { 
-            display: none; position: fixed; 
-            background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); 
-            border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none;
-        }
-        .drag-handle { 
-            height: 24px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; 
-            cursor: move; display: flex; justify-content: center; align-items: center; 
-            color: black; font-weight: bold; font-size: 10px; letter-spacing: 2px;
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --accent-color: #4CAF50; /* Groen ipv Blauw */
         }
 
-        /* Vertical Chord Strip */
-        #chordStrip { top: 100px; left: 20px; width: 65px; }
-        .chord-bar { display: flex; flex-direction: column; padding: 6px; gap: 5px; max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 10px 0; border-radius: 6px; font-weight: bold; font-size: 0.9rem; text-align: center; }
-        /* Custom Button */
-        .custom-btn { background: #1a1a1a; border: 2px dashed var(--griffin-orange); color: var(--griffin-orange); font-size: 0.8rem; }
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            transition: all 0.5s ease;
+        }
 
-        /* Joystick Pad */
-        #joyPad { bottom: 40px; right: 20px; width: 140px; background: rgba(35, 35, 35, 0.8); }
-        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; justify-content: center; padding: 15px; gap: 10px; }
-        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        /* De Akkoordenbalk */
+        #chord-bar {
+            background: #333;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            border-bottom: 3px solid var(--accent-color);
+            overflow-x: auto;
+        }
 
-        /* Content Area */
-        .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
-        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; width: 100%; }
-        #editorArea { display: none; width: 100%; height: 100%; padding: 30px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; background: #fff; color: #000; overflow-y: auto; }
+        .chord-box {
+            border: 1px solid #555;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            min-width: 60px;
+            text-align: center;
+        }
 
-        .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
-        .chord-item { position: absolute; white-space: pre; font-size: 1.15rem; }
-        .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.2rem; }
+        /* Theater Mode Styles */
+        .theater-active #sidebar, .theater-active #header {
+            display: none;
+        }
+
+        .theater-active #chord-bar {
+            height: 80vh;
+            align-items: center;
+            justify-content: center;
+            border-bottom: none;
+        }
+
+        .theater-active .chord-box {
+            font-size: 5rem; /* Gigantische akkoorden voor op afstand */
+        }
+
+        #exit-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background: red;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .theater-active #exit-btn {
+            display: block;
+        }
+
+        .interface-layer { padding: 20px; }
     </style>
 </head>
 <body>
-    <input type="file" id="bulkFiles" multiple style="display:none;">
-    <div class="top-bar">
-        <div class="top-bar-left">
-            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
-        </div>
-        <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.93</h2>
-            <div style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
-                <button class="top-bar-btn" onmousedown="transpose(-1)">−</button>
-                <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
-                <button class="top-bar-btn" onmousedown="transpose(1)">+</button>
-            </div>
-        </div>
-        <div class="top-bar-right">
-            <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
-            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
-        </div>
+
+    <div id="header" class="interface-layer">
+        <h1>Muziek App - Dashboard</h1>
+        <button onclick="toggleTheater()">Start Theatermode (T)</button>
     </div>
 
-    <div class="songs-menu" id="songsMenu">
-        <div class="menu-nav-section">
-            <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
-            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()">📂 IMPORT</button>
-        </div>
-        <div id="indexContent"></div>
+    <div id="sidebar" class="interface-layer">
+        <p>Import status: <span style="color: orange;">Desktop-link onderbroken</span></p>
     </div>
 
-    <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje.</div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
+    <div id="chord-bar">
+        <div class="chord-box">G</div>
+        <div class="chord-box">D</div>
+        <div class="chord-box">Em</div>
+        <div class="chord-box">C</div>
     </div>
 
-    <div id="chordStrip" class="draggable-box">
-        <div class="drag-handle">::::</div>
-        <div class="chord-bar" id="chordBar"></div>
-    </div>
-
-    <div id="joyPad" class="draggable-box">
-        <div class="drag-handle">::::</div>
-        <div class="joy-grid">
-            <button class="joy-btn" style="grid-area: up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
-            <button class="joy-btn" style="grid-area: left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
-            <button class="joy-btn" style="grid-area: right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
-            <button class="joy-btn" style="grid-area: down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
-        </div>
-    </div>
+    <button id="exit-btn" onclick="toggleTheater()">Sluit Theatermode</button>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0;
-        let customChord = ""; // Onthoudt het laatst gekozen custom akkoord
-
-        // Opgeschoonde lijst zonder G# Eb F# Cm Bb
-        const chordsList = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","A7"];
-
-        window.onload = () => { renderIndex(); buildChordStrip(); initDraggable(document.getElementById('chordStrip')); initDraggable(document.getElementById('joyPad')); };
-
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        
-        // Hulpfunctie om custom akkoord te vragen en op te slaan
-        function setCustomChord() {
-            const result = prompt("Welk akkoord invoegen?", customChord);
-            if(result !== null) {
-                customChord = result.trim();
-                insertText(`[${customChord}]`);
-                document.getElementById('customLabel').textContent = customChord || '[ ]';
-            }
+        function toggleTheater() {
+            document.body.classList.toggle('theater-active');
         }
 
-        function buildChordStrip() {
-            const bar = document.getElementById('chordBar');
-            bar.innerHTML = "";
-            
-            // 1. De Custom [ ] knop bovenaan
-            const cBtn = document.createElement('button');
-            cBtn.className = 'chord-btn custom-btn';
-            cBtn.innerHTML = `<span id="customLabel">[ ]</span>`;
-            cBtn.onmousedown = (e) => { e.preventDefault(); setCustomChord(); };
-            bar.appendChild(cBtn);
+        // Sneltoets 'T' voor Theatermode
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 't') toggleTheater();
+        });
 
-            // 2. De opgeschoonde standaardlijst
-            chordsList.forEach(c => {
-                const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
-                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
-                bar.appendChild(b);
-            });
-        }
-
-        function insertText(t) { 
-            const ed = document.getElementById('editorArea'), p = ed.selectionStart; 
-            ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); 
-            ed.selectionStart = ed.selectionEnd = p + t.length; 
-            ed.focus(); 
-        }
-
-        function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach(x => {
-                const div = document.createElement('div'); div.className = "index-item";
-                div.innerHTML = `<span onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</span>`;
-                c.appendChild(div);
-            });
-        }
-
-        function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
-        
-        function draw() {
-            if(!cur) return; const lines = cur.content.trim().split('\n'); let h = "";
-            lines.forEach(l => {
-                let cArr = [], txt = "", i = 0;
-                while(i < l.length) {
-                    if(l[i] === '[') {
-                        let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;}
-                        cArr.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1;
-                    } else { txt += l[i]; i++; }
-                }
-                let r = ""; cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
-                h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`;
-            });
-            document.getElementById('lyricsArea').innerHTML = h;
-        }
-
-        function startEdit() { 
-            if(!cur) return; 
-            document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('editorArea').style.display='block'; 
-            document.getElementById('editBtn').style.display='none'; 
-            document.getElementById('saveBtn').style.display='block'; 
-            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'block'); 
-            document.getElementById('editorArea').value = cur.content; 
-        }
-
-        function finishEdit() { 
-            const i = db.findIndex(s=>s.title===cur.title); 
-            db[i].content = document.getElementById('editorArea').value; 
-            localStorage.setItem('tdfSongs', JSON.stringify(db)); 
-            document.getElementById('lyricsArea').style.display='block'; 
-            document.getElementById('editorArea').style.display='none'; 
-            document.getElementById('editBtn').style.display='block'; 
-            document.getElementById('saveBtn').style.display='none'; 
-            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'none'); 
-            draw(); 
-        }
-        
-        function moveCursor(d) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + d; ed.focus(); }
-        function moveLine(d) {
-            const ed = document.getElementById('editorArea'), lines = ed.value.split('\n'), pos = ed.selectionStart;
-            let curL = ed.value.substr(0, pos).split('\n').length - 1;
-            let targetL = Math.max(0, Math.min(lines.length - 1, curL + d));
-            let newPos = 0; for(let i=0; i<targetL; i++) newPos += lines[i].length + 1;
-            ed.selectionStart = ed.selectionEnd = newPos; ed.focus();
-        }
-
-        function initDraggable(el) {
-            const h = el.querySelector('.drag-handle'); let nx = 0, ny = 0;
-            const s = (e) => { nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; };
-            const m = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches?e.touches[0].clientX:0); let cy = e.clientY || (e.touches?e.touches[0].clientY:0); let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; el.style.right="auto"; el.style.bottom="auto"; };
-            const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
-            h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop;
-        }
-
-        document.getElementById('bulkFiles').onchange = async (e) => {
-            for(let f of Array.from(e.target.files)) {
-                const t = await f.text();
-                db.push({title: f.name.replace('.txt',''), content: t});
-            }
-            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
-        };
+        // Fallback voor import-issue
+        console.log("TheaterMode-Prototype v1.0 geladen. Gebruik 'T' om te wisselen.");
     </script>
 </body>
 </html>
