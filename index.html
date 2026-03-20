@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.66</title>
+    <title>TDF Stage Pilot v6.67</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -50,18 +50,22 @@
         .quick-tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
         .quick-tag { padding: 5px 10px; background: #444; color: #ddd; border-radius: 5px; font-size: 0.75rem; cursor: pointer; }
 
-        /* Editor Tools */
-        #editorToolbar { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; border-top: 1px solid #333; z-index: 10005; padding-bottom: env(safe-area-inset-bottom); }
-        .chord-bar { display: flex; overflow-x: auto; padding: 10px; gap: 8px; border-bottom: 1px solid #333; -webkit-overflow-scrolling: touch; }
-        .chord-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; min-width: 50px; }
+        /* Floating Editor Toolbar - TOP POSITIONED */
+        #editorToolbar { 
+            display: none; position: fixed; top: var(--header-height); left: 0; width: 100%; 
+            background: rgba(26, 26, 26, 0.95); border-bottom: 1px solid var(--griffin-orange); 
+            z-index: 10005; backdrop-filter: blur(10px); 
+        }
+        .chord-bar { display: flex; overflow-x: auto; padding: 8px; gap: 8px; border-bottom: 1px solid #333; }
+        .chord-btn { background: #333; color: white; border: 1px solid #444; padding: 6px 12px; border-radius: 5px; font-weight: bold; min-width: 45px; }
         
-        .joystick-container { display: flex; justify-content: center; padding: 15px; gap: 20px; align-items: center; }
-        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .joystick-container { display: flex; justify-content: center; padding: 10px; gap: 25px; align-items: center; }
+        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
         /* Lyrics & Textarea */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
-        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-bottom: 300px; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-top: 180px; padding-bottom: 300px; }
 
         .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; font-size: 1.1rem; }
@@ -77,7 +81,7 @@
             <button class="top-bar-btn" id="btnShowMenu">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.66</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.67</h2>
             <div id="tpControl" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" id="btnTpMinus">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -116,20 +120,18 @@
         <div class="chord-bar" id="chordBar"></div>
         <div class="joystick-container">
             <button class="joy-btn" id="joyLeft">←</button>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <button class="joy-btn" id="joyUp">↑</button>
-                <button class="joy-btn" id="joyDown">↓</button>
-            </div>
+            <button class="joy-btn" id="joyUp">↑</button>
+            <button class="joy-btn" id="joyDown">↓</button>
             <button class="joy-btn" id="joyRight">→</button>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.66";
+        const APP_VERSION = "6.67";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
-        const chords = ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","G7","C7","D7","A7"];
+        const chords = ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","G7","A7","D7","C7"];
 
         window.onload = () => {
             renderIndex(); renderTagBar(); buildChordBar();
@@ -145,7 +147,6 @@
             $('saveBtn').onclick = finishEdit;
             $('btnImport').onclick = () => $('bulkFiles').click();
             
-            // Joystick logic
             $('joyLeft').onmousedown = (e) => { e.preventDefault(); moveCursor(-1); };
             $('joyRight').onmousedown = (e) => { e.preventDefault(); moveCursor(1); };
             $('joyUp').onmousedown = (e) => { e.preventDefault(); moveLine(-1); };
@@ -209,9 +210,9 @@
                     <span>${x.title}</span><div style="color:var(--griffin-orange)">⋮</div>
                 </div>
                 <div class="item-actions" id="act-${i}" style="display:none; padding:10px; gap:10px; background:#2c2c2e;">
-                    <button class="action-btn" style="background:#444;" onclick="loadSong('${x.title.replace(/'/g,"\\'")}')">OPEN</button>
-                    <button class="action-btn" style="background:var(--griffin-orange); color:black;" onclick="renameSong('${x.title.replace(/'/g,"\\'")}')">NAAM</button>
-                    <button class="action-btn" style="background:var(--griffin-red);" onclick="deleteSong('${x.title.replace(/'/g,"\\'")}')">WIS</button>
+                    <button class="action-btn" style="background:#444; border:none; padding:10px; color:white; border-radius:5px;" onclick="loadSong('${x.title.replace(/'/g,"\\'")}')">OPEN</button>
+                    <button class="action-btn" style="background:var(--griffin-orange); border:none; padding:10px; color:black; border-radius:5px;" onclick="renameSong('${x.title.replace(/'/g,"\\'")}')">NAAM</button>
+                    <button class="action-btn" style="background:var(--griffin-red); border:none; padding:10px; color:white; border-radius:5px;" onclick="deleteSong('${x.title.replace(/'/g,"\\'")}')">WIS</button>
                 </div>`;
                 c.appendChild(div);
             });
@@ -219,7 +220,7 @@
 
         function handleItemClick(el, title) {
             if(tagMode) { const cb = el.querySelector('.tag-checkbox'); cb.checked = !cb.checked; }
-            else { const act = el.nextElementSibling; const vis = act.style.display === 'flex'; document.querySelectorAll('.item-actions').forEach(a => a.style.display='none'); act.style.display = vis ? 'none' : 'flex'; }
+            else { const act = el.nextElementSibling; const vis = act.style.display === 'block'; document.querySelectorAll('.item-actions').forEach(a => a.style.display='none'); act.style.display = vis ? 'none' : 'block'; }
         }
 
         function applyBulkTag(t) {
