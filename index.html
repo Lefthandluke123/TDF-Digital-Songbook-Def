@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v6.96</title>
+    <title>TDF Stage Pilot v6.98</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -12,46 +12,55 @@
             --header-height: 85px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
-        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
+        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); width: 100%; overflow: hidden; position: fixed; }
+        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; }
 
         /* Top Bar */
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; }
+        .top-bar { 
+            height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; 
+            display: flex; align-items: flex-end; justify-content: space-between; 
+            padding: 0 15px 12px 15px; flex-shrink: 0; z-index: 30000; 
+        }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
         /* Menu */
-        .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: calc(40px + env(safe-area-inset-top)); }
+        .songs-menu { 
+            position: fixed; top: 0; left: -100%; width: 33.33%; height: 100%; 
+            background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
+            display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); 
+        }
         .songs-menu.open { left: 0; }
-        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
+        @media (max-width: 768px) { .songs-menu { width: 85%; left: -100%; } .songs-menu.open { left: 0; } }
         
-        .menu-nav-section { padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .menu-nav-section { padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; -webkit-overflow-scrolling: touch; }
         
-        /* Verbeterde Menu Items */
         .index-item { width: 100%; border-bottom: 1px solid #333; background: #1c1c1e; display: flex; align-items: stretch; height: 65px; }
-        .song-link { flex-grow: 1; display: flex; align-items: center; padding: 0 20px; color: #eee; text-decoration: none; font-size: 1.05rem; cursor: pointer; }
-        .song-link:active { background: #2c2c2e; }
-        .edit-btn-container { width: 65px; border-left: 1px solid #333; display: flex; align-items: center; justify-content: center; background: rgba(212, 142, 61, 0.05); cursor: pointer; }
-        .edit-btn-container:active { background: var(--griffin-orange); }
-        .edit-icon { color: var(--griffin-orange); font-size: 1.5rem; font-weight: bold; }
+        .song-link { flex-grow: 1; display: flex; align-items: center; padding: 0 20px; color: #eee; font-size: 1.05rem; }
+        .edit-btn-container { width: 65px; border-left: 1px solid #333; display: flex; align-items: center; justify-content: center; background: rgba(212, 142, 61, 0.1); }
+
+        /* Lyrics & Editor Container */
+        .main-content { flex-grow: 1; background: #fff; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+        .scroll-area { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; }
+        
+        #lyricsArea { padding: 30px; color: #000; width: 100%; }
+        #editorArea { 
+            display: none; width: 100%; height: 100%; padding: 30px 30px 500px 30px; 
+            font-family: inherit; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; 
+            background: #fff; color: #000; resize: none;
+        }
 
         /* Draggables */
-        .draggable-box { display: none; position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none; }
+        .draggable-box { display: none; position: absolute; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none; }
         .drag-handle { height: 24px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-weight: bold; font-size: 10px; letter-spacing: 2px; }
 
-        #chordStrip { top: 100px; left: 20px; width: 70px; }
-        .chord-bar { display: flex; flex-direction: column; padding: 8px; gap: 6px; max-height: 450px; overflow-y: auto; }
-        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 12px 0; border-radius: 8px; font-weight: bold; font-size: 0.95rem; text-align: center; }
-        .custom-btn { background: #1a1a1a; border: 2px dashed var(--griffin-orange); color: var(--griffin-orange); }
+        #chordStrip { top: 20px; left: 20px; width: 70px; }
+        .chord-bar { display: flex; flex-direction: column; padding: 8px; gap: 6px; }
+        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 12px 0; border-radius: 8px; font-weight: bold; text-align: center; }
 
         #joyPad { bottom: 40px; right: 20px; width: 140px; }
         .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; justify-content: center; padding: 15px; gap: 10px; }
         .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
-        /* Content Area */
-        .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-header)); overflow-y: auto; }
-        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; }
-        #editorArea { display: none; width: 100%; height: 100%; padding: 30px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; background: #fff; color: #000; overflow-y: auto; }
 
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; font-size: 1.15rem; }
@@ -60,15 +69,12 @@
 </head>
 <body>
     <input type="file" id="bulkFiles" multiple style="display:none;">
+    
     <div class="top-bar">
-        <div class="top-bar-left">
-            <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
-        </div>
-        <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.96</h2>
-        </div>
+        <div class="top-bar-left"><button class="top-bar-btn" onclick="toggleMenu()">Songs</button></div>
+        <div class="top-bar-center"><h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.98</h2></div>
         <div class="top-bar-right">
-            <button class="top-bar-btn" onclick="startEdit()">✎</button>
+            <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
         </div>
     </div>
@@ -81,29 +87,31 @@
         <div id="indexContent"></div>
     </div>
 
-    <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje.</div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
-    </div>
+    <div class="main-content">
+        <div class="scroll-area" id="scroller">
+            <div id="lyricsArea">Kies een liedje uit het menu.</div>
+            <textarea id="editorArea" spellcheck="false"></textarea>
+        </div>
 
-    <div id="chordStrip" class="draggable-box">
-        <div class="drag-handle">::::</div>
-        <div class="chord-bar" id="chordBar"></div>
-    </div>
+        <div id="chordStrip" class="draggable-box">
+            <div class="drag-handle">::::</div>
+            <div class="chord-bar" id="chordBar"></div>
+        </div>
 
-    <div id="joyPad" class="draggable-box">
-        <div class="drag-handle">::::</div>
-        <div class="joy-grid">
-            <button class="joy-btn" style="grid-area: up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
-            <button class="joy-btn" style="grid-area: left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
-            <button class="joy-btn" style="grid-area: right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
-            <button class="joy-btn" style="grid-area: down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
+        <div id="joyPad" class="draggable-box">
+            <div class="drag-handle">::::</div>
+            <div class="joy-grid">
+                <button class="joy-btn" style="grid-area: up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
+                <button class="joy-btn" style="grid-area: left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
+                <button class="joy-btn" style="grid-area: right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
+                <button class="joy-btn" style="grid-area: down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
+            </div>
         </div>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0, customChord = "";
+        let cur = null, customChord = "";
         const chordsList = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","A7"];
 
         window.onload = () => { renderIndex(); buildChordStrip(); initDraggable(document.getElementById('chordStrip')); initDraggable(document.getElementById('joyPad')); };
@@ -111,14 +119,8 @@
         function renderIndex() {
             const c = document.getElementById('indexContent'); c.innerHTML = "";
             db.sort((a,b) => a.title.localeCompare(b.title)).forEach((x) => {
-                const item = document.createElement('div');
-                item.className = "index-item";
-                item.innerHTML = `
-                    <div class="song-link" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                    <div class="edit-btn-container" onclick="renameSong('${x.title.replace(/'/g, "\\'")}')">
-                        <span class="edit-icon">✎</span>
-                    </div>
-                `;
+                const item = document.createElement('div'); item.className = "index-item";
+                item.innerHTML = `<div class="song-link" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div><div class="edit-btn-container" onclick="renameSong('${x.title.replace(/'/g, "\\'")}')"><span style="color:var(--griffin-orange); font-size:1.5rem;">✎</span></div>`;
                 c.appendChild(item);
             });
         }
@@ -127,35 +129,12 @@
             const idx = db.findIndex(s => s.title === oldTitle);
             const newTitle = prompt("Hernoem liedje:", oldTitle);
             if(newTitle && newTitle.trim() !== "" && newTitle !== oldTitle) {
-                db[idx].title = newTitle.trim();
-                saveAndRefresh();
+                db[idx].title = newTitle.trim(); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
                 if(cur && cur.title === oldTitle) document.getElementById('displayTitle').textContent = newTitle;
             }
         }
 
-        function saveAndRefresh() { localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
-
-        function buildChordStrip() {
-            const bar = document.getElementById('chordBar'); bar.innerHTML = "";
-            const cBtn = document.createElement('button'); cBtn.className = 'chord-btn custom-btn';
-            cBtn.innerHTML = `<span id="customLabel">[ ]</span>`;
-            cBtn.onmousedown = (e) => { e.preventDefault(); setCustomChord(); };
-            bar.appendChild(cBtn);
-            chordsList.forEach(c => {
-                const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
-                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
-                bar.appendChild(b);
-            });
-        }
-
-        function setCustomChord() {
-            const res = prompt("Aangepast akkoord?", customChord);
-            if(res !== null) { customChord = res.trim(); insertText(`[${customChord}]`); document.getElementById('customLabel').textContent = customChord || '[ ]'; }
-        }
-
-        function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
-        function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
-        
+        function loadSong(t) { cur = db.find(s => s.title === t); document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
         function draw() {
             if(!cur) return; const lines = cur.content.trim().split('\n'); let h = "";
             lines.forEach(l => {
@@ -172,9 +151,41 @@
             document.getElementById('lyricsArea').innerHTML = h;
         }
 
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('saveBtn').style.display='block'; document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'block'); document.getElementById('editorArea').value = cur.content; }
-        function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; saveAndRefresh(); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('saveBtn').style.display='none'; document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'none'); draw(); }
-        
+        function startEdit() { 
+            if(!cur) return; 
+            document.getElementById('lyricsArea').style.display='none'; 
+            document.getElementById('editorArea').style.display='block'; 
+            document.getElementById('editBtn').style.display='none';
+            document.getElementById('saveBtn').style.display='block';
+            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'block');
+            document.getElementById('editorArea').value = cur.content;
+        }
+
+        function finishEdit() { 
+            const i = db.findIndex(s=>s.title===cur.title); 
+            db[i].content = document.getElementById('editorArea').value; 
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); 
+            document.getElementById('lyricsArea').style.display='block'; 
+            document.getElementById('editorArea').style.display='none'; 
+            document.getElementById('editBtn').style.display='block';
+            document.getElementById('saveBtn').style.display='none';
+            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'none');
+            draw(); 
+        }
+
+        function buildChordStrip() {
+            const bar = document.getElementById('chordBar'); bar.innerHTML = "";
+            const cBtn = document.createElement('button'); cBtn.className = 'chord-btn custom-btn'; cBtn.innerHTML = `<span>[ ]</span>`;
+            cBtn.onmousedown = (e) => { e.preventDefault(); const res = prompt("Akkoord?", customChord); if(res!==null){ customChord=res.trim(); insertText(`[${customChord}]`); } };
+            bar.appendChild(cBtn);
+            chordsList.forEach(c => {
+                const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
+                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
+                bar.appendChild(b);
+            });
+        }
+
+        function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
         function moveCursor(d) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + d; ed.focus(); }
         function moveLine(d) {
             const ed = document.getElementById('editorArea'), lines = ed.value.split('\n'), pos = ed.selectionStart;
@@ -186,21 +197,20 @@
 
         function initDraggable(el) {
             const h = el.querySelector('.drag-handle'); let nx = 0, ny = 0;
-            const s = (e) => { nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; };
-            const m = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches?e.touches[0].clientX:0); let cy = e.clientY || (e.touches?e.touches[0].clientY:0); let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; el.style.right="auto"; el.style.bottom="auto"; };
+            const start = (e) => { nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; document.onmousemove = move; document.ontouchmove = move; };
+            const move = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches?e.touches[0].clientX:0); let cy = e.clientY || (e.touches?e.touches[0].clientY:0); let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; };
             const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
-            h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop;
+            h.onmousedown = start; h.ontouchstart = start; document.onmouseup = stop; document.ontouchend = stop;
         }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
 
         document.getElementById('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
                 const t = await f.text();
-                if(f.name.endsWith('.json')) {
-                    try { const imp = JSON.parse(t); if(Array.isArray(imp)) db = imp; } catch(e) {}
-                } else db.push({title: f.name.replace('.txt',''), content: t});
+                if(f.name.endsWith('.json')) { try { const imp = JSON.parse(t); if(Array.isArray(imp)) db = imp; } catch(e) {} }
+                else db.push({title: f.name.replace('.txt',''), content: t});
             }
-            saveAndRefresh();
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
         };
     </script>
 </body>
