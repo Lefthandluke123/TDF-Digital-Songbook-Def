@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v6.71</title>
+    <title>TDF Stage Pilot v6.73</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -19,6 +19,7 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
+        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -28,8 +29,9 @@
         .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
-        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; cursor: pointer; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; cursor: pointer; display: none; }
 
+        /* Menu */
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
             background: #1c1c1e; z-index: 30000; transition: left 0.3s ease; 
@@ -52,6 +54,7 @@
         .quick-tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
         .quick-tag { padding: 5px 10px; background: #444; color: #ddd; border-radius: 5px; font-size: 0.75rem; cursor: pointer; }
 
+        /* Floating Editor Toolbar */
         #editorToolbar { 
             display: none; position: fixed; top: var(--header-height); left: 0; width: 100%; 
             background: rgba(26, 26, 26, 0.85); border-bottom: 2px solid var(--griffin-orange); 
@@ -63,9 +66,10 @@
         .joystick-container { display: flex; justify-content: center; padding: 12px; gap: 30px; align-items: center; }
         .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 42px; height: 42px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-        #editorArea { display: none; width: 100%; height: calc(100vh - var(--header-height)); padding: 210px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); overflow-y: auto; }
-        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
+        /* Lyrics & Textarea */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
+        #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
+        #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-top: 200px; padding-bottom: 400px; }
 
         .chord-row { position: relative; height: 1.5rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; font-size: 1.1rem; }
@@ -82,7 +86,7 @@
             <button class="top-bar-btn" id="btnShowMenu">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.71</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.73</h2>
             <div id="tpControl" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" id="btnTpMinus">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -115,7 +119,7 @@
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Selecteer een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
@@ -130,7 +134,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.71";
+        const APP_VERSION = "6.73";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -146,7 +150,6 @@
             $('tagModeBtn').onclick = toggleTagMode;
             $('btnExecuteTag').onclick = () => applyBulkTag($('bulkTagInput').value);
             $('btnClearTags').onclick = clearSelectionTags;
-            // btnExport wordt nu direct in HTML onclick aangeroepen voor Firefox stabiliteit
             $('btnTpMinus').onclick = () => transpose(-1);
             $('btnTpPlus').onclick = () => transpose(1);
             $('scrollBtn').onclick = toggleScroll;
@@ -174,7 +177,7 @@
             const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `tdf_songs_${new Date().toLocaleDateString()}.json`;
+            a.download = `tdf_backup.json`;
             a.click();
         }
 
@@ -305,6 +308,7 @@
             });
         }
 
+        $('btnImport').onclick = () => $('bulkFiles').click();
         $('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
                 const t = await f.text();
