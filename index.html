@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.41</title>
+    <title>TDF Stage Pilot v6.42</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,7 +17,6 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
-        /* Herstelde Top Bar Layout */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -33,7 +32,6 @@
         .transpose-pill { display: inline-flex; align-items: center; gap: 10px; background: #2c2c2e; padding: 4px 12px; border-radius: 20px; border: 1px solid #444; }
         .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 5px; }
 
-        /* Menu */
         .songs-menu { position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
@@ -53,7 +51,6 @@
 
         #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
 
-        /* Reader */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-bottom: 400px; }
@@ -73,7 +70,7 @@
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.41</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.42</h2>
             <div class="transpose-pill" style="margin-top:5px;">
                 <button class="tp-btn" onclick="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -107,7 +104,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.41";
+        const APP_VERSION = "6.42";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
 
@@ -204,8 +201,8 @@
         function deleteSong(t) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
         function renameSong(o) { const n = prompt("Nieuwe naam:", o); if(n && n !== o) { const i = db.findIndex(s => s.title === o); db[i].title = n; localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); if(cur && cur.title === o) loadSong(n); } }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; }
-        function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs',JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('editorArea').style.display='none'; draw(); renderTagBar(); renderIndex(); }
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editIcon').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; }
+        function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs',JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editIcon').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('editorArea').style.display='none'; draw(); renderTagBar(); renderIndex(); }
         function transpose(o) { if(!cur) return; tOff += o; document.getElementById('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() { if(!cur) return; const c = document.getElementById('scroller'), h = c.scrollHeight - c.clientHeight; let d = 180; const s = h/(d*1000), t = Date.now(), p = c.scrollTop; document.getElementById('scrollBtn').style.fill = 'var(--griffin-red)'; sInt = setInterval(() => { c.scrollTop = p + ((Date.now()-t)*s); if(c.scrollTop >= h) stopScroll(); }, 50); }
