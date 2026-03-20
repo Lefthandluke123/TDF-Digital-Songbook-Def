@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.49</title>
+    <title>TDF Stage Pilot v6.50</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -17,7 +17,6 @@
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
-        /* Top Bar */
         .top-bar { 
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
@@ -30,7 +29,6 @@
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
 
-        /* Menu */
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
             background: #1c1c1e; z-index: 90001; transition: left 0.3s ease; 
@@ -42,7 +40,6 @@
         .menu-nav-section { padding: 35px 15px 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; }
         .manage-btn { width: 100%; padding: 12px; background: none; border: 2px solid var(--griffin-orange); color: var(--griffin-orange); border-radius: 10px; font-weight: bold; margin-bottom: 10px; }
 
-        /* Tag balk */
         #tagBar { 
             display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 15px; 
             background: #242426; border-bottom: 1px solid #444; 
@@ -62,7 +59,6 @@
 
         #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
 
-        /* Lyrics & Editor */
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
         #editorArea { display: none; white-space: pre; border: none; outline: none; background: var(--lyric-bg); color: var(--lyric-text); min-height: 100%; padding-bottom: 400px; }
@@ -83,7 +79,7 @@
             <button class="top-bar-btn" id="songsBtn">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.49</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.50</h2>
             <div class="transpose-pill" style="margin-top:4px;">
                 <button class="tp-btn" id="tpDec">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -109,19 +105,19 @@
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tagnaam (bv: set1)">
+            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag (bv: set1)">
             <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:10px; width:100%; margin-top:10px;" id="saveBulkBtn">TAG OPSLAAN</button>
             <div id="tagEditorList" style="margin-top:10px;"></div>
         </div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje uit het menu.</div>
+        <div id="lyricsArea">Selecteer een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.49";
+        const APP_VERSION = "6.50";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -155,9 +151,10 @@
             });
         }
 
+        // Verbeterde Regex voor letters én cijfers
         function extractTags(text) {
             if (!text) return [];
-            const matches = text.match(/#(\w+)/g);
+            const matches = text.match(/#([a-zA-Z0-9]+)/g);
             return matches ? [...new Set(matches.map(m => m.substring(1).toLowerCase()))] : [];
         }
 
@@ -165,10 +162,8 @@
             const bar = $('tagBar');
             let tags = new Set();
             db.forEach(s => extractTags(s.content).forEach(t => tags.add(t)));
-            
             bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" id="tag-all">ALLES</div>`;
             $('tag-all').addEventListener(tEvent, () => filterTag(null));
-            
             Array.from(tags).sort().forEach(t => {
                 const pill = document.createElement('div');
                 pill.className = `tag-pill ${activeTag === t ? 'active' : ''}`;
@@ -217,14 +212,11 @@
                     const s = db.find(x => x.title === cb.dataset.title);
                     if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
                 });
-            } else {
-                // Als niets geselecteerd is, voegen we de tag toe aan het huidige liedje of maken we hem gewoon "bekend" in de database
-                if(cur && !extractTags(cur.content).includes(tag)) {
-                    cur.content += "\n\n#" + tag;
-                }
+            } else if(cur && !extractTags(cur.content).includes(tag)) {
+                cur.content += "\n\n#" + tag;
             }
             $('bulkTagInput').value = "";
-            saveRefresh(); renderTagBar();
+            saveRefresh(); renderTagBar(); toggleTagMode();
         }
 
         function toggleTagMode() { tagMode = !tagMode; $('bulkActions').style.display = tagMode ? "flex" : "none"; renderIndex(); renderTagBar(); }
