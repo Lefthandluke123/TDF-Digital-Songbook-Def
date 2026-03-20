@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.01</title>
+    <title>TDF Stage Pilot v7.05 - Performance</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -23,55 +23,50 @@
             display: flex; align-items: flex-end; justify-content: space-between; 
             padding: 0 15px 12px 15px; z-index: 30000; 
         }
-        #appLogo { height: 42px; width: 42px; cursor: pointer; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; overflow: hidden; }
+        .nav-group { display: flex; align-items: center; gap: 10px; }
+        #appLogo { height: 42px; width: 42px; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
+        .set-btn { background: var(--griffin-orange); color: black !important; padding: 5px 15px; border-radius: 5px; }
+
+        /* Dashboard Grid */
+        #setlistDashboard {
+            position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height));
+            background: rgba(18, 18, 18, 0.98); z-index: 35000; display: none; padding: 20px; overflow-y: auto;
+        }
+        .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+        .dash-item {
+            background: #2c2c2e; border: 2px solid #444; border-radius: 12px; padding: 25px 15px;
+            text-align: center; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; min-height: 100px;
+        }
+        .dash-item:active { background: var(--griffin-orange); color: black; }
 
         /* Menu */
         .songs-menu { 
-            position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
+            position: fixed; top: 0; left: -100%; width: 33.33%; height: 100%; 
             background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
-            display: flex; flex-direction: column; padding-top: calc(40px + env(safe-area-inset-top)); 
+            display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); 
         }
         .songs-menu.open { left: 0; }
-        @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
-        #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 768px) { .songs-menu { width: 85%; } }
+        .tab-bar { display: flex; background: #1a1a1a; border-bottom: 2px solid #333; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
+        #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
         
-        /* Menu Items */
-        .index-item { width: 100%; border-bottom: 1px solid #333; background: #1c1c1e; display: flex; align-items: stretch; height: 70px; }
-        .song-link { flex-grow: 1; display: flex; align-items: center; padding: 0 20px; color: #eee; font-size: 1.1rem; cursor: pointer; }
-        .edit-btn-container { width: 70px; border-left: 1px solid #333; display: flex; align-items: center; justify-content: center; background: rgba(212, 142, 61, 0.1); cursor: pointer; }
-        .edit-icon { color: var(--griffin-orange); font-size: 1.8rem; }
-
-        /* Floating Panels Logic */
-        .draggable-box { 
-            position: fixed; background: rgba(26, 26, 26, 0.95); 
-            border: 2px solid var(--griffin-orange); border-radius: 12px; 
-            z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none;
-            width: auto; height: auto; bottom: auto; right: auto;
-        }
-        .drag-handle { height: 26px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-weight: bold; font-size: 11px; letter-spacing: 2px; }
-
-        /* Chord Strip */
-        #chordStrip { top: 100px; left: 20px; width: 70px; display: none; }
-        .chord-bar { display: flex; flex-direction: column; padding: 8px; gap: 7px; max-height: 450px; overflow-y: auto; }
-        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 13px 0; border-radius: 8px; font-weight: bold; font-size: 1rem; text-align: center; }
-
-        /* Joystick Pad */
-        #joyPad { bottom: 40px; right: 20px; width: 140px; display: none; }
-        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; justify-content: center; padding: 15px; gap: 10px; }
-        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
-        /* NEW: Floating Transpose */
-        #transposePad { top: 100px; right: 20px; width: 100px; display: flex; flex-direction: column; }
-        .tp-controls { display: flex; flex-direction: column; align-items: center; padding: 10px; gap: 8px; }
-        .tp-btn { background: var(--griffin-orange); color: black; border: none; width: 50px; height: 50px; border-radius: 10px; font-size: 1.8rem; font-weight: bold; cursor: pointer; }
-        #tpVal { color: white; font-size: 1.3rem; font-weight: bold; margin: 4px 0; }
+        .index-item { width: 100%; border-bottom: 1px solid #333; background: #1c1c1e; display: flex; align-items: stretch; height: 75px; }
+        .song-link { flex-grow: 1; display: flex; align-items: center; padding: 0 15px; color: #eee; font-size: 1.1rem; }
+        .action-btn { width: 65px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #333; color: var(--griffin-orange); font-size: 1.6rem; cursor: pointer; }
 
         /* Content Area */
-        .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
-        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; width: 100%; }
-        #editorArea { display: none; width: 100%; height: 100%; padding: 30px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; background: #fff; color: #000; overflow-y: auto; }
+        .lyrics-container { background: #fff; width: 100%; height: 100%; overflow-y: auto; }
+        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; }
+        #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; background: #fff; border: none; outline: none; }
+
+        /* Draggables - Alleen zichtbaar bij EDIT */
+        .draggable-box { position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none; display: none; }
+        .drag-handle { height: 26px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-weight: bold; font-size: 11px; }
+        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; font-weight: bold; }
 
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; font-size: 1.15rem; }
@@ -80,90 +75,139 @@
 </head>
 <body>
     <input type="file" id="bulkFiles" multiple style="display:none;">
-    <input type="file" id="logoInput" accept="image/png" style="display:none;">
 
     <div class="top-bar">
-        <div class="top-bar-left">
-            <div id="appLogo" onclick="document.getElementById('logoInput').click()">🖼️</div>
+        <div class="nav-group">
+            <div id="appLogo">🖼️</div>
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
+            <button class="top-bar-btn set-btn" onclick="toggleDashboard()">SET</button>
         </div>
-        <div class="top-bar-center"><h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v7.01</h2></div>
-        <div class="top-bar-right">
-            <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" onclick="toggleScroll()"><path d="M8 5v14l11-7z"/></svg>
-            <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24" onclick="startEdit()"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
+        <div class="nav-group">
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">v7.05</h2>
+        </div>
+        <div class="nav-group">
+            <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
-            <svg class="top-bar-icon" onclick="document.getElementById('bulkFiles').click()" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+    </div>
+
+    <div id="setlistDashboard">
+        <div class="dash-grid" id="dashGrid"></div>
+        <div style="text-align:center; padding:40px;">
+            <button class="top-bar-btn" onclick="toggleDashboard()" style="color:#666">SLUIT</button>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
-        <div class="menu-nav-section"><button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button></div>
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tabLib" onclick="switchTab('lib')">BIBLIOTHEEK</button>
+            <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SETLIST</button>
+        </div>
+        <div class="menu-nav-section">
+            <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
+            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()">📂 IMPORT</button>
+        </div>
         <div id="indexContent"></div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje.</div>
+        <div id="lyricsArea">Gebruik 'SET' voor je optreden.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div id="transposePad" class="draggable-box">
+    <div id="transposePad" class="draggable-box" style="top:100px; right:20px; width:100px;">
         <div class="drag-handle">::::</div>
-        <div class="tp-controls">
-            <button class="tp-btn" onmousedown="transpose(1)">+</button>
-            <span id="tpVal">0</span>
-            <button class="tp-btn" onmousedown="transpose(-1)">−</button>
+        <div style="display:flex; flex-direction:column; align-items:center; padding:10px; gap:8px;">
+            <button style="background:var(--griffin-orange); border:none; width:50px; height:50px; border-radius:10px; font-size:1.8rem;" onmousedown="transpose(1)">+</button>
+            <span id="tpVal" style="color:white; font-size:1.3rem;">0</span>
+            <button style="background:var(--griffin-orange); border:none; width:50px; height:50px; border-radius:10px; font-size:1.8rem;" onmousedown="transpose(-1)">−</button>
         </div>
     </div>
 
-    <div id="chordStrip" class="draggable-box">
+    <div id="chordStrip" class="draggable-box" style="top:100px; left:20px; width:75px;">
         <div class="drag-handle">::::</div>
-        <div class="chord-bar" id="chordBar"></div>
+        <div id="chordBar" style="display:flex; flex-direction:column; padding:8px; gap:5px;"></div>
     </div>
 
-    <div id="joyPad" class="draggable-box">
+    <div id="joyPad" class="draggable-box" style="bottom:40px; right:20px; width:150px;">
         <div class="drag-handle">::::</div>
-        <div class="joy-grid">
-            <button class="joy-btn" style="grid-area: up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
-            <button class="joy-btn" style="grid-area: left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
-            <button class="joy-btn" style="grid-area: right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
-            <button class="joy-btn" style="grid-area: down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
+        <div style="display:grid; grid-template-areas:'. up .' 'left . right' '. down .'; padding:15px; gap:10px;">
+            <button class="joy-btn" style="grid-area:up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
+            <button class="joy-btn" style="grid-area:left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
+            <button class="joy-btn" style="grid-area:right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
+            <button class="joy-btn" style="grid-area:down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
         </div>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0, sInt = null, customChord = "";
-        const chordsList = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","A7"];
+        let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        let cur = null, tOff = 0, currentTab = 'lib';
 
-        window.onload = () => {
-            const logo = localStorage.getItem('tdfLogo');
-            if(logo) updateLogoUI(logo);
-            renderIndex(); buildChordStrip();
-            initDraggable(document.getElementById('chordStrip'));
-            initDraggable(document.getElementById('joyPad'));
-            initDraggable(document.getElementById('transposePad'));
+        window.onload = () => { 
+            renderIndex(); 
+            buildChordStrip(); 
+            initDraggable(document.getElementById('chordStrip')); 
+            initDraggable(document.getElementById('joyPad')); 
+            initDraggable(document.getElementById('transposePad')); 
         };
 
-        function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach((x) => {
-                const item = document.createElement('div'); item.className = "index-item";
-                item.innerHTML = `<div class="song-link" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div><div class="edit-btn-container" onclick="renameSong('${x.title.replace(/'/g, "\\'")}')"><span class="edit-icon">✎</span></div>`;
-                c.appendChild(item);
+        function toggleDashboard() {
+            const dash = document.getElementById('setlistDashboard');
+            const isVisible = dash.style.display === 'block';
+            dash.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) renderDashboard();
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('dashGrid'); grid.innerHTML = "";
+            setlist.forEach(s => {
+                const item = document.createElement('div');
+                item.className = "dash-item";
+                item.textContent = s.title;
+                item.onclick = () => { loadSong(s.title, false); toggleDashboard(); };
+                grid.appendChild(item);
             });
         }
 
-        function renameSong(oldTitle) {
-            const idx = db.findIndex(s => s.title === oldTitle);
-            const newTitle = prompt("Hernoem liedje:", oldTitle);
-            if(newTitle && newTitle.trim() !== "" && newTitle !== oldTitle) {
-                db[idx].title = newTitle.trim(); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
-                if(cur && cur.title === oldTitle) document.getElementById('displayTitle').textContent = newTitle;
+        function switchTab(t) { currentTab = t; renderIndex(); }
+        
+        function renderIndex() {
+            const c = document.getElementById('indexContent'); c.innerHTML = "";
+            let list = currentTab === 'lib' ? [...db].sort((a,b) => a.title.localeCompare(b.title)) : setlist;
+            list.forEach((x, i) => {
+                const div = document.createElement('div'); div.className = "index-item";
+                div.innerHTML = `
+                    <div class="song-link" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                    ${currentTab === 'lib' ? `<div class="action-btn" onclick="addToSetlist('${x.title.replace(/'/g, "\\'")}')">+</div>` : `<div class="action-btn" onclick="removeFromSetlist(${i})">×</div>`}
+                    <div class="action-btn" onclick="renameSong('${x.title.replace(/'/g, "\\'")}')">✎</div>
+                `;
+                c.appendChild(div);
+            });
+        }
+
+        function renameSong(oldT) {
+            const newT = prompt("Nieuwe titel:", oldT);
+            if(newT && newT.trim() !== "") {
+                const idx = db.findIndex(s => s.title === oldT);
+                if(idx !== -1) db[idx].title = newT.trim();
+                setlist.forEach(s => { if(s.title === oldT) s.title = newT.trim(); });
+                localStorage.setItem('tdfSongs', JSON.stringify(db));
+                localStorage.setItem('tdfSetlist', JSON.stringify(setlist));
+                renderIndex();
             }
         }
 
-        function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('tpVal').textContent = "0"; document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
-        
+        function addToSetlist(t) { const s = db.find(x => x.title === t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); } }
+        function removeFromSetlist(i) { setlist.splice(i, 1); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); }
+
+        function loadSong(t, closeMenu = true) {
+            cur = db.find(s => s.title === t) || setlist.find(s => s.title === t);
+            tOff = 0; document.getElementById('tpVal').textContent = "0";
+            document.getElementById('displayTitle').textContent = cur.title;
+            draw(); if(closeMenu) toggleMenu();
+        }
+
         function draw() {
             if(!cur) return; const lines = cur.content.trim().split('\n'); let h = "";
             lines.forEach(l => {
@@ -195,64 +239,30 @@
             if(!cur) return; 
             document.getElementById('lyricsArea').style.display='none'; 
             document.getElementById('editorArea').style.display='block'; 
-            document.getElementById('saveBtn').style.display='block';
-            document.getElementById('editIcon').style.display='none';
-            document.getElementById('chordStrip').style.display = 'block';
-            document.getElementById('joyPad').style.display = 'block';
-            document.getElementById('editorArea').value = cur.content;
+            document.getElementById('saveBtn').style.display='block'; 
+            document.getElementById('editBtn').style.display='none'; 
+            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'block');
+            document.getElementById('editorArea').value = cur.content; 
         }
 
         function finishEdit() { 
             const i = db.findIndex(s=>s.title===cur.title); 
-            db[i].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); 
+            db[i].content = document.getElementById('editorArea').value; 
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); 
             document.getElementById('lyricsArea').style.display='block'; 
             document.getElementById('editorArea').style.display='none'; 
-            document.getElementById('saveBtn').style.display='none';
-            document.getElementById('editIcon').style.display='block';
-            document.getElementById('chordStrip').style.display = 'none';
-            document.getElementById('joyPad').style.display = 'none';
+            document.getElementById('saveBtn').style.display='none'; 
+            document.getElementById('editBtn').style.display='block'; 
+            document.querySelectorAll('.draggable-box').forEach(el => el.style.display = 'none');
             draw(); 
         }
 
-        function buildChordStrip() {
-            const bar = document.getElementById('chordBar'); bar.innerHTML = "";
-            const cBtn = document.createElement('button'); cBtn.className = 'chord-btn custom-btn'; cBtn.innerHTML = `<span>[ ]</span>`;
-            cBtn.onmousedown = (e) => { e.preventDefault(); const res = prompt("Akkoord?", customChord); if(res!==null){ customChord=res.trim(); insertText(`[${customChord}]`); } };
-            bar.appendChild(cBtn);
-            chordsList.forEach(c => {
-                const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
-                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
-                bar.appendChild(b);
-            });
-        }
-
-        function initDraggable(el) {
-            const h = el.querySelector('.drag-handle');
-            let initialX, initialY;
-            const s = (e) => { initialX = e.clientX || e.touches[0].clientX; initialY = e.clientY || e.touches[0].clientY; el.style.bottom = 'auto'; el.style.right = 'auto'; document.onmousemove = move; document.ontouchmove = move; };
-            const move = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches ? e.touches[0].clientX : 0); let cy = e.clientY || (e.touches ? e.touches[0].clientY : 0); let dx = initialX - cx; let dy = initialY - cy; initialX = cx; initialY = cy; el.style.top = (el.offsetTop - dy) + "px"; el.style.left = (el.offsetLeft - dx) + "px"; };
-            const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
-            h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop;
-        }
-
-        function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
-        function moveCursor(d) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + d; ed.focus(); }
-        function moveLine(d) {
-            const ed = document.getElementById('editorArea'), lines = ed.value.split('\n'), pos = ed.selectionStart;
-            let curL = ed.value.substr(0, pos).split('\n').length - 1;
-            let targetL = Math.max(0, Math.min(lines.length - 1, curL + d));
-            let newPos = 0; for(let i=0; i<targetL; i++) newPos += lines[i].length + 1;
-            ed.selectionStart = ed.selectionEnd = newPos; ed.focus();
-        }
-
+        function buildChordStrip() { const bar = document.getElementById('chordBar'); const chords = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","A7"]; chords.forEach(c=>{const b=document.createElement('button'); b.className='chord-btn'; b.textContent=c; b.onmousedown=(e)=>{e.preventDefault(); insertText(`[${c}]`);}; bar.appendChild(b);}); }
+        function insertText(t) { const ed=document.getElementById('editorArea'), p=ed.selectionStart; ed.value=ed.value.slice(0,p)+t+ed.value.slice(ed.selectionEnd); ed.selectionStart=ed.selectionEnd=p+t.length; ed.focus(); }
+        function moveCursor(d) { const ed=document.getElementById('editorArea'); ed.selectionStart=ed.selectionEnd=ed.selectionStart+d; ed.focus(); }
+        function moveLine(d) { const ed=document.getElementById('editorArea'), lines=ed.value.split('\n'), pos=ed.selectionStart; let curL=ed.value.substr(0,pos).split('\n').length-1; let targetL=Math.max(0,Math.min(lines.length-1,curL+d)); let newPos=0; for(let i=0; i<targetL; i++) newPos+=lines[i].length+1; ed.selectionStart=ed.selectionEnd=newPos; ed.focus(); }
+        function initDraggable(el) { const h=el.querySelector('.drag-handle'); let ix, iy; const s=(e)=>{ix=e.clientX||e.touches[0].clientX; iy=e.clientY||e.touches[0].clientY; el.style.bottom='auto'; el.style.right='auto'; document.onmousemove=m; document.ontouchmove=m;}; const m=(e)=>{e.preventDefault(); let cx=e.clientX||(e.touches?e.touches[0].clientX:0); let cy=e.clientY||(e.touches?e.touches[0].clientY:0); let dx=ix-cx; let dy=iy-cy; ix=cx; iy=cy; el.style.top=(el.offsetTop-dy)+"px"; el.style.left=(el.offsetLeft-dx)+"px";}; const stop=()=>{document.onmousemove=null; document.ontouchmove=null;}; h.onmousedown=s; h.ontouchstart=s; document.onmouseup=stop; document.ontouchend=stop; }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        function toggleScroll() { sInt ? (clearInterval(sInt), sInt=null) : sInt = setInterval(() => { document.getElementById('scroller').scrollTop += 1; }, 50); }
-        function updateLogoUI(src) { const l = document.getElementById('appLogo'); l.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:contain;">`; l.style.background = "none"; }
-
-        document.getElementById('logoInput').onchange = (e) => {
-            const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); updateLogoUI(ev.target.result); };
-            r.readAsDataURL(e.target.files[0]);
-        };
 
         document.getElementById('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
