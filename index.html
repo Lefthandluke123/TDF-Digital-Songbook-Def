@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v6.70</title>
+    <title>TDF Stage Pilot v6.71</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -28,7 +28,7 @@
         .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
-        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; cursor: pointer; }
+        #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; cursor: pointer; }
 
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
@@ -82,7 +82,7 @@
             <button class="top-bar-btn" id="btnShowMenu">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.70</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.71</h2>
             <div id="tpControl" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" id="btnTpMinus">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -110,12 +110,12 @@
             <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:12px; border-radius:8px; width:100%;" id="btnExecuteTag">VOEG TAG TOE</button>
             <button class="top-bar-btn" style="background:var(--griffin-red); color:white; padding:8px; border-radius:8px; font-size:0.8rem; margin-top:5px; width:100%;" id="btnClearTags">WIS SELECTIE TAGS</button>
             <hr style="border:0; border-top:1px solid #444; margin:10px 0; width:100%;">
-            <button class="top-bar-btn" style="background:#444; color:white; padding:10px; border-radius:8px; width:100%; font-size:0.8rem;" id="btnExport">MAAK BACKUP (DOWNLOAD)</button>
+            <button class="top-bar-btn" style="background:#444; color:white; padding:10px; border-radius:8px; width:100%; font-size:0.8rem;" id="btnExport" onclick="exportLibrary()">MAAK BACKUP (DOWNLOAD)</button>
         </div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Selecteer een liedje.</div>
+        <div id="lyricsArea">Kies een liedje uit het menu.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
@@ -130,7 +130,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.70";
+        const APP_VERSION = "6.71";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -146,7 +146,7 @@
             $('tagModeBtn').onclick = toggleTagMode;
             $('btnExecuteTag').onclick = () => applyBulkTag($('bulkTagInput').value);
             $('btnClearTags').onclick = clearSelectionTags;
-            $('btnExport').onclick = exportLibrary;
+            // btnExport wordt nu direct in HTML onclick aangeroepen voor Firefox stabiliteit
             $('btnTpMinus').onclick = () => transpose(-1);
             $('btnTpPlus').onclick = () => transpose(1);
             $('scrollBtn').onclick = toggleScroll;
