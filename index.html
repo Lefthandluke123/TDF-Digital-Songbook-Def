@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.60</title>
+    <title>TDF Stage Pilot v6.61</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -44,20 +44,13 @@
 
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
         .index-item { width: 100%; border-bottom: 1px solid #222; padding: 15px 20px; background: #1c1c1e; color: #eee; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-        
-        .item-main { display: flex; align-items: center; gap: 15px; flex-grow: 1; overflow: hidden; pointer-events: none; }
-        .item-main span { font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-main { display: flex; align-items: center; gap: 15px; pointer-events: none; }
         
         .tag-checkbox { width: 35px; height: 35px; accent-color: var(--griffin-orange); cursor: pointer; pointer-events: auto; }
-
         .item-actions { display: none; background: #2c2c2e; padding: 10px; gap: 10px; border-bottom: 2px solid #444; }
         .action-btn { flex: 1; padding: 12px; border-radius: 5px; border: none; font-weight: bold; color: white; cursor: pointer; }
-        .btn-open { background: #444; }
-        .btn-rename { background: var(--griffin-orange); color: black; }
-        .btn-delete { background: var(--griffin-red); }
 
-        #bulkActions { display: none; padding: 15px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 10px; flex-shrink: 0; }
-        .bulk-input { background: #121212; color: white; border: 1px solid #444; padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem; }
+        #bulkActions { display: none; padding: 15px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; flex-shrink: 0; }
 
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
@@ -74,11 +67,11 @@
 
     <div class="top-bar">
         <div class="top-bar-left">
-            <img id="appLogo" alt="Logo">
+            <img id="appLogo" alt="Logo" onclick="document.getElementById('logoInput').click()">
             <button class="top-bar-btn" id="btnShowMenu">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.60</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.61</h2>
             <div class="transpose-pill" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" style="font-size:1.3rem;" id="btnTpMinus">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -104,8 +97,7 @@
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" class="bulk-input" placeholder="Groepsnaam (bv: set1)">
-            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:12px; border-radius:8px;" id="btnSaveTag">GROEP OPSLAAN</button>
+            <button class="manage-btn" style="background:var(--griffin-orange); color:black; border:none;" id="btnPromptTag">NIEUWE TAG / GROEP</button>
             <div id="tagEditorList" style="margin-top:10px;"></div>
         </div>
     </div>
@@ -116,7 +108,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.60";
+        const APP_VERSION = "6.61";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -126,18 +118,16 @@
             if(logo && $('appLogo')) { $('appLogo').src = logo; $('appLogo').style.display = 'block'; }
             renderIndex(); renderTagBar();
             
-            // Event Listeners voor Firefox stabiliteit
             $('btnShowMenu').addEventListener('click', toggleMenu);
             $('btnCloseMenu').addEventListener('click', toggleMenu);
             $('tagModeBtn').addEventListener('click', toggleTagMode);
-            $('btnSaveTag').addEventListener('click', applyBulkTag);
+            $('btnPromptTag').addEventListener('click', applyBulkTagPrompt);
             $('btnTpMinus').addEventListener('click', () => transpose(-1));
             $('btnTpPlus').addEventListener('click', () => transpose(1));
             $('scrollBtn').addEventListener('click', toggleScroll);
             $('editIcon').addEventListener('click', startEdit);
             $('saveBtn').addEventListener('click', finishEdit);
             $('btnImport').addEventListener('click', () => $('bulkFiles').click());
-            $('appLogo').addEventListener('click', () => $('logoInput').click());
         };
 
         function extractTags(text) {
@@ -152,7 +142,6 @@
             db.forEach(s => extractTags(s.content).forEach(t => tags.add(t)));
             bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" id="pill-all">ALLES</div>`;
             $('pill-all').addEventListener('click', () => filterTag(null));
-            
             Array.from(tags).sort().forEach(t => {
                 const pill = document.createElement('div');
                 pill.className = `tag-pill ${activeTag === t ? 'active' : ''}`;
@@ -164,8 +153,7 @@
         }
 
         function renderTagEditor(tags) {
-            const list = $('tagEditorList');
-            list.innerHTML = "";
+            const list = $('tagEditorList'); list.innerHTML = "";
             Array.from(tags).sort().forEach(t => {
                 const item = document.createElement('div');
                 item.style.display = "flex"; item.style.justifyContent = "space-between"; item.style.marginTop = "8px";
@@ -193,15 +181,14 @@
                         <div style="color:var(--griffin-orange); font-weight:bold;">⋮</div>
                     </div>
                     <div class="item-actions" id="actions-${id}">
-                        <button class="action-btn btn-open">OPEN</button>
-                        <button class="action-btn btn-rename">NAAM</button>
-                        <button class="action-btn btn-delete">WIS</button>
+                        <button class="action-btn btn-open" style="background:#444;">OPEN</button>
+                        <button class="action-btn btn-rename" style="background:var(--griffin-orange); color:black;">NAAM</button>
+                        <button class="action-btn btn-delete" style="background:var(--griffin-red);">WIS</button>
                     </div>`;
                 
-                const trigger = div.querySelector(`#trigger-${id}`);
-                trigger.onclick = (e) => {
+                div.querySelector(`#trigger-${id}`).onclick = (e) => {
                     if(tagMode) {
-                        const cb = trigger.querySelector('.tag-checkbox');
+                        const cb = div.querySelector('.tag-checkbox');
                         if(e.target !== cb) cb.checked = !cb.checked;
                     } else {
                         const el = div.querySelector(`#actions-${id}`);
@@ -214,37 +201,28 @@
                 div.querySelector('.btn-open').onclick = () => loadSong(s.title);
                 div.querySelector('.btn-rename').onclick = () => { const n = prompt("Nieuwe naam:", s.title); if(n){ const i = db.findIndex(x => x.title === s.title); db[i].title = n; saveRefresh(); } };
                 div.querySelector('.btn-delete').onclick = () => { if(confirm("Wis liedje?")){ db = db.filter(x => x.title !== s.title); saveRefresh(); } };
-                
                 c.appendChild(div);
             });
         }
 
-        function loadSong(t) { 
-            cur = db.find(s => s.title === t); 
-            tOff = 0; $('tpVal').textContent = "0"; 
-            $('displayTitle').textContent = cur.title; 
-            draw(); 
-            toggleMenu(); 
-        }
-
-        function toggleTagMode() { 
-            tagMode = !tagMode; 
-            $('tagModeBtn').textContent = tagMode ? "KLAAR" : "TAGS BEHEREN";
-            $('bulkActions').style.display = tagMode ? "flex" : "none"; 
-            renderIndex(); renderTagBar();
-        }
-
-        function applyBulkTag() {
-            const tag = $('bulkTagInput').value.trim().toLowerCase();
+        function applyBulkTagPrompt() {
+            const tag = prompt("Voer groepsnaam in (letters en cijfers):");
             if(!tag) return;
-            document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
-                const s = db.find(x => x.title === cb.dataset.title);
-                if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
-            });
-            $('bulkTagInput').value = "";
+            const cleanTag = tag.trim().toLowerCase();
+            const checked = document.querySelectorAll('.tag-checkbox:checked');
+            if(checked.length > 0) {
+                checked.forEach(cb => {
+                    const s = db.find(x => x.title === cb.dataset.title);
+                    if(s && !extractTags(s.content).includes(cleanTag)) s.content += "\n\n#" + cleanTag;
+                });
+            } else if(cur && !extractTags(cur.content).includes(cleanTag)) {
+                cur.content += "\n\n#" + cleanTag;
+            }
             saveRefresh(); toggleTagMode();
         }
 
+        function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; $('tpVal').textContent = "0"; $('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
+        function toggleTagMode() { tagMode = !tagMode; $('tagModeBtn').textContent = tagMode ? "KLAAR" : "TAGS BEHEREN"; $('bulkActions').style.display = tagMode ? "flex" : "none"; renderIndex(); renderTagBar(); }
         function saveRefresh() { localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
         function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
         
