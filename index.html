@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.52</title>
+    <title>TDF Stage Pilot v6.54</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -23,14 +23,9 @@
             display: flex; align-items: flex-end; justify-content: space-between; 
             padding: 0 15px 12px 15px; z-index: 99999; 
         }
-        .top-bar-left, .top-bar-right { display: flex; align-items: center; gap: 12px; min-width: 120px; }
-        .top-bar-center { text-align: center; flex-grow: 1; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
         #appLogo { height: 42px; width: auto; max-width: 80px; object-fit: contain; display: none; }
-
-        .transpose-pill { display: inline-flex; align-items: center; gap: 8px; background: #2c2c2e; padding: 3px 10px; border-radius: 20px; border: 1px solid #444; }
-        .tp-btn { color: var(--griffin-orange); font-weight: bold; font-size: 1.3rem; background: none; border: none; padding: 0 5px; }
 
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
@@ -40,27 +35,21 @@
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         
-        .menu-nav-section { padding: 35px 15px 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; }
-        .manage-btn { width: 100%; padding: 12px; background: none; border: 2px solid var(--griffin-orange); color: var(--griffin-orange); border-radius: 10px; font-weight: bold; margin-bottom: 10px; }
+        .menu-nav-section { padding: 25px 15px 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .manage-btn { width: 100%; padding: 12px; background: none; border: 2px solid var(--griffin-orange); color: var(--griffin-orange); border-radius: 10px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
 
-        #tagBar { 
-            display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 15px; 
-            background: #242426; border-bottom: 1px solid #444; 
-            max-height: 150px; overflow-y: auto; flex-shrink: 0;
-        }
-        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; border: 1px solid transparent; }
-        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; border-color: white; }
+        #tagBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 15px; background: #242426; border-bottom: 1px solid #444; max-height: 120px; overflow-y: auto; flex-shrink: 0; }
+        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; }
+        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; }
 
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
         .index-container { position: relative; width: 100%; border-bottom: 1px solid #222; height: 60px; }
-        .index-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0 20px; background: #1c1c1e; color: #eee; cursor: pointer; z-index: 2; display: flex; align-items: center; transition: transform 0.2s; gap: 15px; }
+        .index-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0 20px; background: #1c1c1e; color: #eee; cursor: pointer; z-index: 2; display: flex; align-items: center; gap: 15px; }
         
-        .tag-checkbox { width: 28px; height: 28px; accent-color: var(--griffin-orange); }
-        .swipe-action { position: absolute; top: 0; bottom: 0; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; font-size: 0.9rem; width: 90px; }
-        .delete-btn { right: 0; background: var(--griffin-red); }
-        .rename-btn { right: 90px; background: var(--griffin-orange); color: black; }
+        .tag-checkbox { width: 32px; height: 32px; accent-color: var(--griffin-orange); cursor: pointer; }
 
-        #bulkActions { display: none; padding: 20px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
+        #bulkActions { display: none; padding: 15px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 10px; flex-shrink: 0; padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
+        .bulk-input { background: #121212; color: white; border: 1px solid #444; padding: 12px; border-radius: 8px; width: 100%; font-size: 1rem; }
 
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
@@ -72,44 +61,43 @@
     </style>
 </head>
 <body data-theme="light">
-    <div id="toast" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--griffin-orange); padding:10px 20px; border-radius:20px; display:none; z-index:1000000; font-weight:bold; color:black;"></div>
     <input type="file" id="bulkFiles" accept=".txt" multiple style="display:none;">
     <input type="file" id="logoInput" accept="image/png" style="display:none;">
 
     <div class="top-bar">
         <div class="top-bar-left">
             <img id="appLogo" alt="Logo" onclick="$('logoInput').click()">
-            <button class="top-bar-btn" id="songsBtn">Songs</button>
+            <button class="top-bar-btn" id="songsBtn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.52</h2>
-            <div class="transpose-pill" style="margin-top:4px;">
-                <button class="tp-btn" id="tpDec">−</button>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.54</h2>
+            <div class="transpose-pill" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
+                <button class="top-bar-btn" style="font-size:1.3rem;" onclick="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
-                <button class="tp-btn" id="tpInc">+</button>
+                <button class="top-bar-btn" style="font-size:1.3rem;" onclick="transpose(1)">+</button>
             </div>
         </div>
         <div class="top-bar-right">
-            <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" style="fill:#34c759;"><path d="M8 5v14l11-7z"/></svg>
-            <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
-            <button class="top-bar-btn" id="saveBtn" style="display:none;">GEREED</button>
-            <svg class="top-bar-icon" id="importIcon" viewBox="0 0 24 24" style="margin-left:5px;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <svg class="top-bar-icon" id="scrollBtn" viewBox="0 0 24 24" style="fill:#34c759;" onclick="toggleScroll()"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="top-bar-icon" id="editIcon" viewBox="0 0 24 24" onclick="startEdit()"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
+            <button class="top-bar-btn" id="saveBtn" style="display:none;" onclick="finishEdit()">GEREED</button>
+            <svg class="top-bar-icon" id="importIcon" viewBox="0 0 24 24" onclick="$('bulkFiles').click()"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
         <div class="menu-nav-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span style="color:white; font-weight:bold; font-size:1.2rem;">SONGBOOK</span>
-                <button class="top-bar-btn" id="closeMenuBtn">SLUIT</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="color:white; font-weight:bold;">SONGBOOK</span>
+                <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
             </div>
-            <button class="manage-btn" id="tagModeBtn">TAGS BEHEREN</button>
+            <button class="manage-btn" id="tagModeBtn" onclick="toggleTagMode()">TAGS BEHEREN</button>
         </div>
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag (bv: set1)">
-            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:10px; width:100%; margin-top:10px;" id="saveBulkBtn">TAG OPSLAAN</button>
+            <input type="text" id="bulkTagInput" class="bulk-input" placeholder="Groepsnaam (bv: set1)">
+            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:12px; border-radius:8px;" onclick="applyBulkTag()">GROEP OPSLAAN</button>
             <div id="tagEditorList" style="margin-top:10px;"></div>
         </div>
     </div>
@@ -120,11 +108,10 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.52";
+        const APP_VERSION = "6.54";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
-        const tEvent = 'touchstart';
 
         window.onload = () => {
             if (localStorage.getItem('tdfVersion') !== APP_VERSION) {
@@ -133,28 +120,10 @@
             }
             const logo = localStorage.getItem('tdfLogo');
             if(logo) { $('appLogo').src = logo; $('appLogo').style.display = 'block'; }
-            renderIndex(); renderTagBar(); setupEventListeners();
+            renderIndex(); renderTagBar();
         };
 
-        function setupEventListeners() {
-            $('songsBtn').addEventListener(tEvent, toggleMenu);
-            $('closeMenuBtn').addEventListener(tEvent, toggleMenu);
-            $('tagModeBtn').addEventListener(tEvent, toggleTagMode);
-            $('saveBulkBtn').addEventListener(tEvent, applyBulkTag);
-            $('tpDec').addEventListener(tEvent, () => transpose(-1));
-            $('tpInc').addEventListener(tEvent, () => transpose(1));
-            $('scrollBtn').addEventListener(tEvent, toggleScroll);
-            $('editIcon').addEventListener(tEvent, startEdit);
-            $('saveBtn').addEventListener(tEvent, finishEdit);
-            $('importIcon').addEventListener(tEvent, () => $('bulkFiles').click());
-            $('logoInput').addEventListener('change', (e) => {
-                const r = new FileReader();
-                r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); location.reload(); };
-                r.readAsDataURL(e.target.files[0]);
-            });
-        }
-
-        // Regex hersteld voor letters EN cijfers
+        // Regex hersteld voor letters EN cijfers: # gevolgd door alfanumerieke tekens
         function extractTags(text) {
             if (!text) return [];
             const matches = text.match(/#([a-zA-Z0-9]+)/g);
@@ -165,13 +134,12 @@
             const bar = $('tagBar');
             let tags = new Set();
             db.forEach(s => extractTags(s.content).forEach(t => tags.add(t)));
-            bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" id="tag-all">ALLES</div>`;
-            $('tag-all').addEventListener(tEvent, () => filterTag(null));
+            bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" onclick="filterTag(null)">ALLES</div>`;
             Array.from(tags).sort().forEach(t => {
                 const pill = document.createElement('div');
                 pill.className = `tag-pill ${activeTag === t ? 'active' : ''}`;
                 pill.textContent = t.toUpperCase();
-                pill.addEventListener(tEvent, () => filterTag(t));
+                pill.onclick = () => filterTag(t);
                 bar.appendChild(pill);
             });
             if(tagMode) renderTagEditor(tags);
@@ -181,33 +149,59 @@
             const list = $('tagEditorList'); list.innerHTML = "";
             Array.from(tags).sort().forEach(t => {
                 const item = document.createElement('div');
-                item.style.display = "flex"; item.style.justifyContent = "space-between"; item.style.marginTop = "10px";
-                item.innerHTML = `<span style="color:white">#${t}</span><div><button onclick="renameT('${t}')">✏️</button><button onclick="delT('${t}')">🗑️</button></div>`;
+                item.style.display = "flex"; item.style.justifyContent = "space-between"; item.style.marginTop = "8px";
+                item.innerHTML = `<span style="color:white;font-size:0.9rem;">#${t}</span><div><button onclick="renameT('${t}')">✏️</button><button onclick="delT('${t}')">🗑️</button></div>`;
                 list.appendChild(item);
             });
         }
 
-        window.renameT = (o) => { const n = prompt("Hernoem naar:", o); if(n) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+o+'\\b','g'), '#'+n.toLowerCase())); saveRefresh(); } };
-        window.delT = (t) => { if(confirm("Verwijder tag overal?")) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+t+'\\b','g'), '')); saveRefresh(); } };
+        window.renameT = (o) => { const n = prompt("Hernoem tag:", o); if(n) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+o+'\\b','g'), '#'+n.toLowerCase())); saveRefresh(); } };
+        window.delT = (t) => { if(confirm("Wis tag #"+t+" overal?")) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+t+'\\b','g'), '')); saveRefresh(); } };
 
         function renderIndex() {
             const c = $('indexContent'); c.innerHTML = "";
             let songs = [...db].sort((a,b) => a.title.localeCompare(b.title));
             if (activeTag) songs = songs.filter(s => extractTags(s.content).includes(activeTag));
+            
             songs.forEach(s => {
                 const div = document.createElement('div'); div.className = 'index-container';
-                div.innerHTML = `<div class="swipe-action rename-btn">Naam</div><div class="swipe-action delete-btn">Wis</div><div class="index-item"><input type="checkbox" class="tag-checkbox" data-title="${s.title}" ${tagMode ? '' : 'style="display:none"'} onclick="event.stopPropagation()"><span>${s.title}</span></div>`;
+                div.innerHTML = `
+                    <div class="swipe-action rename-btn" onclick="renameSong('${s.title.replace(/'/g, "\\'")}')">Naam</div>
+                    <div class="swipe-action delete-btn" onclick="deleteSong('${s.title.replace(/'/g, "\\'")}')">Wis</div>
+                    <div class="index-item">
+                        <input type="checkbox" class="tag-checkbox" data-title="${s.title}" ${tagMode ? '' : 'style="display:none"'} onclick="event.stopPropagation()">
+                        <span>${s.title}</span>
+                    </div>`;
                 const item = div.querySelector('.index-item');
-                item.addEventListener(tEvent, () => { if(tagMode) { const cb = item.querySelector('.tag-checkbox'); cb.checked = !cb.checked; } else { loadSong(s.title); toggleMenu(); } });
-                div.querySelector('.rename-btn').addEventListener(tEvent, () => renameSong(s.title));
-                div.querySelector('.delete-btn').addEventListener(tEvent, () => deleteSong(s.title));
+                item.onclick = () => { 
+                    if(tagMode) {
+                        const cb = item.querySelector('.tag-checkbox');
+                        cb.checked = !cb.checked;
+                    } else { loadSong(s.title); toggleMenu(); }
+                };
                 if(!tagMode) initSwipe(item);
                 c.appendChild(div);
             });
         }
 
-        function toggleTagMode() { tagMode = !tagMode; $('bulkActions').style.display = tagMode ? "flex" : "none"; renderIndex(); renderTagBar(); }
-        function applyBulkTag() { const tag = $('bulkTagInput').value.trim().toLowerCase(); if(!tag) return; document.querySelectorAll('.tag-checkbox:checked').forEach(cb => { const s = db.find(x => x.title === cb.dataset.title); if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag; }); $('bulkTagInput').value = ""; saveRefresh(); toggleTagMode(); }
+        function toggleTagMode() { 
+            tagMode = !tagMode; 
+            $('tagModeBtn').textContent = tagMode ? "OPSLAAN / KLAAR" : "TAGS BEHEREN";
+            $('bulkActions').style.display = tagMode ? "flex" : "none"; 
+            renderIndex(); renderTagBar();
+        }
+
+        function applyBulkTag() {
+            const tag = $('bulkTagInput').value.trim().toLowerCase();
+            if(!tag) return;
+            document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
+                const s = db.find(x => x.title === cb.dataset.title);
+                if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
+            });
+            $('bulkTagInput').value = "";
+            saveRefresh(); toggleTagMode();
+        }
+
         function saveRefresh() { localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
         function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
         function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; $('tpVal').textContent = "0"; $('displayTitle').textContent = cur.title; draw(); }
@@ -234,20 +228,19 @@
         function transpose(o) { if(!cur) return; tOff += o; $('tpVal').textContent = (tOff > 0 ? "+" : "") + tOff; draw(); }
         function toggleMenu() { $('songsMenu').classList.toggle('open'); }
         function deleteSong(t) { if(confirm("Wis "+t+"?")) { db = db.filter(s => s.title !== t); saveRefresh(); } }
-        function renameSong(o) { const n = prompt("Nieuwe naam:", o); if(n) { const i = db.findIndex(s => s.title === o); db[i].title = n; saveRefresh(); if(cur && cur.title === o) loadSong(n); } }
+        function renameSong(o) { const n = prompt("Hernoem naar:", o); if(n) { const i = db.findIndex(s => s.title === o); db[i].title = n; saveRefresh(); if(cur && cur.title === o) loadSong(n); } }
         function startEdit() { if(!cur) return; $('lyricsArea').style.display='none'; $('editIcon').style.display='none'; $('saveBtn').style.display='block'; $('editorArea').style.display='block'; $('editorArea').value=cur.content; }
         function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = $('editorArea').value; saveRefresh(); $('lyricsArea').style.display='block'; $('editIcon').style.display='block'; $('saveBtn').style.display='none'; $('editorArea').style.display='none'; draw(); renderTagBar(); }
         function toggleScroll() { sInt ? stopScroll() : startScroll(); }
         function startScroll() { if(!cur) return; const c = $('scroller'), h = c.scrollHeight - c.clientHeight; let d = 180; const s = h/(d*1000), t = Date.now(), p = c.scrollTop; $('scrollBtn').style.fill = 'var(--griffin-red)'; sInt = setInterval(() => { c.scrollTop = p + ((Date.now()-t)*s); if(c.scrollTop >= h) stopScroll(); }, 50); }
         function stopScroll() { clearInterval(sInt); sInt = null; $('scrollBtn').style.fill = "#34c759"; }
-        function initSwipe(item) { let startX, moveX; item.addEventListener(tEvent, e => { startX = e.touches[0].clientX; item.style.transition = 'none'; }); item.addEventListener('touchmove', e => { moveX = e.touches[0].clientX; let d = moveX - startX; if(d < 0) item.style.transform = `translateX(${Math.max(d, -180)}px)`; }); item.addEventListener('touchend', () => { item.style.transition = 'transform 0.2s'; if(moveX - startX < -90) item.style.transform = 'translateX(-180px)'; else item.style.transform = 'translateX(0px)'; }); }
+        function initSwipe(item) { let startX, moveX; item.addEventListener('touchstart', e => { startX = e.touches[0].clientX; item.style.transition = 'none'; }); item.addEventListener('touchmove', e => { moveX = e.touches[0].clientX; let d = moveX - startX; if(d < 0) item.style.transform = `translateX(${Math.max(d, -180)}px)`; }); item.addEventListener('touchend', () => { item.style.transition = 'transform 0.2s'; if(moveX - startX < -90) item.style.transform = 'translateX(-180px)'; else item.style.transform = 'translateX(0px)'; }); }
         
         $('bulkFiles').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
             for(let f of files) {
                 const t = await f.text();
                 let fl = t.split('\n')[0].replace(/[\[\]\r]/g, '').trim();
-                if (fl.length > 60) fl = fl.substring(0, 50) + "...";
                 db.push({title: fl || f.name.replace('.txt',''), content: t});
             }
             saveRefresh();
