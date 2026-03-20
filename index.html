@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.50</title>
+    <title>TDF Stage Pilot v6.51</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -79,11 +79,11 @@
             <button class="top-bar-btn" id="songsBtn">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.50</h2>
-            <div class="transpose-pill" style="margin-top:4px;">
-                <button class="tp-btn" id="tpDec">−</button>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.51</h2>
+            <div class="transpose-pill" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
+                <button class="top-bar-btn" style="font-size:1.3rem;" id="tpDec">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
-                <button class="tp-btn" id="tpInc">+</button>
+                <button class="top-bar-btn" style="font-size:1.3rem;" id="tpInc">+</button>
             </div>
         </div>
         <div class="top-bar-right">
@@ -105,7 +105,7 @@
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag (bv: set1)">
+            <input type="text" id="bulkTagInput" style="background:#121212; color:white; border:1px solid #444; padding:15px; border-radius:10px; width:100%;" placeholder="Nieuwe tag (bv: iers)">
             <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; padding:15px; border-radius:10px; width:100%; margin-top:10px;" id="saveBulkBtn">TAG OPSLAAN</button>
             <div id="tagEditorList" style="margin-top:10px;"></div>
         </div>
@@ -117,7 +117,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "6.50";
+        const APP_VERSION = "6.51";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -151,10 +151,10 @@
             });
         }
 
-        // Verbeterde Regex voor letters én cijfers
+        // Regex aangepast: Alleen letters ([a-zA-Z])
         function extractTags(text) {
             if (!text) return [];
-            const matches = text.match(/#([a-zA-Z0-9]+)/g);
+            const matches = text.match(/#([a-zA-Z]+)/g);
             return matches ? [...new Set(matches.map(m => m.substring(1).toLowerCase()))] : [];
         }
 
@@ -184,7 +184,15 @@
             });
         }
 
-        window.renameT = (o) => { const n = prompt("Nieuwe naam:", o); if(n) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+o+'\\b','g'), '#'+n.toLowerCase())); saveRefresh(); } };
+        window.renameT = (o) => { 
+            let n = prompt("Nieuwe naam (alleen letters):", o); 
+            if(n) {
+                n = n.replace(/[^a-zA-Z]/g, ''); // Verwijder cijfers
+                db.forEach(s => s.content = s.content.replace(new RegExp('#'+o+'\\b','g'), '#'+n.toLowerCase())); 
+                saveRefresh(); 
+            } 
+        };
+
         window.delT = (t) => { if(confirm("Verwijder tag overal?")) { db.forEach(s => s.content = s.content.replace(new RegExp('#'+t+'\\b','g'), '')); saveRefresh(); } };
 
         function renderIndex() {
@@ -204,7 +212,8 @@
         }
 
         function applyBulkTag() {
-            const tag = $('bulkTagInput').value.trim().toLowerCase();
+            let tag = $('bulkTagInput').value.trim().toLowerCase();
+            tag = tag.replace(/[^a-zA-Z]/g, ''); // Verwijder cijfers bij opslaan
             if(!tag) return;
             const selected = document.querySelectorAll('.tag-checkbox:checked');
             if(selected.length > 0) {
@@ -216,7 +225,7 @@
                 cur.content += "\n\n#" + tag;
             }
             $('bulkTagInput').value = "";
-            saveRefresh(); renderTagBar(); toggleTagMode();
+            saveRefresh(); toggleTagMode();
         }
 
         function toggleTagMode() { tagMode = !tagMode; $('bulkActions').style.display = tagMode ? "flex" : "none"; renderIndex(); renderTagBar(); }
