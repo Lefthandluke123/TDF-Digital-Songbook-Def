@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v6.83</title>
+    <title>TDF Stage Pilot v6.84</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -36,24 +36,34 @@
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
         .menu-nav-section { padding: 15px; background: #1a1a1a; border-bottom: 1px solid #333; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        
         #settingsPanel { display: none; padding: 15px; background: #2c2c2e; border-bottom: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; }
-        .admin-btn { width: 100%; padding: 12px; background: #444; color: white; border: 1px solid #666; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; }
+        .admin-btn { width: 100%; padding: 12px; background: #444; color: white; border: 1px solid #666; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem; }
 
-        /* DE ZWEVENDE BALK */
+        /* Tags & Search */
+        .search-container { padding: 10px 15px; background: #1c1c1e; }
+        #songSearch { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #121212; color: white; font-size: 1rem; }
+        
+        #tagBar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 15px; background: #242426; border-bottom: 1px solid #444; max-height: 100px; overflow-y: auto; flex-shrink: 0; }
+        .tag-pill { padding: 6px 14px; border-radius: 20px; background: #333; color: #aaa; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; }
+        .tag-pill.active { background: var(--griffin-orange); color: black; font-weight: bold; }
+
+        #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; -webkit-overflow-scrolling: touch; }
+        .index-item { width: 100%; border-bottom: 1px solid #222; padding: 18px 20px; background: #1c1c1e; color: #eee; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+
+        /* Zwevende Toolbar Editor */
         #editorToolbar { 
             display: none; position: absolute; top: 10px; left: 10px; right: 10px;
             background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 15px;
             z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        .chord-bar { display: flex; overflow-x: auto; padding: 10px; gap: 8px; border-bottom: 1px solid #333; -webkit-overflow-scrolling: touch; }
+        .chord-bar { display: flex; overflow-x: auto; padding: 10px; gap: 8px; border-bottom: 1px solid #333; }
         .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; font-weight: bold; min-width: 50px; }
-        
-        /* DE JOYSTICK */
         .joystick-container { display: flex; justify-content: center; padding: 15px; gap: 20px; align-items: center; }
         .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 45px; height: 45px; border-radius: 10px; font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
         .joy-stack { display: flex; flex-direction: column; gap: 10px; }
 
-        /* Editor Area */
+        /* Content Area */
         .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; position: relative; }
         #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; width: 100%; }
         #editorArea { 
@@ -77,7 +87,7 @@
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.83</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.84</h2>
             <div style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" onmousedown="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -100,8 +110,14 @@
         <div id="settingsPanel">
             <button class="admin-btn" style="background:var(--griffin-orange); color:black;" onclick="toggleTagMode()">TAGS BEHEREN</button>
             <button class="admin-btn" onclick="exportLibrary()">📥 OPSLAAN IN BESTANDEN (.JSON)</button>
+            <div id="bulkActions" style="display:none; flex-direction:column; gap:8px; margin-top:10px;">
+                <input type="text" id="bulkTagInput" placeholder="Nieuwe tag..." style="background:#121212; color:white; border:1px solid #444; padding:10px; border-radius:5px; width:100%;">
+                <button class="admin-btn" onclick="applyBulkTag(document.getElementById('bulkTagInput').value)">VOEG TAG TOE</button>
+                <button class="admin-btn" style="background:var(--griffin-red);" onclick="clearSelectionTags()">WIS SELECTIE TAGS</button>
+            </div>
         </div>
         <div class="search-container"><input type="text" id="songSearch" placeholder="Zoek op titel..." oninput="renderIndex()"></div>
+        <div id="tagBar"></div>
         <div id="indexContent"></div>
     </div>
 
@@ -117,20 +133,19 @@
                 <button class="joy-btn" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
             </div>
         </div>
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Kies een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <script id="mainScript">
+    <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let cur = null, tOff = 0, sInt = null, tagMode = false;
+        let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const chordsList = ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","G7","A7","D7","C7"];
 
         window.onload = () => {
             const logo = localStorage.getItem('tdfLogo');
             if(logo) updateLogoUI(logo);
-            renderIndex(); buildChordBar();
-            console.log("Stage Pilot v6.83 geladen");
+            renderIndex(); renderTagBar(); buildChordBar();
         };
 
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
@@ -140,6 +155,66 @@
             const data = localStorage.getItem('tdfSongs');
             const blob = new Blob([data], {type: 'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_backup.json'; a.click();
+        }
+
+        function extractTags(text) {
+            const m = text.match(/#([a-zA-Z0-9]+)/g);
+            return m ? [...new Set(m.map(x => x.substring(1).toLowerCase()))] : [];
+        }
+
+        function renderTagBar() {
+            const bar = document.getElementById('tagBar'); let tags = new Set();
+            db.forEach(s => extractTags(s.content).forEach(t => tags.add(t)));
+            bar.innerHTML = `<div class="tag-pill ${!activeTag?'active':''}" onclick="filterTag(null)">ALLES</div>`;
+            Array.from(tags).sort().forEach(t => {
+                const p = document.createElement('div'); p.className = `tag-pill ${activeTag===t?'active':''}`;
+                p.textContent = t.toUpperCase(); p.onclick = () => filterTag(t); bar.appendChild(p);
+            });
+        }
+
+        function filterTag(t) { activeTag = t; renderIndex(); renderTagBar(); }
+
+        function renderIndex() {
+            const c = document.getElementById('indexContent'), q = document.getElementById('songSearch').value.toLowerCase();
+            c.innerHTML = "";
+            let s = [...db].sort((a,b) => a.title.localeCompare(b.title));
+            if(activeTag) s = s.filter(x => extractTags(x.content).includes(activeTag));
+            if(q) s = s.filter(x => x.title.toLowerCase().includes(q));
+            s.forEach((x, i) => {
+                const div = document.createElement('div');
+                div.innerHTML = `<div class="index-item" onclick="handleItemClick(this)">
+                    <input type="checkbox" class="tag-checkbox" data-title="${x.title}" ${tagMode?'':'style="display:none"'} onclick="event.stopPropagation()">
+                    <span>${x.title}</span><div style="color:var(--griffin-orange)">⋮</div>
+                </div>
+                <div class="item-actions" style="display:none; padding:10px; gap:10px; background:#2c2c2e;">
+                    <button class="top-bar-btn" style="background:#444; padding:10px; border-radius:5px;" onclick="loadSong('${x.title.replace(/'/g,"\\'")}')">OPEN</button>
+                    <button class="top-bar-btn" style="background:var(--griffin-red); padding:10px; border-radius:5px;" onclick="deleteSong('${x.title.replace(/'/g,"\\'")}')">WIS</button>
+                </div>`;
+                c.appendChild(div);
+            });
+        }
+
+        function applyBulkTag(t) {
+            const tag = t.trim().toLowerCase().replace('#',''); if(!tag) return;
+            document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
+                const s = db.find(x => x.title === cb.dataset.title);
+                if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
+            });
+            saveRefresh();
+        }
+
+        function clearSelectionTags() {
+            if(!confirm("Wis alle tags van selectie?")) return;
+            document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
+                const s = db.find(x => x.title === cb.dataset.title);
+                if(s) s.content = s.content.replace(/#[a-zA-Z0-9]+/g, '').trim();
+            });
+            saveRefresh();
+        }
+
+        function handleItemClick(el) {
+            if(tagMode) { const cb = el.querySelector('.tag-checkbox'); cb.checked = !cb.checked; }
+            else { const act = el.nextElementSibling; act.style.display = act.style.display === 'none' ? 'flex' : 'none'; }
         }
 
         function buildChordBar() {
@@ -166,42 +241,19 @@
             ed.selectionStart = ed.selectionEnd = newPos; ed.focus();
         }
 
-        function renderIndex() {
-            const c = document.getElementById('indexContent'), q = document.getElementById('songSearch').value.toLowerCase();
-            c.innerHTML = "";
-            let s = [...db].sort((a,b) => a.title.localeCompare(b.title));
-            if(q) s = s.filter(x => x.title.toLowerCase().includes(q));
-            s.forEach((x, i) => {
-                const div = document.createElement('div');
-                div.innerHTML = `<div class="index-item" onclick="handleItemClick(this)">
-                    <input type="checkbox" class="tag-checkbox" data-title="${x.title}" ${tagMode?'':'style="display:none"'} onclick="event.stopPropagation()">
-                    <span>${x.title}</span><div style="color:var(--griffin-orange)">⋮</div>
-                </div>
-                <div class="item-actions" style="display:none; padding:10px; gap:10px; background:#2c2c2e;">
-                    <button class="top-bar-btn" style="background:#444; padding:10px; border-radius:5px;" onclick="loadSong('${x.title.replace(/'/g,"\\'")}')">OPEN</button>
-                    <button class="top-bar-btn" style="background:var(--griffin-red); padding:10px; border-radius:5px;" onclick="deleteSong('${x.title.replace(/'/g,"\\'")}')">WIS</button>
-                </div>`;
-                c.appendChild(div);
-            });
-        }
-
-        function handleItemClick(el) {
-            if(tagMode) { const cb = el.querySelector('.tag-checkbox'); cb.checked = !cb.checked; }
-            else { const act = el.nextElementSibling; act.style.display = act.style.display === 'none' ? 'flex' : 'none'; }
-        }
-
         function loadSong(t) { cur = db.find(s => s.title === t); tOff = 0; document.getElementById('tpVal').textContent = "0"; document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
-        function saveRefresh() { localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
+        function toggleTagMode() { tagMode = !tagMode; document.getElementById('bulkActions').style.display = tagMode?"flex":"none"; renderIndex(); }
+        function saveRefresh() { localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); renderTagBar(); }
         function transpose(o) { tOff += o; document.getElementById('tpVal').textContent = (tOff>0?"+":"")+tOff; draw(); }
 
         function draw() {
-            if(!cur) return; const lines = cur.content.trim().split('\n'); let h = "";
+            if(!cur) return; const lines = cur.content.replace(/#[a-zA-Z0-9]+/g, '').trim().split('\n'); let h = "";
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
                     if(l[i] === '[') {
                         let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;}
-                        let c = l.substring(i+1, e); chords.push({p: txt.length, v: c}); i = e+1;
+                        let c = l.substring(i+1, e); chords.push({p: txt.length, v: tpChord(c, tOff)}); i = e+1;
                     } else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
@@ -210,22 +262,20 @@
             document.getElementById('lyricsArea').innerHTML = h;
         }
 
-        function startEdit() { 
-            if(!cur) return; 
-            document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('editorArea').style.display='block'; 
-            document.getElementById('editorToolbar').style.display='block'; 
-            document.getElementById('editorArea').value=cur.content; 
-        }
-        function finishEdit() { 
-            const i = db.findIndex(s=>s.title===cur.title); 
-            db[i].content = document.getElementById('editorArea').value; saveRefresh(); 
-            document.getElementById('lyricsArea').style.display='block'; 
-            document.getElementById('editorArea').style.display='none'; 
-            document.getElementById('editorToolbar').style.display='none'; draw(); 
+        function tpChord(c, o) {
+            const n = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+            return c.replace(/[A-G][#b]?/g, m => {
+                let x = m; if(x==="Bb")x="A#"; if(x==="Eb")x="D#"; if(x==="Ab")x="G#"; if(x==="Db")x="C#"; if(x==="Gb")x="F#";
+                let i = n.indexOf(x); if(i===-1) return m;
+                let j = (i+o)%12; while(j<0)j+=12; return n[j];
+            });
         }
 
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorToolbar').style.display='block'; document.getElementById('editorArea').value=cur.content; }
+        function finishEdit() { const i = db.findIndex(s=>s.title===cur.title); db[i].content = document.getElementById('editorArea').value; saveRefresh(); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('editorToolbar').style.display='none'; draw(); }
         function toggleScroll() { sInt ? (clearInterval(sInt), sInt=null) : sInt = setInterval(() => { document.getElementById('scroller').scrollTop += 1; }, 50); }
+
+        function deleteSong(t) { if(confirm("Liedje wissen?")) { db = db.filter(s => s.title !== t); saveRefresh(); document.getElementById('lyricsArea').innerHTML = "Selecteer een liedje."; } }
 
         document.getElementById('logoInput').onchange = (e) => {
             const r = new FileReader(); r.onload = (ev) => { localStorage.setItem('tdfLogo', ev.target.result); updateLogoUI(ev.target.result); };
@@ -236,7 +286,7 @@
         document.getElementById('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
                 const t = await f.text();
-                if(f.name.endsWith('.json')) db = JSON.parse(t);
+                if(f.name.endsWith('.json')) { try { db = JSON.parse(t); saveRefresh(); alert("Backup hersteld!"); } catch(e){ alert("Fout in JSON"); } }
                 else db.push({title: f.name.replace('.txt',''), content: t});
             }
             saveRefresh();
