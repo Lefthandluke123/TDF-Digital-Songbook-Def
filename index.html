@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v6.98</title>
+    <title>TDF Stage Pilot v6.99</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -39,7 +39,7 @@
         .song-link { flex-grow: 1; display: flex; align-items: center; padding: 0 20px; color: #eee; font-size: 1.05rem; }
         .edit-btn-container { width: 65px; border-left: 1px solid #333; display: flex; align-items: center; justify-content: center; background: rgba(212, 142, 61, 0.1); }
 
-        /* Lyrics & Editor Container */
+        /* Main Area */
         .main-content { flex-grow: 1; background: #fff; overflow: hidden; position: relative; display: flex; flex-direction: column; }
         .scroll-area { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; }
         
@@ -50,8 +50,12 @@
             background: #fff; color: #000; resize: none;
         }
 
-        /* Draggables */
-        .draggable-box { display: none; position: absolute; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none; }
+        /* Fixed Draggables Logic */
+        .draggable-box { 
+            display: none; position: absolute; background: rgba(26, 26, 26, 0.95); 
+            border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none; 
+        }
         .drag-handle { height: 24px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-weight: bold; font-size: 10px; letter-spacing: 2px; }
 
         #chordStrip { top: 20px; left: 20px; width: 70px; }
@@ -72,7 +76,7 @@
     
     <div class="top-bar">
         <div class="top-bar-left"><button class="top-bar-btn" onclick="toggleMenu()">Songs</button></div>
-        <div class="top-bar-center"><h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.98</h2></div>
+        <div class="top-bar-center"><h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.99</h2></div>
         <div class="top-bar-right">
             <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
@@ -127,7 +131,7 @@
 
         function renameSong(oldTitle) {
             const idx = db.findIndex(s => s.title === oldTitle);
-            const newTitle = prompt("Hernoem liedje:", oldTitle);
+            const newTitle = prompt("Hernoem:", oldTitle);
             if(newTitle && newTitle.trim() !== "" && newTitle !== oldTitle) {
                 db[idx].title = newTitle.trim(); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
                 if(cur && cur.title === oldTitle) document.getElementById('displayTitle').textContent = newTitle;
@@ -197,7 +201,12 @@
 
         function initDraggable(el) {
             const h = el.querySelector('.drag-handle'); let nx = 0, ny = 0;
-            const start = (e) => { nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; document.onmousemove = move; document.ontouchmove = move; };
+            const start = (e) => { 
+                nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; 
+                // STRETCH FIX: Wis bottom en right bij start van slepen
+                el.style.bottom = 'auto'; el.style.right = 'auto';
+                document.onmousemove = move; document.ontouchmove = move; 
+            };
             const move = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches?e.touches[0].clientX:0); let cy = e.clientY || (e.touches?e.touches[0].clientY:0); let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; };
             const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
             h.onmousedown = start; h.ontouchstart = start; document.onmouseup = stop; document.ontouchend = stop;
