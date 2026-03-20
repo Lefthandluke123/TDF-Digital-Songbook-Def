@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TDF Stage Pilot v6.62</title>
+    <title>TDF Stage Pilot v6.63</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -21,7 +21,7 @@
             position: fixed; top: 0 !important; left: 0; width: 100%; height: var(--header-height); 
             background: var(--top-bar-bg); border-bottom: 1px solid #333; 
             display: flex; align-items: flex-end; justify-content: space-between; 
-            padding: 0 15px 12px 15px; z-index: 9999; 
+            padding: 0 15px 12px 15px; z-index: 10000; 
         }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .top-bar-icon { width: 28px; height: 28px; fill: var(--griffin-orange); cursor: pointer; }
@@ -29,10 +29,8 @@
 
         .songs-menu { 
             position: fixed; top: 0; left: -33.33%; width: 33.33%; height: 100%; 
-            background: #1c1c1e; z-index: 9001; transition: left 0.3s ease; 
-            display: flex; flex-direction: column; 
-            /* Extra ruimte bovenin voor Firefox iPad */
-            padding-top: calc(50px + env(safe-area-inset-top)); 
+            background: #1c1c1e; z-index: 10001; transition: left 0.3s ease; 
+            display: flex; flex-direction: column; padding-top: calc(50px + env(safe-area-inset-top)); 
         }
         .songs-menu.open { left: 0; }
         @media (max-width: 768px) { .songs-menu { width: 85%; left: -85%; } }
@@ -47,12 +45,13 @@
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
         .index-item { width: 100%; border-bottom: 1px solid #222; padding: 18px 20px; background: #1c1c1e; color: #eee; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
         .item-main { display: flex; align-items: center; gap: 15px; pointer-events: none; }
-        
         .tag-checkbox { width: 35px; height: 35px; accent-color: var(--griffin-orange); cursor: pointer; pointer-events: auto; }
+
+        #bulkActions { display: none; padding: 15px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; gap: 12px; flex-shrink: 0; }
+        .bulk-input { background: #121212; color: white; border: 1px solid #444; padding: 15px; border-radius: 10px; width: 100%; font-size: 1.1rem; }
+
         .item-actions { display: none; background: #2c2c2e; padding: 10px; gap: 10px; border-bottom: 2px solid #444; }
         .action-btn { flex: 1; padding: 12px; border-radius: 5px; border: none; font-weight: bold; color: white; cursor: pointer; }
-
-        #bulkActions { display: none; padding: 15px; background: #2c2c2e; border-top: 2px solid var(--griffin-orange); flex-direction: column; flex-shrink: 0; }
 
         .lyrics-container { background: var(--lyric-bg); width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
         #lyricsArea, #editorArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.35rem; line-height: 1.35; color: var(--lyric-text); width: 100%; }
@@ -69,11 +68,11 @@
 
     <div class="top-bar">
         <div class="top-bar-left">
-            <img id="appLogo" alt="Logo" onclick="document.getElementById('logoInput').click()">
+            <img id="appLogo" alt="Logo">
             <button class="top-bar-btn" id="btnShowMenu">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.62</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.63</h2>
             <div class="transpose-pill" style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" style="font-size:1.3rem;" id="btnTpMinus">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -99,18 +98,19 @@
         <div id="tagBar"></div>
         <div id="indexContent"></div>
         <div id="bulkActions">
-            <button class="manage-btn" style="background:var(--griffin-orange); color:black; border:none;" id="btnPromptTag">NIEUWE TAG / GROEP</button>
+            <input type="text" id="bulkTagInput" class="bulk-input" placeholder="Tagnaam (bv: set1)">
+            <button class="top-bar-btn" style="background:var(--griffin-orange); color:black; border:none; padding:15px; border-radius:10px;" id="btnExecuteTag">VOEG TAG TOE</button>
             <div id="tagEditorList" style="margin-top:10px;"></div>
         </div>
     </div>
 
     <div class="lyrics-container" id="scroller">
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Selecteer een liedje.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        const APP_VERSION = "6.62";
+        const APP_VERSION = "6.63";
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0, sInt = null, tagMode = false, activeTag = null;
         const $ = (id) => document.getElementById(id);
@@ -123,7 +123,7 @@
             $('btnShowMenu').addEventListener('click', toggleMenu);
             $('btnCloseMenu').addEventListener('click', toggleMenu);
             $('tagModeBtn').addEventListener('click', toggleTagMode);
-            $('btnPromptTag').addEventListener('click', applyBulkTagPrompt);
+            $('btnExecuteTag').addEventListener('click', applyBulkTag);
             $('btnTpMinus').addEventListener('click', () => transpose(-1));
             $('btnTpPlus').addEventListener('click', () => transpose(1));
             $('scrollBtn').addEventListener('click', toggleScroll);
@@ -143,12 +143,12 @@
             let tags = new Set();
             db.forEach(s => extractTags(s.content).forEach(t => tags.add(t)));
             bar.innerHTML = `<div class="tag-pill ${!activeTag ? 'active' : ''}" id="pill-all">ALLES</div>`;
-            $('pill-all').addEventListener('click', () => filterTag(null));
+            $('pill-all').onclick = () => filterTag(null);
             Array.from(tags).sort().forEach(t => {
                 const pill = document.createElement('div');
                 pill.className = `tag-pill ${activeTag === t ? 'active' : ''}`;
                 pill.textContent = t.toUpperCase();
-                pill.addEventListener('click', () => filterTag(t));
+                pill.onclick = () => filterTag(t);
                 bar.appendChild(pill);
             });
             if(tagMode) renderTagEditor(tags);
@@ -199,7 +199,6 @@
                         el.style.display = isVisible ? 'none' : 'flex';
                     }
                 };
-                
                 div.querySelector('.btn-open').onclick = () => loadSong(s.title);
                 div.querySelector('.btn-rename').onclick = () => { const n = prompt("Nieuwe naam:", s.title); if(n){ const i = db.findIndex(x => x.title === s.title); db[i].title = n; saveRefresh(); } };
                 div.querySelector('.btn-delete').onclick = () => { if(confirm("Wis liedje?")){ db = db.filter(x => x.title !== s.title); saveRefresh(); } };
@@ -207,19 +206,19 @@
             });
         }
 
-        function applyBulkTagPrompt() {
-            const tag = prompt("Voer groepsnaam in (letters en cijfers):");
+        function applyBulkTag() {
+            const tag = $('bulkTagInput').value.trim().toLowerCase();
             if(!tag) return;
-            const cleanTag = tag.trim().toLowerCase();
             const checked = document.querySelectorAll('.tag-checkbox:checked');
             if(checked.length > 0) {
                 checked.forEach(cb => {
                     const s = db.find(x => x.title === cb.dataset.title);
-                    if(s && !extractTags(s.content).includes(cleanTag)) s.content += "\n\n#" + cleanTag;
+                    if(s && !extractTags(s.content).includes(tag)) s.content += "\n\n#" + tag;
                 });
-            } else if(cur && !extractTags(cur.content).includes(cleanTag)) {
-                cur.content += "\n\n#" + cleanTag;
+            } else if(cur && !extractTags(cur.content).includes(tag)) {
+                cur.content += "\n\n#" + tag;
             }
+            $('bulkTagInput').value = "";
             saveRefresh(); toggleTagMode();
         }
 
