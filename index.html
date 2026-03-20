@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v6.92</title>
+    <title>TDF Stage Pilot v6.93</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -24,29 +24,34 @@
         #indexContent { flex-grow: 1; overflow-y: auto; background: #121212; }
         .index-item { width: 100%; border-bottom: 1px solid #222; padding: 15px 20px; background: #1c1c1e; color: #eee; cursor: pointer; }
 
-        /* MULTI-LAYOUT TOOLBAR */
-        .draggable-box { display: none; position: fixed; background: rgba(30, 30, 30, 0.95); border: 1px solid var(--griffin-orange); border-radius: 10px; z-index: 50000; box-shadow: 0 8px 25px rgba(0,0,0,0.8); touch-action: none; }
-        .drag-header { height: 24px; background: var(--griffin-orange); border-radius: 8px 8px 0 0; cursor: move; display: flex; justify-content: space-between; align-items: center; padding: 0 8px; color: black; font-size: 10px; font-weight: bold; }
-        .rotate-btn { cursor: pointer; font-size: 14px; padding: 2px; }
+        /* Draggable UI Elements */
+        .draggable-box { 
+            display: none; position: fixed; 
+            background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); 
+            border-radius: 12px; z-index: 50000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); touch-action: none;
+        }
+        .drag-handle { 
+            height: 24px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; 
+            cursor: move; display: flex; justify-content: center; align-items: center; 
+            color: black; font-weight: bold; font-size: 10px; letter-spacing: 2px;
+        }
 
-        #chordGrid { top: 100px; left: 20px; transition: width 0.2s ease; }
-        /* Horizontaal stand (default) */
-        .grid-h { width: 240px; }
-        .grid-h .chord-grid-container { grid-template-columns: repeat(6, 1fr); }
-        /* Verticaal stand */
-        .grid-v { width: 90px; }
-        .grid-v .chord-grid-container { grid-template-columns: repeat(2, 1fr); }
+        /* Vertical Chord Strip */
+        #chordStrip { top: 100px; left: 20px; width: 65px; }
+        .chord-bar { display: flex; flex-direction: column; padding: 6px; gap: 5px; max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .chord-btn { background: #333; color: white; border: 1px solid #555; padding: 10px 0; border-radius: 6px; font-weight: bold; font-size: 0.9rem; text-align: center; }
+        /* Custom Button */
+        .custom-btn { background: #1a1a1a; border: 2px dashed var(--griffin-orange); color: var(--griffin-orange); font-size: 0.8rem; }
 
-        .chord-grid-container { display: grid; gap: 4px; padding: 6px; max-height: 300px; overflow-y: auto; }
-        .chord-btn { background: #444; color: white; border: none; padding: 8px 0; border-radius: 4px; font-weight: bold; font-size: 0.8rem; text-align: center; }
+        /* Joystick Pad */
+        #joyPad { bottom: 40px; right: 20px; width: 140px; background: rgba(35, 35, 35, 0.8); }
+        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; justify-content: center; padding: 15px; gap: 10px; }
+        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-        #joyPad { bottom: 30px; right: 20px; width: 130px; }
-        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; justify-content: center; padding: 10px; gap: 6px; }
-        .joy-btn { background: var(--griffin-orange); color: black; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
+        /* Content Area */
         .lyrics-container { background: #fff; width: 100%; height: calc(100vh - var(--header-height)); overflow-y: auto; }
-        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; }
-        #editorArea { display: none; width: 100%; height: 100%; padding: 30px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; background: #fff; color: #000; }
+        #lyricsArea { padding: 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; color: #000; width: 100%; }
+        #editorArea { display: none; width: 100%; height: 100%; padding: 30px 30px 400px 30px; font-family: ui-monospace, monospace; font-size: 1.4rem; line-height: 1.4; border: none; outline: none; background: #fff; color: #000; overflow-y: auto; }
 
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; font-size: 1.15rem; }
@@ -60,7 +65,7 @@
             <button class="top-bar-btn" onclick="toggleMenu()">Songs</button>
         </div>
         <div class="top-bar-center">
-            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.92</h2>
+            <h2 id="displayTitle" style="margin:0; color:white; font-size:1.1rem;">Stage Pilot v6.93</h2>
             <div style="margin-top:4px; display:inline-flex; align-items:center; gap:8px; background:#2c2c2e; padding:3px 10px; border-radius:20px; border:1px solid #444;">
                 <button class="top-bar-btn" onmousedown="transpose(-1)">−</button>
                 <span id="tpVal" style="color:white; font-size:0.9rem;">0</span>
@@ -69,13 +74,14 @@
         </div>
         <div class="top-bar-right">
             <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
-            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">KLAAR</button>
+            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
         </div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
         <div class="menu-nav-section">
             <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
+            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()">📂 IMPORT</button>
         </div>
         <div id="indexContent"></div>
     </div>
@@ -85,17 +91,13 @@
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
-    <div id="chordGrid" class="draggable-box grid-h">
-        <div class="drag-header">
-            <span class="rotate-btn" onclick="toggleRotation()">↻</span>
-            <span>::::</span>
-            <span style="width:14px"></span>
-        </div>
-        <div class="chord-grid-container" id="chordGridIn"></div>
+    <div id="chordStrip" class="draggable-box">
+        <div class="drag-handle">::::</div>
+        <div class="chord-bar" id="chordBar"></div>
     </div>
 
     <div id="joyPad" class="draggable-box">
-        <div class="drag-header" style="justify-content:center;">::::</div>
+        <div class="drag-handle">::::</div>
         <div class="joy-grid">
             <button class="joy-btn" style="grid-area: up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
             <button class="joy-btn" style="grid-area: left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
@@ -107,23 +109,49 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let cur = null, tOff = 0;
-        const chords = ["A","Am","A7","Am7","B","Bm","Bb","C","Cm","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","G#","Eb","F#"];
+        let customChord = ""; // Onthoudt het laatst gekozen custom akkoord
 
-        window.onload = () => { renderIndex(); buildGrid(); initDraggable(document.getElementById('chordGrid')); initDraggable(document.getElementById('joyPad')); };
+        // Opgeschoonde lijst zonder G# Eb F# Cm Bb
+        const chordsList = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","Fm","G","Gm","G7","A7"];
 
-        function toggleRotation() {
-            const el = document.getElementById('chordGrid');
-            if(el.classList.contains('grid-h')) { el.classList.remove('grid-h'); el.classList.add('grid-v'); }
-            else { el.classList.remove('grid-v'); el.classList.add('grid-h'); }
+        window.onload = () => { renderIndex(); buildChordStrip(); initDraggable(document.getElementById('chordStrip')); initDraggable(document.getElementById('joyPad')); };
+
+        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
+        
+        // Hulpfunctie om custom akkoord te vragen en op te slaan
+        function setCustomChord() {
+            const result = prompt("Welk akkoord invoegen?", customChord);
+            if(result !== null) {
+                customChord = result.trim();
+                insertText(`[${customChord}]`);
+                document.getElementById('customLabel').textContent = customChord || '[ ]';
+            }
         }
 
-        function buildGrid() {
-            const g = document.getElementById('chordGridIn');
-            chords.forEach(c => {
+        function buildChordStrip() {
+            const bar = document.getElementById('chordBar');
+            bar.innerHTML = "";
+            
+            // 1. De Custom [ ] knop bovenaan
+            const cBtn = document.createElement('button');
+            cBtn.className = 'chord-btn custom-btn';
+            cBtn.innerHTML = `<span id="customLabel">[ ]</span>`;
+            cBtn.onmousedown = (e) => { e.preventDefault(); setCustomChord(); };
+            bar.appendChild(cBtn);
+
+            // 2. De opgeschoonde standaardlijst
+            chordsList.forEach(c => {
                 const b = document.createElement('button'); b.className = 'chord-btn'; b.textContent = c;
                 b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
-                g.appendChild(b);
+                bar.appendChild(b);
             });
+        }
+
+        function insertText(t) { 
+            const ed = document.getElementById('editorArea'), p = ed.selectionStart; 
+            ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); 
+            ed.selectionStart = ed.selectionEnd = p + t.length; 
+            ed.focus(); 
         }
 
         function renderIndex() {
@@ -175,7 +203,6 @@
             draw(); 
         }
         
-        function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0, p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
         function moveCursor(d) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + d; ed.focus(); }
         function moveLine(d) {
             const ed = document.getElementById('editorArea'), lines = ed.value.split('\n'), pos = ed.selectionStart;
@@ -186,22 +213,20 @@
         }
 
         function initDraggable(el) {
-            const h = el.querySelector('.drag-header'); let nx = 0, ny = 0;
+            const h = el.querySelector('.drag-handle'); let nx = 0, ny = 0;
             const s = (e) => { nx = e.clientX || e.touches[0].clientX; ny = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; };
-            const m = (e) => { 
-                if (e.target.classList.contains('rotate-btn')) return;
-                e.preventDefault(); 
-                let cx = e.clientX || (e.touches?e.touches[0].clientX:0); 
-                let cy = e.clientY || (e.touches?e.touches[0].clientY:0); 
-                let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; 
-                el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; 
-                el.style.right="auto"; el.style.bottom="auto"; 
-            };
+            const m = (e) => { e.preventDefault(); let cx = e.clientX || (e.touches?e.touches[0].clientX:0); let cy = e.clientY || (e.touches?e.touches[0].clientY:0); let dx = nx-cx; let dy = ny-cy; nx=cx; ny=cy; el.style.top = (el.offsetTop - dy)+"px"; el.style.left = (el.offsetLeft - dx)+"px"; el.style.right="auto"; el.style.bottom="auto"; };
             const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
             h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop;
         }
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        function transpose(o) { tOff += o; document.getElementById('tpVal').textContent = (tOff>0?"+":"")+tOff; draw(); }
+
+        document.getElementById('bulkFiles').onchange = async (e) => {
+            for(let f of Array.from(e.target.files)) {
+                const t = await f.text();
+                db.push({title: f.name.replace('.txt',''), content: t});
+            }
+            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
+        };
     </script>
 </body>
 </html>
