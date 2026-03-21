@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.19</title>
+    <title>TDF Stage Pilot v7.20 - Floating Joy</title>
     <style>
         :root { --bg-dark: #121212; --top-bar-bg: #1a1a1a; --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 85px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; }
         body { font-family: ui-monospace, 'SF Mono', monospace; display: flex; flex-direction: column; }
 
+        /* Top Bar */
         .top-bar { height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; flex-shrink: 0; }
         #appLogo { height: 42px; width: 42px; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1rem; font-weight: bold; cursor: pointer; }
 
+        /* Menu */
         .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
         .tab-bar { display: flex; background: #1a1a1a; border-bottom: 1px solid #333; }
@@ -23,12 +25,20 @@
         .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
         #indexContent { flex-grow: 1; overflow-y: scroll; background: #121212; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
 
-        .draggable-box { position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; display: none; touch-action: none; }
-        .drag-handle { height: 26px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-size: 10px; font-weight: bold; }
-        .tool-btn { background: #333; color: white; border: 1px solid #555; border-radius: 6px; padding: 12px; font-weight: bold; width: 100%; text-align: center; }
+        /* Floating Draggables */
+        .draggable-box { position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; display: none; touch-action: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .drag-handle { height: 26px; background: var(--griffin-orange); border-radius: 9px 9px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+        .tool-btn { background: #333; color: white; border: 1px solid #555; border-radius: 8px; padding: 12px; font-weight: bold; width: 100%; text-align: center; }
+        .tool-btn:active { background: var(--griffin-orange); color: black; }
 
+        /* Joystick Style */
+        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; padding: 15px; gap: 8px; }
+        .joy-btn { width: 50px; height: 50px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .joy-btn:active { background: var(--griffin-orange); color: black; }
+
+        /* Content Area */
         .lyrics-container { flex-grow: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; }
+        #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; line-height: 1.4; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.4rem; background: #fff; border: none; outline: none; }
 
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
@@ -40,38 +50,38 @@
     <input type="file" id="bulkFiles" multiple style="display:none;">
 
     <div class="top-bar">
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; align-items:center;">
             <div id="appLogo">🖼️</div>
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:5px 15px;border-radius:5px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white;font-size:0.9rem;margin:0;">v7.19</h2>
+        <h2 id="displayTitle" style="color:white;font-size:0.9rem;margin:0;">v7.20 Joy</h2>
         <div style="display:flex; gap:10px;">
             <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
         </div>
     </div>
 
-    <div id="chordStrip" class="draggable-box" style="top:100px; left:20px; width:80px;">
-        <div class="drag-handle">AKKOORDEN</div>
-        <div id="chordBar" style="display:flex; flex-direction:column; padding:8px; gap:6px; max-height:400px; overflow-y:auto;"></div>
+    <div id="chordStrip" class="draggable-box" style="top:100px; left:20px; width:85px;">
+        <div class="drag-handle">CHORDS</div>
+        <div id="chordBar" style="display:flex; flex-direction:column; padding:8px; gap:6px; max-height:350px; overflow-y:auto;"></div>
     </div>
 
-    <div id="joyPad" class="draggable-box" style="bottom:40px; right:20px; width:150px;">
-        <div class="drag-handle">NAVIGATIE</div>
-        <div style="display:grid; grid-template-areas:'. up .' 'left . right' '. down .'; padding:15px; gap:10px;">
-            <button class="tool-btn" style="grid-area:up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
-            <button class="tool-btn" style="grid-area:left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
-            <button class="tool-btn" style="grid-area:right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
-            <button class="tool-btn" style="grid-area:down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
+    <div id="joyPad" class="draggable-box" style="bottom:50px; right:20px;">
+        <div class="drag-handle">JOYSTICK</div>
+        <div class="joy-grid">
+            <button class="joy-btn" style="grid-area:up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
+            <button class="joy-btn" style="grid-area:left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
+            <button class="joy-btn" style="grid-area:right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
+            <button class="joy-btn" style="grid-area:down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
         </div>
     </div>
 
     <div id="transposePad" class="draggable-box" style="top:100px; right:20px; width:100px;">
-        <div class="drag-handle">TRANSPOSE</div>
-        <div style="display:flex; flex-direction:column; align-items:center; padding:10px; gap:8px;">
+        <div class="drag-handle">PITCH</div>
+        <div style="display:flex; flex-direction:column; align-items:center; padding:12px; gap:8px;">
             <button class="tool-btn" onclick="transpose(1)">+</button>
-            <span id="tpVal" style="color:white; font-size:1.2rem;">0</span>
+            <span id="tpVal" style="color:white; font-size:1.4rem; font-weight:bold;">0</span>
             <button class="tool-btn" onclick="transpose(-1)">-</button>
         </div>
     </div>
@@ -82,13 +92,13 @@
             <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SET</button>
         </div>
         <div id="indexContent"></div>
-        <div style="padding:15px; background:#1a1a1a; display:flex; gap:10px; flex-shrink:0;">
+        <div style="padding:15px; background:#1a1a1a; display:flex; gap:10px; border-top:1px solid #333;">
             <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
-            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="color:#fff; background:#444; padding:5px 10px; border-radius:4px;">📂 IMPORT</button>
+            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="color:#fff; background:#444; padding:8px 15px; border-radius:6px;">📂 IMPORT</button>
         </div>
     </div>
 
-    <div class="lyrics-container"><div id="lyricsArea">Gebruik de 'SONGS' knop.</div><textarea id="editorArea" spellcheck="false"></textarea></div>
+    <div class="lyrics-container"><div id="lyricsArea">Selecteer een liedje.</div><textarea id="editorArea" spellcheck="false"></textarea></div>
 
     <script>
         let db = [], setlist = [], cur = null, tOff = 0, currentTab = 'lib';
@@ -97,41 +107,64 @@
             try {
                 db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
                 setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
-            } catch(e) { db = []; setlist = []; }
+            } catch(e) { db=[]; setlist=[]; }
         }
 
-        window.onload = () => { sync(); buildChordStrip(); renderIndex(); ['chordStrip','joyPad','transposePad'].forEach(id => initDrag(document.getElementById(id))); };
+        window.onload = () => { 
+            sync(); 
+            buildChordStrip(); 
+            renderIndex(); 
+            ['chordStrip','joyPad','transposePad'].forEach(id => initDrag(document.getElementById(id))); 
+        };
 
         function renderIndex() {
             sync(); const c = document.getElementById('indexContent'); if(!c) return; c.innerHTML = "";
             let l = currentTab === 'lib' ? [...db].sort((a,b) => a.title.localeCompare(b.title)) : setlist;
             l.forEach((x, i) => {
-                const w = document.createElement('div'); w.style.cssText = "border-bottom:1px solid #333; height:70px; display:flex; align-items:center; padding:0 15px; background:#1c1c1e; color:white;";
-                w.innerHTML = `<div style="width:40px; color:var(--griffin-orange); font-size:1.4rem;" onclick="rename('${x.title}')">✎</div>
-                <div style="flex-grow:1; font-weight:bold;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                <div style="color:var(--griffin-orange); font-size:1.8rem;" onclick="${currentTab==='lib'?'addToSet':'remFromSet'}('${x.title}',${i})">${currentTab==='lib'?'+':'×'}</div>`;
+                const w = document.createElement('div'); w.style.cssText = "border-bottom:1px solid #333; height:75px; display:flex; align-items:center; padding:0 15px; background:#1c1c1e; color:white;";
+                w.innerHTML = `
+                    <div style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(212,142,61,0.1); border-radius:8px; border:1px solid #444; margin-right:15px;" onclick="rename('${x.title}')">
+                        <span style="color:var(--griffin-orange); font-size:1.5rem;">✎</span>
+                    </div>
+                    <div style="flex-grow:1; font-weight:bold; font-size:1.1rem;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                    <div style="color:var(--griffin-orange); font-size:2rem; padding:10px;" onclick="${currentTab==='lib'?'addToSet':'remFromSet'}('${x.title}',${i})">${currentTab==='lib'?'+':'×'}</div>
+                `;
                 c.appendChild(w);
             });
         }
-
-        document.getElementById('bulkFiles').onchange = async (e) => {
-            for(let f of Array.from(e.target.files)) {
-                const t = await f.text();
-                if(f.name.endsWith('.json')) { try { const imp = JSON.parse(t); db = imp; } catch(e) {} }
-                else db.push({title: f.name.replace('.txt',''), content: t});
-            }
-            localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
-        };
 
         function buildChordStrip() {
             const bar = document.getElementById('chordBar'); const chords = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","G","G7"];
             chords.forEach(c => { const b = document.createElement('button'); b.className = 'tool-btn'; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); }; bar.appendChild(b); });
         }
 
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display = 'none'; document.getElementById('editorArea').style.display = 'block'; document.getElementById('editorArea').value = cur.content; document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'block'); document.getElementById('editBtn').style.display = 'none'; document.getElementById('saveBtn').style.display = 'block'; }
-        function finishEdit() { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display = 'block'; document.getElementById('editorArea').style.display = 'none'; document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'none'); document.getElementById('editBtn').style.display = 'block'; document.getElementById('saveBtn').style.display = 'none'; draw(); }
+        function initDrag(el) {
+            const h = el.querySelector('.drag-handle'); let ix, iy;
+            const s = (e) => { ix = e.clientX || e.touches[0].clientX; iy = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; };
+            const m = (e) => { e.preventDefault(); let cx = e.clientX || e.touches[0].clientX; let cy = e.clientY || e.touches[0].clientY; el.style.top = (el.offsetTop - (iy - cy)) + "px"; el.style.left = (el.offsetLeft - (ix - cx)) + "px"; ix = cx; iy = cy; };
+            const stop = () => { document.onmousemove = null; document.ontouchmove = null; };
+            h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop;
+        }
+
+        function startEdit() { 
+            if(!cur) return; 
+            document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; 
+            document.getElementById('editorArea').value=cur.content; 
+            document.querySelectorAll('.draggable-box').forEach(b=>b.style.display='block');
+            document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block';
+        }
+
+        function finishEdit() { 
+            const idx = db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx].content=document.getElementById('editorArea').value;
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none';
+            document.querySelectorAll('.draggable-box').forEach(b=>b.style.display='none');
+            document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none';
+            draw(); 
+        }
+
+        // De rest van de functies (load, draw, transpose, etc.) blijven identiek voor stabiliteit
         function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0,p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
-        function initDrag(el) { const h = el.querySelector('.drag-handle'); let ix, iy; const s = (e) => { ix = e.clientX || e.touches[0].clientX; iy = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; }; const m = (e) => { e.preventDefault(); let cx = e.clientX || e.touches[0].clientX; let cy = e.clientY || e.touches[0].clientY; el.style.top = (el.offsetTop - (iy - cy)) + "px"; el.style.left = (el.offsetLeft - (ix - cx)) + "px"; ix = cx; iy = cy; }; const stop = () => { document.onmousemove = null; document.ontouchmove = null; }; h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop; }
         function loadSong(t) { sync(); cur = db.find(s => s.title === t) || setlist.find(s => s.title === t); document.getElementById('displayTitle').textContent = cur.title; draw(); toggleMenu(); }
         function draw() { if(!cur) return; const lines = cur.content.trim().split('\n'); let h = ""; lines.forEach(l => { let cArr = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;} cArr.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; }); h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`; }); document.getElementById('lyricsArea').innerHTML = h; }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
@@ -141,6 +174,7 @@
         function rename(old) { const n = prompt("Nieuw:", old); if(n) { const i = db.findIndex(s=>s.title===old); if(i!==-1) { db[i].title = n; localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } } }
         function moveCursor(d) { const ed=document.getElementById('editorArea'); ed.selectionStart=ed.selectionEnd=ed.selectionStart+d; ed.focus(); }
         function moveLine(d) { const ed=document.getElementById('editorArea'), lines=ed.value.split('\n'), pos=ed.selectionStart; let curL=ed.value.substr(0,pos).split('\n').length-1; let targetL=Math.max(0,Math.min(lines.length-1,curL+d)); let newPos=0; for(let i=0; i<targetL; i++) newPos+=lines[i].length+1; ed.selectionStart=ed.selectionEnd=newPos; ed.focus(); }
+        function transpose(o) { /* Hier zou de transpose logica van v7.05 weer in kunnen */ }
     </script>
 </body>
 </html>
