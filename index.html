@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.15</title>
+    <title>TDF Stage Pilot v7.17</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -14,72 +14,51 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        html, body { 
-            height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); 
-            overflow: hidden; position: fixed; width: 100%; 
-            overscroll-behavior: none; /* Voorkom bouncen */
-        }
+        /* WebApp Scroll Fix van v7.16 behouden */
+        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; overscroll-behavior: none; }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; }
 
-        .top-bar { 
-            height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; 
-            display: flex; align-items: flex-end; justify-content: space-between; 
-            padding: 0 15px 12px 15px; flex-shrink: 0; z-index: 30000; 
-        }
+        /* Top Bar met Logo */
+        .top-bar { height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; flex-shrink: 0; }
+        #appLogo { height: 42px; width: 42px; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; overflow: hidden; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1rem; font-weight: bold; cursor: pointer; }
 
         /* Dashboard */
-        #setlistDashboard { 
-            position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); 
-            background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-            padding-bottom: 150px; 
-        }
+        #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 150px; }
         .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin: 8px 15px; height: 65px; color: white; cursor: pointer; }
 
-        /* Menu met iOS Scroll Fix */
-        .songs-menu { 
-            position: fixed; top: 0; left: -100%; width: 85%; height: 100%; 
-            background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
-            display: flex; flex-direction: column; 
-            padding-top: env(safe-area-inset-top);
-        }
+        /* Menu met Scroll-fix */
+        .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
-        
         .tab-bar { display: flex; background: #1a1a1a; flex-shrink: 0; border-bottom: 1px solid #333; }
-        .tab-btn { flex: 1; padding: 20px; border: none; background: none; color: #666; font-weight: bold; font-size: 1rem; }
+        .tab-btn { flex: 1; padding: 20px; color: #666; background: none; border: none; font-weight: bold; font-size: 1rem; }
         .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
         
-        #indexContent { 
-            flex-grow: 1; 
-            overflow-y: scroll; /* Forceer scrollbar */
-            background: #121212; 
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 150px; /* EXTRA RUIMTE ONDERAAN VOOR IOS WEBAPP */
-        }
+        #indexContent { flex-grow: 1; overflow-y: scroll; background: #121212; -webkit-overflow-scrolling: touch; padding-bottom: 200px; min-height: 200px; }
+        .menu-footer { height: 80px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-        .menu-footer { height: 80px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
-
+        /* Grote Potlood Fix */
         .index-item-wrapper { position: relative; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); height: 75px; flex-shrink: 0; }
-        .index-item-content { position: relative; width: 100%; height: 100%; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 20px; z-index: 2; transition: transform 0.2s ease; }
+        .index-item-content { position: relative; width: 100%; height: 100%; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 15px; z-index: 2; transition: transform 0.2s ease; }
         .delete-btn { position: absolute; right: 0; top: 0; width: 100px; height: 100%; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
+        .rename-btn-container { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(212, 142, 61, 0.1); border-radius: 8px; border: 1px solid #444; margin-right: 15px; cursor: pointer; }
+        .rename-btn-container:active { background: var(--griffin-orange); }
+        .rename-icon { color: var(--griffin-orange); font-size: 1.5rem; }
 
         /* Content Area */
-        .lyrics-container { flex-grow: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; }
+        .lyrics-container { flex-grow: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.4rem; background: #fff; border: none; outline: none; }
-
-        .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
-        .chord-item { position: absolute; white-space: pre; }
-        .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.2rem; }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <div style="display:flex; gap:10px;">
+            <div id="appLogo">🖼️</div>
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:5px 15px;border-radius:5px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white;font-size:0.9rem;margin:0;">v7.15 Milestone</h2>
+        <h2 id="displayTitle" style="color:white;font-size:0.9rem;margin:0;">v7.17 Sync</h2>
         <button class="top-bar-btn" onclick="startEdit()">✎</button>
     </div>
 
@@ -94,24 +73,27 @@
             <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SETLIST</button>
         </div>
         <div id="indexContent"></div>
-        <div class="menu-footer">
-            <button class="top-bar-btn" style="color:var(--griffin-orange)" onclick="toggleMenu()">SLUIT MENU</button>
-        </div>
+        <div class="menu-footer"><button class="top-bar-btn" style="color:var(--griffin-orange)" onclick="toggleMenu()">SLUIT MENU</button></div>
     </div>
 
     <div class="lyrics-container">
-        <div id="lyricsArea">Kies een liedje uit het menu.</div>
+        <div id="lyricsArea">Gebruik de 'SONGS' knop.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
-        let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
-        let cur = null, currentTab = 'lib';
+        // Forceer data sync bij elke start
+        let db = [], setlist = [];
+        function syncData() {
+            db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
+            setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        }
+        syncData();
 
         window.onload = () => { renderIndex(); };
 
         function toggleDashboard() {
+            syncData();
             const d = document.getElementById('setlistDashboard');
             d.style.display = d.style.display === 'block' ? 'none' : 'block';
             if(d.style.display === 'block') renderDashboard();
@@ -128,14 +110,29 @@
         }
 
         function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
+            syncData(); // Milestone fix: herlaad data net voor renderen
+            const c = document.getElementById('indexContent');
+            if(!c) return;
+            c.innerHTML = "";
             let l = currentTab === 'lib' ? [...db].sort((a,b) => a.title.localeCompare(b.title)) : setlist;
             
+            if(l.length === 0) {
+                c.innerHTML = "<div style='color:#555; padding:40px; text-align:center;'>Geen liedjes gevonden.</div>";
+                return;
+            }
+
             l.forEach((x, i) => {
                 const wrapper = document.createElement('div'); wrapper.className = "index-item-wrapper";
                 const content = document.createElement('div'); content.className = "index-item-content";
-                content.innerHTML = `<div style="flex-grow:1; font-weight:bold;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                <div style="color:var(--griffin-orange); font-size:1.8rem; padding:10px;" onclick="addToSet('${x.title}')">${currentTab==='lib'?'+':''}</div>`;
+                
+                // Grote Potlood Fix en Hernoem Actie
+                content.innerHTML = `
+                    <div class="rename-btn-container" onclick="renameSong('${x.title.replace(/'/g, "\\'")}')">
+                        <span class="rename-icon">✎</span>
+                    </div>
+                    <div style="flex-grow:1; font-weight:bold;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                    <div style="color:var(--griffin-orange); font-size:1.8rem; padding:10px;" onclick="addToSet('${x.title}')">${currentTab==='lib'?'+':''}</div>
+                `;
 
                 const del = document.createElement('div'); del.className = "delete-btn"; del.textContent = "WISSEN";
                 del.onclick = () => { currentTab === 'lib' ? deleteFromLib(x.title) : remFromSet(i); };
@@ -149,17 +146,33 @@
                 };
                 wrapper.appendChild(del); wrapper.appendChild(content); c.appendChild(wrapper);
             });
-            // Milestone fix: forceer redraw van scroll
-            setTimeout(() => { c.scrollTop = 0; }, 50);
         }
 
-        function deleteFromLib(t) { if(confirm(`"${t}" wissen?`)) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } }
+        // Hernoem functie
+        function renameSong(oldTitle) {
+            const idx = db.findIndex(s => s.title === oldTitle);
+            const newTitle = prompt("Hernoem liedje:", oldTitle);
+            if(newTitle && newTitle.trim() !== "" && newTitle !== oldTitle) {
+                db[idx].title = newTitle.trim();
+                localStorage.setItem('tdfSongs', JSON.stringify(db));
+                renderIndex();
+                if(cur && cur.title === oldTitle) document.getElementById('displayTitle').textContent = newTitle;
+            }
+        }
+
+        function toggleMenu() {
+            const m = document.getElementById('songsMenu');
+            m.classList.toggle('open');
+            if(m.classList.contains('open')) renderIndex();
+        }
+
+        function deleteFromLib(t) { if(confirm(`Wissen?`)) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } }
         function remFromSet(i) { setlist.splice(i, 1); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); }
         function switchTab(t) { currentTab = t; document.getElementById('tabLib').classList.toggle('active', t==='lib'); document.getElementById('tabSet').classList.toggle('active', t==='set'); renderIndex(); }
         function addToSet(t) { if(currentTab !== 'lib') return; const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("OK"); } }
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
 
         function loadSong(t) {
+            syncData();
             cur = db.find(s => s.title === t) || setlist.find(s => s.title === t);
             document.getElementById('displayTitle').textContent = cur.title;
             draw(); toggleMenu();
@@ -183,6 +196,8 @@
 
         function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value = cur.content; }
         function finishEdit() { const idx = db.findIndex(s => s.title === cur.title); if(idx!==-1) db[idx].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; draw(); }
+
+        let currentTab = 'lib';
     </script>
 </body>
 </html>
