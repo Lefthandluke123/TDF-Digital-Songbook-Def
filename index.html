@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital Setlist</title>
+    <title>TDF Setlist V7.46</title>
     <style>
         :root { 
             --bg-dark: #0a0a0a; 
@@ -52,100 +52,179 @@
             cursor: pointer; 
         }
 
-        /* Logo Stack (Oorspronkelijk) */
-        .logo-container { 
-            position: relative; 
-            width: 50px; 
+        .app-logo { 
             height: 50px; 
+            width: auto; 
             cursor: pointer; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        .base-logo, .overlay-logo { 
-            position: absolute; 
-            max-width: 100%; 
-            max-height: 100%; 
-            padding: 2px;
-            object-fit: contain; 
-        }
-        .base-logo { z-index: 1; }
-        .overlay-logo { z-index: 2; }
 
         /* Dashboard Overlay */
         #setlistDashboard { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-dark); z-index: 45000; display: none; 
-            flex-direction: column; padding-top: env(safe-area-inset-top); 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: var(--bg-dark); 
+            z-index: 45000; 
+            display: none; 
+            flex-direction: column; 
+            padding-top: env(safe-area-inset-top); 
         }
 
         .dash-header { 
-            padding: 10px 20px; display: flex; justify-content: space-between; 
-            align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; height: 85px; 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #333; 
+            flex-shrink: 0; 
+            height: 85px; 
         }
 
-        .dash-list { flex: 1; overflow-y: auto; padding: 10px 15px; background: var(--bg-dark); }
+        .dash-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 15px; 
+            background: var(--bg-dark); 
+        }
 
-        /* Swipe UI */
+        /* Swipe UI Elements */
         .swipe-container { 
-            position: relative; margin-bottom: 8px; overflow: hidden; 
-            border-radius: 8px; background: var(--griffin-red); flex-shrink: 0; 
+            position: relative; 
+            margin-bottom: 8px; 
+            overflow: hidden; 
+            border-radius: 8px; 
+            background: var(--griffin-red); 
+            flex-shrink: 0; 
         }
 
-        .dash-row, .menu-row { 
-            display: flex; align-items: center; background: #1c1c1e; 
-            border: 1px solid #333; height: 72px; color: white; width: 100%; 
-            position: relative; z-index: 2; transition: transform 0.2s ease; 
+        .dash-row { 
+            display: flex; 
+            align-items: center; 
+            background: #1c1c1e; 
+            border: 1px solid #333; 
+            height: 72px; 
+            color: white; 
+            width: 100%; 
+            position: relative; 
+            z-index: 2; 
+            transition: transform 0.2s ease; 
         }
 
         .dash-num { 
-            width: 50px; height: 100%; display: flex; align-items: center; 
-            justify-content: center; color: var(--griffin-orange); 
-            font-size: 1.5rem; font-weight: bold; border-right: 1px solid #333; 
+            width: 50px; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--griffin-orange); 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            border-right: 1px solid #333; 
         }
 
         .dash-name { 
-            flex: 1; padding: 0 15px; font-size: 1.4rem; font-weight: bold; 
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
+            flex: 1; 
+            padding: 0 15px; 
+            font-size: 1.4rem; 
+            font-weight: bold; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
         }
 
         .dash-controls { display: flex; gap: 5px; padding-right: 10px; }
-        .dash-ctrl-btn { width: 40px; height: 40px; background: #333; border: 1px solid #444; color: white; border-radius: 6px; }
+        .dash-ctrl-btn { 
+            width: 40px; 
+            height: 40px; 
+            background: #333; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 6px; 
+        }
 
-        /* Songs Menu */
+        /* Songs Menu (Sidebar) */
         .songs-menu { 
-            position: fixed; top: 0; left: -100%; width: 85%; height: 100%; 
-            background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
-            display: flex; flex-direction: column; 
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: 85%; 
+            height: 100%; 
+            background: #1c1c1e; 
+            z-index: 40000; 
+            transition: left 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
         }
         .songs-menu.open { left: 0; }
         #indexContent { flex: 1; overflow-y: auto; padding: 10px; }
-
-        .swipe-hint { 
-            position: absolute; right: 20px; top: 0; bottom: 0; 
-            display: flex; align-items: center; color: white; font-size: 0.8rem; 
+        
+        .menu-row { 
+            display: flex; 
+            align-items: center; 
+            background: #2c2c2e; 
+            margin-bottom: 2px; 
+            height: 60px; 
+            color: white; 
+            position: relative; 
+            z-index: 2;
         }
 
-        /* Lyrics Display */
+        .swipe-hint { 
+            position: absolute; 
+            right: 20px; 
+            top: 0; 
+            bottom: 0; 
+            display: flex; 
+            align-items: center; 
+            color: white; 
+            font-size: 0.8rem; 
+        }
+
+        /* Lyrics & Editor */
         .lyrics-container { flex: 1; background: #fff; overflow-y: auto; position: relative; }
         #lyricsArea { padding: 25px; font-size: 1.4rem; color: #000; line-height: 1.5; white-space: pre-wrap; }
         #editorArea { 
-            display: none; width: 100%; height: 100%; padding: 25px; 
-            font-size: 1.4rem; font-family: monospace; border: none; background: #f9f9f9; 
+            display: none; 
+            width: 100%; 
+            height: 100%; 
+            padding: 25px; 
+            font-size: 1.4rem; 
+            font-family: monospace; 
+            border: none; 
+            background: #f9f9f9; 
         }
 
         .chord-row { color: var(--griffin-red); font-weight: bold; height: 1.4rem; position: relative; }
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 15px; display: block; }
 
-        /* Floating Tools */
+        /* Floating Toolboxes */
         .draggable-box { 
-            position: fixed; background: #1a1a1a; border: 1px solid var(--griffin-orange); 
-            border-radius: 8px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-            display: none; z-index: 50000;
+            position: fixed;
+            background: #1a1a1a; 
+            border: 1px solid var(--griffin-orange); 
+            border-radius: 8px; 
+            padding: 5px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            display: none;
+            z-index: 50000;
         }
-        .drag-handle { color: white; text-align: center; font-size: 10px; cursor: move; padding: 5px; background: #333; margin-bottom: 5px; }
-        .joy-container { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 5px; }
+        .drag-handle { 
+            color: white; 
+            text-align: center; 
+            font-size: 10px; 
+            cursor: move; 
+            padding: 5px; 
+            background: #333;
+            margin-bottom: 5px;
+        }
+        .joy-container {
+            display: grid;
+            grid-template-areas: ". up ." "left . right" ". down .";
+            gap: 5px;
+        }
         .joy-btn { width: 50px; height: 50px; border-radius: 50%; background: #444; color: white; border: none; font-size: 1.2rem; }
     </style>
 </head>
@@ -155,14 +234,11 @@
 
     <div class="top-bar">
         <div style="display:flex; gap:12px; align-items:center;">
-            <div class="logo-container" onclick="location.reload()">
-                <img src="logo.png" class="base-logo" alt="">
-                <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="">
-            </div>
+            <img src="logo.png" class="app-logo" onclick="location.reload()" alt="TDF Logo">
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:6px 18px;border-radius:6px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white; font-size:1rem; margin:0; text-align: center;">TDF Digital Setlist</h2>
+        <h2 id="displayTitle" style="color:white; font-size:1.2rem; margin:0;">TDF</h2>
         <div style="display:flex; gap:10px;">
             <button class="top-bar-btn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">OK</button>
@@ -172,10 +248,7 @@
     <div id="setlistDashboard">
         <div class="dash-header">
             <div style="display:flex; gap:15px; align-items:center;">
-                <div class="logo-container" style="width:60px; height:60px;">
-                    <img src="logo.png" class="base-logo" alt="">
-                    <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="">
-                </div>
+                <img src="logo.png" style="height:40px;" alt="TDF">
                 <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:6px 14px; border-radius:6px;">+ REGEL</button>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -195,7 +268,7 @@
     </div>
 
     <div class="lyrics-container">
-        <div id="lyricsArea">Kies een nummer...</div>
+        <div id="lyricsArea">Kies een nummer uit het SONGS menu of beheer je SET.</div>
         <textarea id="editorArea" placeholder="Tekst [Akkoord] hier..."></textarea>
     </div>
 
@@ -224,7 +297,6 @@
             renderIndex();
             buildChordStrip();
             ['chordStrip', 'joyPad'].forEach(id => initDrag(document.getElementById(id)));
-            setupImport(); // Import initialiseren
         };
 
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
@@ -234,67 +306,6 @@
             if(d.style.display === 'flex') renderDashboard();
         }
 
-        // --- IMPORT LOGICA (GECORRIGEERD VOOR FIREFOX IPAD) ---
-        function setupImport() {
-            const input = document.getElementById('bulkFiles');
-            input.addEventListener('change', async (e) => {
-                const files = Array.from(e.target.files);
-                if (files.length === 0) return;
-
-                for (let file of files) {
-                    try {
-                        const text = await readFileAsText(file);
-                        if (file.name.endsWith('.json')) {
-                            // JSON verwerken
-                            const imported = JSON.parse(text);
-                            if (Array.isArray(imported)) {
-                                imported.forEach(s => addUniqueToDb(s));
-                            } else {
-                                addUniqueToDb(imported);
-                            }
-                        } else if (file.name.endsWith('.txt')) {
-                            // TXT verwerken
-                            addUniqueToDb({ 
-                                title: file.name.replace('.txt',''), 
-                                content: text 
-                            });
-                        }
-                    } catch (err) {
-                        alert(`Fout bij bestand: ${file.name}. Is dit een geldig bestand?`);
-                        console.error(err);
-                    }
-                }
-
-                saveDb();
-                renderIndex();
-                input.value = ""; // Input resetten
-                alert("Bestanden verwerkt!");
-            });
-        }
-
-        // Robuuste methode om bestanden als tekst te lezen
-        function readFileAsText(file) {
-            return new Promise((resolve, reject) => {
-                const fr = new FileReader();
-                fr.onload = () => resolve(fr.result);
-                fr.onerror = () => reject(fr.error);
-                fr.readAsText(file);
-            });
-        }
-
-        // Liedje uniek toevoegen aan DB (overschrijven indien titel bestaat)
-        function addUniqueToDb(newSong) {
-            if (!newSong.title || !newSong.content) return;
-            newSong.content = newSong.content.replace(/\r\n/g, '\n'); // Line endings fix
-            const exists = db.findIndex(s => s.title === newSong.title);
-            if (exists !== -1) db[exists] = newSong;
-            else db.push(newSong);
-        }
-
-        function saveDb() { localStorage.setItem('tdfSongs', JSON.stringify(db)); }
-        function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
-
-        // --- RENDER FUNCTIES ---
         function renderIndex() {
             const c = document.getElementById('indexContent');
             c.innerHTML = "";
@@ -378,7 +389,7 @@
                 h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`;
             });
             document.getElementById('lyricsArea').innerHTML = h;
-            document.querySelector('.lyrics-container').scrollTop = 0;
+            window.scrollTo(0,0);
         }
 
         function handleTouchStart(e) { touchStartX = e.touches[0].clientX; }
@@ -390,7 +401,7 @@
             let move = touchStartX - e.changedTouches[0].clientX;
             if (move > 60) {
                 if(isGlobal) {
-                    if(confirm(`"${db[i].title}" definitief wissen?`)) { db.splice(i,1); saveDb(); renderIndex(); }
+                    if(confirm("Wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
                 } else {
                     setlist.splice(i,1); saveSet(); renderDashboard();
                 }
@@ -400,11 +411,7 @@
 
         function addToSet(t) {
             const s = db.find(x=>x.title===t);
-            if(s) { 
-                setlist.push(JSON.parse(JSON.stringify(s))); // Deep copy
-                saveSet(); 
-                alert(t + " toegevoegd aan set"); 
-            }
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); saveSet(); alert(t + " toegevoegd"); }
         }
 
         function moveSetItem(idx, dir) {
@@ -439,7 +446,7 @@
             ed.focus();
         }
 
-        function moveCursorHorizontal(n) { 
+        function moveCursor(n) { 
             const ed = document.getElementById('editorArea');
             ed.selectionStart = ed.selectionEnd = ed.selectionStart + n;
             ed.focus();
@@ -460,14 +467,16 @@
         function initDrag(el) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             const handle = el.querySelector('.drag-handle');
-            handle.onmousedown = dragMouseDown;
-            handle.ontouchstart = dragMouseDown;
-            function dragMouseDown(e) {
+            handle.onmousedown = dragStart;
+            handle.ontouchstart = dragStart;
+            function dragStart(e) {
                 e.preventDefault();
                 pos3 = e.clientX || e.touches[0].clientX;
                 pos4 = e.clientY || e.touches[0].clientY;
-                document.onmouseup = dragEnd; document.onmousemove = dragMove;
-                document.ontouchend = dragEnd; document.ontouchmove = dragMove;
+                document.onmouseup = dragEnd;
+                document.onmousemove = dragMove;
+                document.ontouchend = dragEnd;
+                document.ontouchmove = dragMove;
             }
             function dragMove(e) {
                 pos1 = pos3 - (e.clientX || e.touches[0].clientX);
@@ -483,7 +492,7 @@
         function copySetWhatsApp() {
             let t = "*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n");
             navigator.clipboard.writeText(t);
-            alert("Gekopieerd voor WhatsApp!");
+            alert("Gekopieerd!");
         }
 
         function startEdit() {
@@ -500,7 +509,7 @@
             cur.content = document.getElementById('editorArea').value;
             const idx = db.findIndex(s => s.title === cur.title);
             if(idx !== -1) db[idx].content = cur.content;
-            saveDb();
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
             document.getElementById('lyricsArea').style.display='block';
             document.getElementById('editorArea').style.display='none';
             document.getElementById('saveBtn').style.display='none';
@@ -508,6 +517,8 @@
             document.getElementById('chordStrip').style.display='none';
             draw();
         }
+
+        function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
     </script>
 </body>
 </html>
