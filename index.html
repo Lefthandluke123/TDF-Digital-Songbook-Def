@@ -404,7 +404,7 @@
             let move = touchStartX - e.changedTouches[0].clientX;
             if (move > 60) {
                 if(isGlobal) {
-                    if(confirm("Liedje uit database wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
+                    if(confirm("Wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
                 } else {
                     setlist.splice(i,1); saveSet(); renderDashboard();
                 }
@@ -414,11 +414,7 @@
 
         function addToSet(t) {
             const s = db.find(x=>x.title===t);
-            if(s) { 
-                setlist.push(JSON.parse(JSON.stringify(s))); 
-                saveSet(); 
-                alert(t + " toegevoegd aan SET"); 
-            }
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); saveSet(); alert(t + " toegevoegd"); }
         }
 
         function moveSetItem(idx, dir) {
@@ -430,7 +426,7 @@
         }
 
         function addCustomRow() {
-            const n = prompt("Naam voor tekstregel:", "--- PAUZE ---");
+            const n = prompt("Tekstregel:", "--- PAUZE ---");
             if(n) { setlist.push({title: n, content: ""}); saveSet(); renderDashboard(); }
         }
 
@@ -438,7 +434,7 @@
             const bar = document.getElementById('chordBar');
             ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => {
                 const b = document.createElement('button');
-                b.style.cssText = "width:60px; height:40px; background:#333; color:white; border:1px solid #444; border-radius:6px; margin-bottom:5px; font-weight:bold;";
+                b.style.cssText = "width:65px; height:45px; background:#333; color:white; border:1px solid #444; border-radius:6px; margin-bottom:5px; font-weight:bold;";
                 b.textContent = c;
                 b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
                 bar.appendChild(b);
@@ -453,22 +449,20 @@
             ed.focus();
         }
 
-        function moveLine(n) {
-            const ed = document.getElementById('editorArea');
-            const text = ed.value;
-            const pos = ed.selectionStart;
-            const lines = text.split('\n');
-            let currentLine = text.substr(0, pos).split('\n').length - 1;
-            let targetLine = Math.max(0, Math.min(lines.length - 1, currentLine + n));
-            let newPos = 0;
-            for(let i=0; i<targetL; i++) newPos += lines[i].length + 1;
-            ed.selectionStart = ed.selectionEnd = newPos;
-            ed.focus();
-        }
-        
         function moveCursor(n) { 
             const ed = document.getElementById('editorArea');
             ed.selectionStart = ed.selectionEnd = ed.selectionStart + n;
+            ed.focus();
+        }
+
+        function moveLine(n) {
+            const ed = document.getElementById('editorArea');
+            const lines = ed.value.split('\n');
+            let currentLine = ed.value.substr(0, ed.selectionStart).split('\n').length - 1;
+            let targetLine = Math.max(0, Math.min(lines.length - 1, currentLine + n));
+            let newPos = 0;
+            for(let i=0; i<targetLine; i++) newPos += lines[i].length + 1;
+            ed.selectionStart = ed.selectionEnd = newPos;
             ed.focus();
         }
 
@@ -476,9 +470,8 @@
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             el.querySelector('.drag-handle').onmousedown = dragMouseDown;
             el.querySelector('.drag-handle').ontouchstart = dragMouseDown;
-
             function dragMouseDown(e) {
-                e = e || window.event;
+                e.preventDefault();
                 pos3 = e.clientX || e.touches[0].clientX;
                 pos4 = e.clientY || e.touches[0].clientY;
                 document.onmouseup = closeDragElement;
@@ -486,9 +479,7 @@
                 document.ontouchend = closeDragElement;
                 document.ontouchmove = elementDrag;
             }
-
             function elementDrag(e) {
-                e = e || window.event;
                 pos1 = pos3 - (e.clientX || e.touches[0].clientX);
                 pos2 = pos4 - (e.clientY || e.touches[0].clientY);
                 pos3 = e.clientX || e.touches[0].clientX;
@@ -496,51 +487,13 @@
                 el.style.top = (el.offsetTop - pos2) + "px";
                 el.style.left = (el.offsetLeft - pos1) + "px";
             }
-
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                document.ontouchend = null;
-                document.ontouchmove = null;
-            }
+            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; }
         }
 
         function copySetWhatsApp() {
             let t = "*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n");
             navigator.clipboard.writeText(t);
-            alert("Setlist gekopieerd voor WhatsApp!");
-        }
-
-        document.getElementById('bulkFiles').onchange = async (e) => {
-            for (let f of e.target.files) {
-                const content = await f.text();
-                db.push({ title: f.name.replace('.txt',''), content: content });
-            }
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            renderIndex();
-        };
-
-        function startEdit() {
-            if(!cur) return;
-            document.getElementById('lyricsArea').style.display='none';
-            document.getElementById('editorArea').style.display='block';
-            document.getElementById('editorArea').value = cur.content;
-            document.getElementById('saveBtn').style.display='block';
-            document.getElementById('joyPad').style.display='block';
-            document.getElementById('chordStrip').style.display='block';
-        }
-
-        function finishEdit() {
-            cur.content = document.getElementById('editorArea').value;
-            const idx = db.findIndex(s => s.title === cur.title);
-            if(idx !== -1) db[idx].content = cur.content;
-            localStorage.setItem('tdfSongs', JSON.stringify(db));
-            document.getElementById('lyricsArea').style.display='block';
-            document.getElementById('editorArea').style.display='none';
-            document.getElementById('saveBtn').style.display='none';
-            document.getElementById('joyPad').style.display='none';
-            document.getElementById('chordStrip').style.display='none';
-            draw();
+            alert("Gekopieerd!");
         }
     </script>
 </body>
