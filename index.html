@@ -5,44 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.24 - Final Sync</title>
+    <title>TDF Stage Pilot v7.26 - Clear Set</title>
     <style>
         :root { --bg-dark: #0a0a0a; --top-bar-bg: #1a1a1a; --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 85px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; }
         body { font-family: ui-monospace, 'SF Mono', monospace; display: flex; flex-direction: column; }
 
-        /* Top Bar */
         .top-bar { height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; flex-shrink: 0; }
         #appLogo { height: 42px; width: 42px; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.5rem; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
-        /* Full Screen Dashboard */
+        /* Dashboard */
         #setlistDashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 45000; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .dash-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .wa-subtle-btn { background: #25D366; color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .wa-subtle-btn { background: #25D366; color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .dash-list { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 15px 20px; }
         .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 2px solid #333; border-radius: 12px; margin-bottom: 15px; height: 90px; color: white; }
         .dash-num { width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 2.5rem; font-weight: 900; border-right: 2px solid #333; }
-        .dash-name { flex-grow: 1; padding: 0 30px; font-size: 2rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dash-name { flex-grow: 1; padding: 0 30px; font-size: 2rem; font-weight: bold; }
         .dash-footer { padding: 25px; background: #1a1a1a; border-top: 1px solid #333; }
         .full-close-btn { width: 100%; background: var(--griffin-orange); color: black; border: none; padding: 22px; border-radius: 14px; font-size: 1.6rem; font-weight: bold; }
-
-        /* Floating Tools */
-        .draggable-box { position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; display: none; touch-action: none; }
-        .drag-handle { height: 30px; background: var(--griffin-orange); border-radius: 10px 10px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-size: 11px; font-weight: bold; }
-        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; padding: 15px; gap: 10px; }
-        .joy-btn { width: 55px; height: 55px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.8rem; font-weight: bold; }
 
         /* Menu */
         .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
-        #indexContent { flex-grow: 1; overflow-y: scroll; background: #121212; padding-bottom: 100px; }
-        .menu-footer { padding: 15px; background: #1a1a1a; display: flex; gap: 10px; border-top: 1px solid #333; }
+        .tab-bar { display: flex; background: #1a1a1a; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 20px; color: #666; background: none; border: none; font-weight: bold; font-size: 1rem; }
+        .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
+        #indexContent { flex-grow: 1; overflow-y: scroll; background: #121212; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
+        .menu-footer { padding: 15px; background: #1a1a1a; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #333; }
+
+        /* Floating Tools */
+        .draggable-box { position: fixed; background: rgba(26, 26, 26, 0.95); border: 2px solid var(--griffin-orange); border-radius: 12px; z-index: 50000; display: none; touch-action: none; }
+        .drag-handle { height: 30px; background: var(--griffin-orange); border-radius: 10px 10px 0 0; cursor: move; display: flex; justify-content: center; align-items: center; color: black; font-size: 10px; font-weight: bold; }
+        .joy-grid { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; padding: 15px; gap: 10px; }
+        .joy-btn { width: 55px; height: 55px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
         /* Lyrics */
         .lyrics-container { flex-grow: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        #lyricsArea { padding: 35px; font-size: 1.5rem; color: #000; line-height: 1.5; }
+        #lyricsArea { padding: 35px; font-size: 1.5rem; color: #000; line-height: 1.4; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.5rem; background: #fff; border: none; outline: none; }
         .chord-row { position: relative; height: 1.7rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; }
@@ -58,9 +60,11 @@
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:6px 18px;border-radius:6px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white;font-size:1.1rem;margin:0;">v7.24</h2>
-        <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
-        <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
+        <h2 id="displayTitle" style="color:white; font-size:1.1rem; margin:0;">v7.26</h2>
+        <div style="display:flex; gap:12px;">
+            <button class="top-bar-btn" id="editBtn" onclick="startEdit()">✎</button>
+            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
+        </div>
     </div>
 
     <div id="setlistDashboard">
@@ -83,23 +87,75 @@
     </div>
 
     <div class="songs-menu" id="songsMenu">
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tabLib" onclick="switchTab('lib')">BIBLIOTHEEK</button>
+            <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SETLIST</button>
+        </div>
         <div id="indexContent"></div>
         <div class="menu-footer">
-            <button class="top-bar-btn" onclick="toggleMenu()">SLUIT</button>
-            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="color:#fff; background:#444; padding:8px 15px; border-radius:8px;">📂 IMPORT</button>
+            <div id="setlistActions" style="display:none;">
+                <button class="top-bar-btn" onclick="clearSetlist()" style="color:var(--griffin-red); width:100%; border:1px solid var(--griffin-red); padding:10px; border-radius:8px; margin-bottom:5px;">🗑️ LEEG SETLIST</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="top-bar-btn" onclick="toggleMenu()" style="flex:1; border:1px solid #444; padding:10px; border-radius:8px;">SLUIT</button>
+                <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="flex:1; background:#444; color:white; padding:10px; border-radius:8px;">📂 IMPORT</button>
+            </div>
         </div>
     </div>
 
-    <div class="lyrics-container"><div id="lyricsArea">Importeer je songs via het menu...</div><textarea id="editorArea" spellcheck="false"></textarea></div>
+    <div class="lyrics-container"><div id="lyricsArea">Selecteer een song...</div><textarea id="editorArea" spellcheck="false"></textarea></div>
 
     <script>
-        let db = [], setlist = [], cur = null;
+        let db = [], setlist = [], cur = null, currentTab = 'lib';
 
         function sync() {
             db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
             setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         }
 
+        window.onload = () => { sync(); renderIndex(); initDrag(document.getElementById('joyPad')); };
+
+        function clearSetlist() {
+            if(confirm("Hele setlist leegmaken? Je bibliotheek blijft bewaard.")) {
+                setlist = [];
+                localStorage.setItem('tdfSetlist', JSON.stringify(setlist));
+                renderIndex();
+            }
+        }
+
+        function switchTab(t) {
+            currentTab = t;
+            document.getElementById('tabLib').classList.toggle('active', t==='lib');
+            document.getElementById('tabSet').classList.toggle('active', t==='set');
+            document.getElementById('setlistActions').style.display = (t === 'set') ? 'block' : 'none';
+            renderIndex();
+        }
+
+        function renderIndex() {
+            sync(); const c = document.getElementById('indexContent'); if(!c) return; c.innerHTML = "";
+            let l = currentTab === 'lib' ? [...db].sort((a,b) => a.title.localeCompare(b.title)) : setlist;
+            l.forEach((x, i) => {
+                const w = document.createElement('div'); w.style.cssText = "border-bottom:1px solid #333; height:80px; display:flex; align-items:center; padding:0 20px; background:#1c1c1e; color:white;";
+                w.innerHTML = `<div style="flex-grow:1; font-weight:bold; font-size:1.2rem;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                <div style="color:var(--griffin-orange); font-size:2.2rem; padding:10px;" onclick="${currentTab==='lib'?'addToSet':'remFromSet'}('${x.title}',${i})">${currentTab==='lib'?'+':'×'}</div>`;
+                c.appendChild(w);
+            });
+        }
+
+        function addToSet(t) { sync(); const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("OK!"); } }
+        function remFromSet(t, i) { setlist.splice(i, 1); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); }
+        function loadSong(t) { sync(); cur = db.find(s => s.title === t) || setlist.find(s => s.title === t); document.getElementById('displayTitle').textContent = cur.title; draw(); if(document.getElementById('songsMenu').classList.contains('open')) toggleMenu(); }
+        function draw() { if(!cur) return; const lines = cur.content.trim().split('\n'); let h = ""; lines.forEach(l => { let cArr = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;} cArr.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; }); h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`; }); document.getElementById('lyricsArea').innerHTML = h; }
+        function toggleDashboard() { sync(); const d = document.getElementById('setlistDashboard'); d.style.display = (d.style.display === 'flex') ? 'none' : 'flex'; if(d.style.display==='flex') renderDashboard(); }
+        function renderDashboard() { const list = document.getElementById('dashList'); list.innerHTML = ""; setlist.forEach((s, i) => { const row = document.createElement('div'); row.className = "dash-row"; row.innerHTML = `<div class="dash-num">${i+1}</div><div class="dash-name">${s.title}</div>`; row.onclick = () => { loadSong(s.title); toggleDashboard(); }; list.appendChild(row); }); }
+        function copySetWhatsApp() { let txt = "*SETLIST:*\n\n"; setlist.forEach((s, i) => { txt += `${i+1}. ${s.title}\n`; }); navigator.clipboard.writeText(txt).then(() => alert("Gekopieerd!")); }
+        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; document.getElementById('joyPad').style.display='block'; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; }
+        function finishEdit() { const idx = db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx].content=document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('joyPad').style.display='none'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; draw(); }
+        function moveCursor(d) { const ed=document.getElementById('editorArea'); ed.selectionStart=ed.selectionEnd=ed.selectionStart+d; ed.focus(); }
+        function moveLine(d) { const ed=document.getElementById('editorArea'), lines=ed.value.split('\n'), pos=ed.selectionStart; let curL=ed.value.substr(0,pos).split('\n').length-1; let targetL=Math.max(0,Math.min(lines.length-1,curL+d)); let newPos=0; for(let i=0; i<targetL; i++) newPos+=lines[i].length+1; ed.selectionStart=ed.selectionEnd=newPos; ed.focus(); }
+        function initDrag(el) { const h = el.querySelector('.drag-handle'); let ix, iy; const s = (e) => { ix = e.clientX || e.touches[0].clientX; iy = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; }; const m = (e) => { e.preventDefault(); let cx = e.clientX || e.touches[0].clientX; let cy = e.clientY || e.touches[0].clientY; el.style.top = (el.offsetTop - (iy - cy)) + "px"; el.style.left = (el.offsetLeft - (ix - cx)) + "px"; ix = cx; iy = cy; }; const stop = () => { document.onmousemove = null; document.ontouchmove = null; }; h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop; }
+        
         document.getElementById('bulkFiles').onchange = async (e) => {
             for(let f of Array.from(e.target.files)) {
                 const t = await f.text();
@@ -108,35 +164,6 @@
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
         };
-
-        function renderIndex() {
-            sync(); const c = document.getElementById('indexContent'); if(!c) return; c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach((x, i) => {
-                const w = document.createElement('div'); w.style.cssText = "border-bottom:1px solid #333; height:80px; display:flex; align-items:center; padding:0 20px; background:#1c1c1e; color:white;";
-                w.innerHTML = `<div style="flex-grow:1; font-weight:bold; font-size:1.2rem;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                <div style="color:var(--griffin-orange); font-size:2.2rem; padding:10px;" onclick="addToSet('${x.title}')">+</div>`;
-                c.appendChild(w);
-            });
-        }
-
-        function copySetWhatsApp() {
-            let txt = "*SETLIST:*\n\n";
-            setlist.forEach((s, i) => { txt += `${i+1}. ${s.title}\n`; if((i+1)%3===0 && i+1<12) txt += "---\n"; });
-            navigator.clipboard.writeText(txt).then(() => alert("Gekopieerd!"));
-        }
-
-        function loadSong(t) { sync(); cur = db.find(s => s.title === t) || setlist.find(s => s.title === t); document.getElementById('displayTitle').textContent = cur.title; draw(); if(document.getElementById('songsMenu').classList.contains('open')) toggleMenu(); }
-        function draw() { if(!cur) return; const lines = cur.content.trim().split('\n'); let h = ""; lines.forEach(l => { let cArr = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;} cArr.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; }); h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`; }); document.getElementById('lyricsArea').innerHTML = h; }
-        function toggleDashboard() { sync(); const d = document.getElementById('setlistDashboard'); d.style.display = (d.style.display === 'flex') ? 'none' : 'flex'; if(d.style.display==='flex') renderDashboard(); }
-        function renderDashboard() { const list = document.getElementById('dashList'); list.innerHTML = ""; setlist.forEach((s, i) => { const row = document.createElement('div'); row.className = "dash-row"; row.innerHTML = `<div class="dash-num">${i+1}</div><div class="dash-name">${s.title}</div>`; row.onclick = () => { loadSong(s.title); toggleDashboard(); }; list.appendChild(row); }); }
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
-        function addToSet(t) { sync(); const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("Toegevoegd!"); } }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; document.getElementById('joyPad').style.display='block'; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; }
-        function finishEdit() { const idx = db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx].content=document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.getElementById('joyPad').style.display='none'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; draw(); }
-        function moveCursor(d) { const ed=document.getElementById('editorArea'); ed.selectionStart=ed.selectionEnd=ed.selectionStart+d; ed.focus(); }
-        function moveLine(d) { const ed=document.getElementById('editorArea'), lines=ed.value.split('\n'), pos=ed.selectionStart; let curL=ed.value.substr(0,pos).split('\n').length-1; let targetL=Math.max(0,Math.min(lines.length-1,curL+d)); let newPos=0; for(let i=0; i<targetL; i++) newPos+=lines[i].length+1; ed.selectionStart=ed.selectionEnd=newPos; ed.focus(); }
-        function initDrag(el) { const h = el.querySelector('.drag-handle'); let ix, iy; const s = (e) => { ix = e.clientX || e.touches[0].clientX; iy = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; }; const m = (e) => { e.preventDefault(); let cx = e.clientX || e.touches[0].clientX; let cy = e.clientY || e.touches[0].clientY; el.style.top = (el.offsetTop - (iy - cy)) + "px"; el.style.left = (el.offsetLeft - (ix - cx)) + "px"; ix = cx; iy = cy; }; const stop = () => { document.onmousemove = null; document.ontouchmove = null; }; h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop; }
-        sync();
     </script>
 </body>
 </html>
