@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital Setlist</title>
+    <title>TDF Setlist V7.46</title>
     <style>
         :root { 
             --bg-dark: #0a0a0a; 
@@ -52,24 +52,11 @@
             cursor: pointer; 
         }
 
-        /* Logo Stack */
-        .logo-container { 
-            position: relative; 
-            width: 50px; 
+        .app-logo { 
             height: 50px; 
+            width: auto; 
             cursor: pointer; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        .base-logo, .overlay-logo { 
-            position: absolute; 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain; 
-        }
-        .base-logo { z-index: 1; }
-        .overlay-logo { z-index: 2; }
 
         /* Dashboard Overlay */
         #setlistDashboard { 
@@ -102,7 +89,7 @@
             background: var(--bg-dark); 
         }
 
-        /* Swipe UI */
+        /* Swipe UI Elements */
         .swipe-container { 
             position: relative; 
             margin-bottom: 8px; 
@@ -157,7 +144,7 @@
             border-radius: 6px; 
         }
 
-        /* Songs Menu */
+        /* Songs Menu (Sidebar) */
         .songs-menu { 
             position: fixed; 
             top: 0; 
@@ -195,7 +182,7 @@
             font-size: 0.8rem; 
         }
 
-        /* Lyrics Display */
+        /* Lyrics & Editor */
         .lyrics-container { flex: 1; background: #fff; overflow-y: auto; position: relative; }
         #lyricsArea { padding: 25px; font-size: 1.4rem; color: #000; line-height: 1.5; white-space: pre-wrap; }
         #editorArea { 
@@ -213,20 +200,32 @@
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 15px; display: block; }
 
-        /* Floating Tools */
+        /* Floating Toolboxes */
         .draggable-box { 
+            position: fixed;
             background: #1a1a1a; 
             border: 1px solid var(--griffin-orange); 
             border-radius: 8px; 
             padding: 5px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
             display: none;
+            z-index: 50000;
+        }
+        .drag-handle { 
+            color: white; 
+            text-align: center; 
+            font-size: 10px; 
+            cursor: move; 
+            padding: 5px; 
+            background: #333;
+            margin-bottom: 5px;
         }
         .joy-container {
             display: grid;
             grid-template-areas: ". up ." "left . right" ". down .";
             gap: 5px;
         }
+        .joy-btn { width: 50px; height: 50px; border-radius: 50%; background: #444; color: white; border: none; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -235,14 +234,11 @@
 
     <div class="top-bar">
         <div style="display:flex; gap:12px; align-items:center;">
-            <div class="logo-container" onclick="location.reload()">
-                <img src="logo.png" class="base-logo" alt="Base">
-                <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="Griffin">
-            </div>
+            <img src="logo.png" class="app-logo" onclick="location.reload()" alt="TDF Logo">
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:6px 18px;border-radius:6px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white; font-size:1rem; margin:0; text-align: center;">TDF Digital Setlist</h2>
+        <h2 id="displayTitle" style="color:white; font-size:1.2rem; margin:0;">TDF</h2>
         <div style="display:flex; gap:10px;">
             <button class="top-bar-btn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">OK</button>
@@ -252,10 +248,7 @@
     <div id="setlistDashboard">
         <div class="dash-header">
             <div style="display:flex; gap:15px; align-items:center;">
-                <div class="logo-container" style="width:60px; height:60px;">
-                    <img src="logo.png" class="base-logo" alt="Base">
-                    <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="Griffin">
-                </div>
+                <img src="logo.png" style="height:40px;" alt="TDF">
                 <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:6px 14px; border-radius:6px;">+ REGEL</button>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -275,12 +268,12 @@
     </div>
 
     <div class="lyrics-container">
-        <div id="lyricsArea">Kies een nummer...</div>
+        <div id="lyricsArea">Kies een nummer uit het SONGS menu of beheer je SET.</div>
         <textarea id="editorArea" placeholder="Tekst [Akkoord] hier..."></textarea>
     </div>
 
-    <div id="joyPad" class="draggable-box">
-        <div class="drag-handle" style="color:white; text-align:center; font-size:10px; cursor:move; padding-bottom:5px;">MOVE</div>
+    <div id="joyPad" class="draggable-box" style="bottom: 20px; left: 20px;">
+        <div class="drag-handle">MOVE</div>
         <div class="joy-container">
             <button class="joy-btn" style="grid-area:up" onclick="moveLine(-1)">↑</button>
             <button class="joy-btn" style="grid-area:left" onclick="moveCursor(-1)">←</button>
@@ -289,9 +282,9 @@
         </div>
     </div>
 
-    <div id="chordStrip" class="draggable-box">
-        <div class="drag-handle" style="color:white; text-align:center; font-size:10px; cursor:move; padding-bottom:5px;">CHORDS</div>
-        <div id="chordBar"></div>
+    <div id="chordStrip" class="draggable-box" style="bottom: 20px; right: 20px;">
+        <div class="drag-handle">CHORDS</div>
+        <div id="chordBar" style="display: flex; flex-direction: column;"></div>
     </div>
 
     <script>
@@ -307,7 +300,6 @@
         };
 
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-
         function toggleDashboard() {
             const d = document.getElementById('setlistDashboard');
             d.style.display = (d.style.display === 'flex') ? 'none' : 'flex';
@@ -409,7 +401,7 @@
             let move = touchStartX - e.changedTouches[0].clientX;
             if (move > 60) {
                 if(isGlobal) {
-                    if(confirm("Wissen uit database?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
+                    if(confirm("Wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
                 } else {
                     setlist.splice(i,1); saveSet(); renderDashboard();
                 }
@@ -475,10 +467,9 @@
         function initDrag(el) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             const handle = el.querySelector('.drag-handle');
-            handle.onmousedown = dragMouseDown;
-            handle.ontouchstart = dragMouseDown;
-
-            function dragMouseDown(e) {
+            handle.onmousedown = dragStart;
+            handle.ontouchstart = dragStart;
+            function dragStart(e) {
                 e.preventDefault();
                 pos3 = e.clientX || e.touches[0].clientX;
                 pos4 = e.clientY || e.touches[0].clientY;
@@ -487,7 +478,7 @@
                 document.ontouchend = dragEnd;
                 document.ontouchmove = dragMove;
             }
-            function elementDrag(e) {
+            function dragMove(e) {
                 pos1 = pos3 - (e.clientX || e.touches[0].clientX);
                 pos2 = pos4 - (e.clientY || e.touches[0].clientY);
                 pos3 = e.clientX || e.touches[0].clientX;
