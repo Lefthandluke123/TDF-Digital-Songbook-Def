@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v7.11 - Swipe Delete</title>
+    <title>TDF Stage Pilot v7.12 - Full List Fix</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -19,32 +19,34 @@
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1rem; font-weight: bold; cursor: pointer; }
 
         /* Dashboard */
-        #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; }
+        #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
         .whatsapp-btn { background: #25D366; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; margin: 20px auto; display: block; }
+        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin: 6px 15px; height: 60px; color: white; cursor: pointer; }
+        .dash-num { width: 50px; text-align: center; color: var(--griffin-orange); font-weight: bold; border-right: 1px solid #333; }
+        .dash-name { flex-grow: 1; padding: 0 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* Swipe Delete Logic */
-        .index-item-wrapper { position: relative; width: 100%; overflow: hidden; border-bottom: 1px solid #333; background: var(--griffin-red); height: 70px; }
-        .index-item-content { 
-            position: relative; width: 100%; height: 100%; background: #1c1c1e; color: white; 
-            display: flex; align-items: center; padding: 0 15px; transition: transform 0.3s ease; 
-            z-index: 2; touch-action: pan-x;
-        }
-        .delete-btn { 
-            position: absolute; right: 0; top: 0; width: 100px; height: 100%; 
-            background: var(--griffin-red); color: white; display: flex; 
-            align-items: center; justify-content: center; font-weight: bold; z-index: 1;
-        }
-
-        /* Menu */
-        .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        /* Menu met Scroll-Fix */
+        .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid #333; }
         .songs-menu.open { left: 0; }
-        .tab-bar { display: flex; background: #1a1a1a; }
+        .tab-bar { display: flex; background: #1a1a1a; flex-shrink: 0; }
         .tab-btn { flex: 1; padding: 20px; color: #666; background: none; border: none; font-weight: bold; }
         .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
+        
+        #indexContent { 
+            flex-grow: 1; overflow-y: auto; background: #121212; 
+            -webkit-overflow-scrolling: touch; /* Vloeiend scrollen op iPad */
+            padding-bottom: 80px; /* Ruimte onderaan voor laatste liedje */
+        }
 
-        /* Content */
-        .lyrics-container { background: #fff; width: 100%; height: 100%; overflow-y: auto; }
+        .index-item-wrapper { position: relative; width: 100%; overflow: hidden; border-bottom: 1px solid #333; background: var(--griffin-red); min-height: 70px; flex-shrink: 0; }
+        .index-item-content { position: relative; width: 100%; height: 70px; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 15px; transition: transform 0.2s ease; z-index: 2; touch-action: pan-x; }
+        .delete-btn { position: absolute; right: 0; top: 0; width: 100px; height: 100%; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
+
+        /* Content Area */
+        .lyrics-container { background: #fff; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; }
+        #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.4rem; background: #fff; border: none; outline: none; }
+
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; }
         .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.2rem; }
@@ -54,7 +56,7 @@
     <div class="top-bar">
         <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
         <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:5px 15px;border-radius:5px;">SET</button>
-        <h2 id="displayTitle" style="color:white;font-size:1rem;margin:0;">v7.11</h2>
+        <h2 id="displayTitle" style="color:white;font-size:1rem;margin:0;">v7.12</h2>
         <button class="top-bar-btn" onclick="startEdit()">✎</button>
     </div>
 
@@ -66,19 +68,24 @@
 
     <div class="songs-menu" id="songsMenu">
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('lib')">LIB</button>
-            <button class="tab-btn" onclick="switchTab('set')">SET</button>
+            <button class="tab-btn active" id="tabLib" onclick="switchTab('lib')">LIB</button>
+            <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SET</button>
         </div>
-        <div id="indexContent" style="flex-grow:1; overflow-y:auto; background:#121212;"></div>
-        <button class="tab-btn" style="color:var(--griffin-orange)" onclick="toggleMenu()">SLUIT</button>
+        <div id="indexContent"></div>
+        <button class="tab-btn" style="color:var(--griffin-orange); background:#1a1a1a; flex-shrink:0; border-top:1px solid #333;" onclick="toggleMenu()">SLUIT MENU</button>
     </div>
 
-    <div class="lyrics-container"><div id="lyricsArea">Veeg naar links om te wissen.</div></div>
+    <div class="lyrics-container">
+        <div id="lyricsArea">Selecteer een liedje.</div>
+        <textarea id="editorArea" spellcheck="false"></textarea>
+    </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, currentTab = 'lib';
+
+        window.onload = () => { renderIndex(); };
 
         function toggleDashboard() {
             const d = document.getElementById('setlistDashboard');
@@ -89,9 +96,8 @@
         function renderDashboard() {
             const list = document.getElementById('dashList'); list.innerHTML = "";
             setlist.forEach((s, i) => {
-                const row = document.createElement('div');
-                row.style.cssText = "display:flex; align-items:center; background:#1c1c1e; border:1px solid #333; border-radius:8px; margin:6px 15px; height:60px; color:white;";
-                row.innerHTML = `<div style="width:50px; text-align:center; border-right:1px solid #333;">${i+1}</div><div style="padding:0 15px; flex-grow:1;">${s.title}</div>`;
+                const row = document.createElement('div'); row.className = "dash-row";
+                row.innerHTML = `<div class="dash-num">${i+1}</div><div class="dash-name">${s.title}</div>`;
                 row.onclick = () => { loadSong(s.title); toggleDashboard(); };
                 list.appendChild(row);
             });
@@ -102,49 +108,30 @@
             let l = currentTab === 'lib' ? [...db].sort((a,b) => a.title.localeCompare(b.title)) : setlist;
             
             l.forEach((x, i) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = "index-item-wrapper";
-                
-                const content = document.createElement('div');
-                content.className = "index-item-content";
-                content.innerHTML = `
-                    <div style="flex-grow:1" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                    <div style="color:var(--griffin-orange); font-size:1.5rem; padding-left:15px;" onclick="addToSet('${x.title}')">${currentTab==='lib'?'+':''}</div>
-                `;
+                const wrapper = document.createElement('div'); wrapper.className = "index-item-wrapper";
+                const content = document.createElement('div'); content.className = "index-item-content";
+                content.innerHTML = `<div style="flex-grow:1; font-weight:bold;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                <div style="color:var(--griffin-orange); font-size:1.8rem; padding:10px;" onclick="addToSet('${x.title}')">${currentTab==='lib'?'+':''}</div>`;
 
-                const del = document.createElement('div');
-                del.className = "delete-btn";
-                del.textContent = "WISSEN";
+                const del = document.createElement('div'); del.className = "delete-btn"; del.textContent = "WISSEN";
                 del.onclick = () => { currentTab === 'lib' ? deleteFromLib(x.title) : remFromSet(i); };
 
-                // Swipe Logic
                 let startX;
                 content.ontouchstart = (e) => startX = e.touches[0].clientX;
                 content.ontouchmove = (e) => {
                     let diff = startX - e.touches[0].clientX;
-                    if(diff > 50) content.style.transform = "translateX(-100px)";
-                    if(diff < -50) content.style.transform = "translateX(0)";
+                    if(diff > 40) content.style.transform = "translateX(-100px)";
+                    if(diff < -40) content.style.transform = "translateX(0)";
                 };
-
-                wrapper.appendChild(del);
-                wrapper.appendChild(content);
-                c.appendChild(wrapper);
+                wrapper.appendChild(del); wrapper.appendChild(content); c.appendChild(wrapper);
             });
         }
 
-        function deleteFromLib(t) {
-            if(confirm(`"${t}" definitief verwijderen uit bibliotheek?`)) {
-                db = db.filter(s => s.title !== t);
-                localStorage.setItem('tdfSongs', JSON.stringify(db));
-                renderIndex();
-            }
-        }
-
-        function remFromSet(i) {
-            setlist.splice(i, 1);
-            localStorage.setItem('tdfSetlist', JSON.stringify(setlist));
-            renderIndex();
-        }
+        function deleteFromLib(t) { if(confirm(`"${t}" wissen?`)) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } }
+        function remFromSet(i) { setlist.splice(i, 1); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); }
+        function switchTab(t) { currentTab = t; document.getElementById('tabLib').classList.toggle('active', t==='lib'); document.getElementById('tabSet').classList.toggle('active', t==='set'); renderIndex(); }
+        function addToSet(t) { if(currentTab !== 'lib') return; const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("Toegevoegd!"); } }
+        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
 
         function loadSong(t) {
             cur = db.find(s => s.title === t) || setlist.find(s => s.title === t);
@@ -168,14 +155,9 @@
             document.getElementById('lyricsArea').innerHTML = h;
         }
 
-        function switchTab(t) { currentTab = t; renderIndex(); }
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
-        function addToSet(t) { if(currentTab !== 'lib') return; const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("Toegevoegd aan SET"); } }
-        function copyForWhatsApp() {
-            let txt = "*SETLIST:*\n";
-            setlist.forEach((s, i) => txt += `${i+1}. ${s.title}\n`);
-            navigator.clipboard.writeText(txt).then(() => alert("Gekopieerd!"));
-        }
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value = cur.content; }
+        function finishEdit() { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; draw(); }
+        function copyForWhatsApp() { let txt = "*SETLIST:*\n"; setlist.forEach((s, i) => txt += `${i+1}. ${s.title}\n`); navigator.clipboard.writeText(txt).then(() => alert("Gekopieerd!")); }
     </script>
 </body>
 </html>
