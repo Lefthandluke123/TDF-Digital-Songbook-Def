@@ -5,93 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.13</title>
+    <title>TDF Stage Pilot v7.14</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
             --griffin-orange: #d48e3d; --griffin-red: #c12718; 
-            --header-height: 85px;
+            --header-height: 85px; --tab-height: 60px; --footer-height: 60px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* WebApp Full Height Fix */
         html, body { 
-            height: -webkit-fill-available; 
-            height: fill-available;
-            margin: 0; padding: 0; background-color: var(--bg-dark); 
+            height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); 
             overflow: hidden; position: fixed; width: 100%; 
         }
-        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
+        body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; }
 
-        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; }
+        .top-bar { position: absolute; top: 0; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1rem; font-weight: bold; cursor: pointer; }
 
-        /* Dashboard */
-        #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
-        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin: 6px 15px; height: 60px; color: white; cursor: pointer; }
-        .dash-num { width: 50px; text-align: center; color: var(--griffin-orange); font-weight: bold; border-right: 1px solid #333; }
-        .dash-name { flex-grow: 1; padding: 0 15px; font-weight: bold; }
-
-        /* Menu met WebApp Scroll Fix */
+        /* Menu met Absolute Positioning voor Scroll-fix */
         .songs-menu { 
             position: fixed; top: 0; left: -100%; width: 85%; height: 100%; 
             background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
-            display: flex; flex-direction: column; 
-            padding-top: env(safe-area-inset-top);
         }
         .songs-menu.open { left: 0; }
-        .tab-bar { display: flex; background: #1a1a1a; flex-shrink: 0; border-bottom: 1px solid #333; }
-        .tab-btn { flex: 1; padding: 20px; color: #666; background: none; border: none; font-weight: bold; }
+        
+        .tab-bar { position: absolute; top: env(safe-area-inset-top); left: 0; width: 100%; height: var(--tab-height); display: flex; background: #1a1a1a; border-bottom: 1px solid #333; }
+        .tab-btn { flex: 1; border: none; background: none; color: #666; font-weight: bold; font-size: 1rem; }
         .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
         
         #indexContent { 
-            flex: 1; 
+            position: absolute; 
+            top: calc(var(--tab-height) + env(safe-area-inset-top)); 
+            bottom: var(--footer-height); 
+            left: 0; width: 100%;
             overflow-y: auto; 
             background: #121212; 
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
-            padding-bottom: env(safe-area-inset-bottom, 50px);
         }
 
-        .index-item-wrapper { position: relative; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); min-height: 75px; }
-        .index-item-content { position: relative; width: 100%; min-height: 75px; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 15px; transition: transform 0.2s ease; z-index: 2; }
+        .menu-footer { position: absolute; bottom: 0; left: 0; width: 100%; height: var(--footer-height); background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: center; }
+
+        .index-item-wrapper { position: relative; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); height: 75px; }
+        .index-item-content { position: relative; width: 100%; height: 100%; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 20px; transition: transform 0.2s ease; z-index: 2; }
         .delete-btn { position: absolute; right: 0; top: 0; width: 100px; height: 100%; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         /* Content Area */
-        .lyrics-container { flex: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .main-container { position: absolute; top: var(--header-height); bottom: 0; left: 0; width: 100%; overflow: hidden; }
+        .lyrics-container { width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #fff; }
         #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.4rem; background: #fff; border: none; outline: none; }
 
         .chord-row { position: relative; height: 1.6rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; }
         .lyric-line { white-space: pre; display: block; margin-bottom: 18px; min-height: 1.2rem; }
+
+        #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; padding-bottom: 50px; -webkit-overflow-scrolling: touch; }
+        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin: 8px 15px; height: 65px; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="top-bar">
         <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
         <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:5px 15px;border-radius:5px;">SET</button>
-        <h2 id="displayTitle" style="color:white;font-size:1rem;margin:0;">v7.13</h2>
+        <h2 id="displayTitle" style="color:white;font-size:0.9rem;margin:0;">v7.14</h2>
         <button class="top-bar-btn" onclick="startEdit()">✎</button>
     </div>
 
     <div id="setlistDashboard">
-        <div id="dashList"></div>
+        <div id="dashList" style="padding:10px 0;"></div>
         <div style="text-align:center; padding:30px;"><button class="top-bar-btn" onclick="toggleDashboard()">SLUIT</button></div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
         <div class="tab-bar">
-            <button class="tab-btn active" id="tabLib" onclick="switchTab('lib')">LIB</button>
-            <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SET</button>
+            <button class="tab-btn active" id="tabLib" onclick="switchTab('lib')">BIBLIOTHEEK</button>
+            <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SETLIST</button>
         </div>
         <div id="indexContent"></div>
-        <button class="tab-btn" style="color:var(--griffin-orange); background:#1a1a1a; flex-shrink:0;" onclick="toggleMenu()">SLUIT MENU</button>
+        <div class="menu-footer">
+            <button class="top-bar-btn" style="color:var(--griffin-orange)" onclick="toggleMenu()">SLUIT MENU</button>
+        </div>
     </div>
 
-    <div class="lyrics-container">
-        <div id="lyricsArea">Selecteer een liedje.</div>
-        <textarea id="editorArea" spellcheck="false"></textarea>
+    <div class="main-container">
+        <div class="lyrics-container">
+            <div id="lyricsArea">Kies een liedje uit het menu.</div>
+            <textarea id="editorArea" spellcheck="false"></textarea>
+        </div>
     </div>
 
     <script>
@@ -100,6 +102,9 @@
         let cur = null, currentTab = 'lib';
 
         window.onload = () => { renderIndex(); };
+
+        // Voorkom pagina-bouncen voor WebApp stabiliteit
+        document.addEventListener('touchmove', (e) => { if(e.touches.length > 1) e.preventDefault(); }, {passive: false});
 
         function toggleDashboard() {
             const d = document.getElementById('setlistDashboard');
@@ -111,7 +116,7 @@
             const list = document.getElementById('dashList'); list.innerHTML = "";
             setlist.forEach((s, i) => {
                 const row = document.createElement('div'); row.className = "dash-row";
-                row.innerHTML = `<div class="dash-num">${i+1}</div><div class="dash-name">${s.title}</div>`;
+                row.innerHTML = `<div style="width:50px; text-align:center; color:var(--griffin-orange); font-weight:bold;">${i+1}</div><div style="flex-grow:1; padding:0 15px; font-weight:bold;">${s.title}</div>`;
                 row.onclick = () => { loadSong(s.title); toggleDashboard(); };
                 list.appendChild(row);
             });
