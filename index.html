@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.41 - Flex Setlist</title>
+    <title>TDF Stage Pilot v7.43 - Header Update</title>
     <style>
         :root { --bg-dark: #0a0a0a; --top-bar-bg: #1a1a1a; --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 85px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -15,30 +15,30 @@
         .top-bar { height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; flex-shrink: 0; }
         .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
 
+        /* Dashboard: Header met Logo links en WA rechts */
         #setlistDashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 45000; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
-        .dash-header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; height: 70px; }
+        .dash-header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; height: 75px; }
         .dash-list { flex: 1; overflow-y: auto; padding: 10px 15px; -webkit-overflow-scrolling: touch; background: var(--bg-dark); }
         
-        /* 10% Groter voor Firefox op iPad */
-        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 6px; margin-bottom: 5px; height: 53px; color: white; width: 100%; gap: 5px; padding-right: 5px; }
-        .dash-num { width: 55px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.55rem; font-weight: 900; border-right: 1px solid #333; flex-shrink: 0; }
-        .dash-name { flex: 1; padding: 0 10px; font-size: 1.65rem; font-weight: bold; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin-bottom: 6px; height: 72px; color: white; width: 100%; gap: 8px; padding-right: 10px; }
+        .dash-num { width: 65px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.9rem; font-weight: 900; border-right: 1px solid #333; background: rgba(0,0,0,0.2); flex-shrink: 0; }
+        .dash-name { flex: 1; padding: 0 15px; font-size: 1.9rem; font-weight: bold; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .dash-controls { display: flex; gap: 4px; flex-shrink: 0; }
-        .dash-ctrl-btn { width: 38px; height: 38px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
+        .dash-controls { display: flex; gap: 6px; flex-shrink: 0; }
+        .dash-ctrl-btn { width: 44px; height: 44px; background: #333; border: 1px solid #444; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
         .btn-del { color: var(--griffin-red); }
 
-        /* De perfecte v7.39 Joystick */
+        /* Joystick & Tools */
         .draggable-box { position: fixed; z-index: 50000; display: none; touch-action: none; }
-        .joy-container { background: rgba(26, 26, 26, 0.9); border: 2px solid var(--griffin-orange); border-radius: 50%; padding: 10px; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .joy-container { background: rgba(26, 26, 26, 0.9); border: 2px solid var(--griffin-orange); border-radius: 50%; padding: 10px; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 5px; }
         .drag-handle { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--griffin-orange); color: black; padding: 2px 10px; border-radius: 10px; font-size: 9px; font-weight: bold; cursor: move; }
-        .joy-btn { width: 50px; height: 50px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.4rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .joy-btn { width: 52px; height: 52px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
 
-        /* Full Width Lyrics */
+        /* Lyrics Full Width */
         .lyrics-container { flex: 1; background: #fff; overflow-y: auto; width: 100%; }
         #lyricsArea { padding: 30px; font-size: 1.5rem; color: #000; line-height: 1.4; width: 100%; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-size: 1.5rem; border: none; outline: none; background: #fff; }
-        
+
         .chord-row { position: relative; height: 1.7rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
         .chord-item { position: absolute; white-space: pre; }
         .lyric-line { white-space: pre; display: block; margin-bottom: 20px; min-height: 1.3rem; }
@@ -46,7 +46,6 @@
         .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .songs-menu.open { left: 0; }
         #indexContent { flex: 1; overflow-y: auto; background: #121212; }
-        .list-item { height: 65px; display: flex; align-items: center; border-bottom: 1px solid #333; padding: 0 15px; background: #1c1c1e; color: white; }
     </style>
 </head>
 <body>
@@ -67,10 +66,13 @@
 
     <div id="setlistDashboard">
         <div class="dash-header">
-            <h1 style="color:white; margin:0; font-size:1.2rem;">STAGELIST</h1>
-            <div style="display:flex; gap:8px;">
-                <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:5px 10px; border-radius:6px; font-size:0.8rem;">+ LEGE REGEL</button>
-                <button class="top-bar-btn" onclick="toggleDashboard()" style="border:1px solid #444; padding:5px 12px; border-radius:6px;">SLUIT</button>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div style="height:35px; width:35px; background:#333; border-radius:5px; display:flex; align-items:center; justify-content:center; color:var(--griffin-orange);">🖼️</div>
+                <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:6px 14px; border-radius:6px; font-size:0.9rem;">+ LEGE REGEL</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="top-bar-btn" onclick="copySetWhatsApp()" style="background:#25D366; color:white; width:44px; height:44px; border-radius:50%; padding:0; font-size:1.2rem; display:flex; align-items:center; justify-content:center;">🟢</button>
+                <button class="top-bar-btn" onclick="toggleDashboard()" style="border:1px solid #444; padding:6px 15px; border-radius:6px;">SLUIT</button>
             </div>
         </div>
         <div class="dash-list" id="dashList"></div>
@@ -85,10 +87,9 @@
             <button class="joy-btn" style="grid-area:down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
         </div>
     </div>
-
-    <div id="chordStrip" class="draggable-box" style="top:120px; left:20px; width:85px; background:rgba(26,26,26,0.95); border:2px solid var(--griffin-orange); border-radius:12px;">
+    <div id="chordStrip" class="draggable-box" style="top:120px; left:20px; width:90px; background:rgba(26,26,26,0.95); border:2px solid var(--griffin-orange); border-radius:12px;">
         <div class="drag-handle">CHORDS</div>
-        <div id="chordBar" style="display:flex; flex-direction:column; padding:8px; gap:6px; max-height:400px; overflow-y:auto;"></div>
+        <div id="chordBar" style="display:flex; flex-direction:column; padding:10px; gap:8px; max-height:400px; overflow-y:auto;"></div>
     </div>
 
     <div class="songs-menu" id="songsMenu">
@@ -102,7 +103,7 @@
         </div>
     </div>
 
-    <div class="lyrics-container"><div id="lyricsArea">Klaar voor actie.</div><textarea id="editorArea" spellcheck="false"></textarea></div>
+    <div class="lyrics-container"><div id="lyricsArea">Importeer songs...</div><textarea id="editorArea" spellcheck="false"></textarea></div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
@@ -111,14 +112,11 @@
 
         window.onload = () => { renderIndex(); buildChordStrip(); ['chordStrip','joyPad'].forEach(id => initDrag(document.getElementById(id))); };
 
-        // Setlist Management
         function renderDashboard() {
             const list = document.getElementById('dashList'); list.innerHTML = "";
             setlist.forEach((s, i) => {
                 const row = document.createElement('div'); row.className = "dash-row";
-                row.innerHTML = `
-                    <div class="dash-num">${i+1}</div>
-                    <div class="dash-name" onclick="renameSetItem(${i})">${s.title}</div>
+                row.innerHTML = `<div class="dash-num">${i+1}</div><div class="dash-name" onclick="renameSetItem(${i})">${s.title}</div>
                     <div class="dash-controls">
                         <button class="dash-ctrl-btn" onclick="moveSetItem(${i}, -1)">↑</button>
                         <button class="dash-ctrl-btn" onclick="moveSetItem(${i}, 1)">↓</button>
@@ -129,23 +127,20 @@
         }
 
         function addCustomRow() {
-            const n = prompt("Naam deunenset/regel:", "Pauze");
+            const n = prompt("Naam deunenset/regel:", "DEUNENSET");
             if (n) { setlist.push({title: n, content: ""}); saveSet(); renderDashboard(); }
         }
 
         function renameSetItem(i) {
             const item = setlist[i];
-            if(!item.content) { // Als het een label is
-                const n = prompt("Hernoem:", item.title);
+            if(!item.content) {
+                const n = prompt("Hernoem deunenset:", item.title);
                 if(n) { setlist[i].title = n; saveSet(); renderDashboard(); }
-            } else {
-                loadSong(item.title); toggleDashboard();
-            }
+            } else { loadSong(item.title); toggleDashboard(); }
         }
 
         function moveSetItem(idx, dir) {
-            let target = idx + dir;
-            if(target < 0 || target >= setlist.length) return;
+            let target = idx + dir; if(target < 0 || target >= setlist.length) return;
             const temp = setlist[idx]; setlist[idx] = setlist[target]; setlist[target] = temp;
             saveSet(); renderDashboard();
         }
@@ -153,10 +148,9 @@
         function removeFromSet(idx) { setlist.splice(idx, 1); saveSet(); renderDashboard(); }
         function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
 
-        // Basis
         function buildChordStrip() {
             const bar = document.getElementById('chordBar'); const chords = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","G","G7"];
-            chords.forEach(c => { const b = document.createElement('button'); b.style.cssText="background:#333;color:white;border:1px solid #555;padding:10px;border-radius:6px;font-weight:bold;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); }; bar.appendChild(b); });
+            chords.forEach(c => { const b = document.createElement('button'); b.style.cssText="background:#333;color:white;border:1px solid #555;padding:12px;border-radius:6px;font-weight:bold;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); }; bar.appendChild(b); });
         }
         function initDrag(el) {
             const h = el.querySelector('.drag-handle'); let ix, iy;
@@ -169,7 +163,7 @@
             const files = Array.from(e.target.files);
             for(let f of files) {
                 const t = await f.text();
-                if(f.name.endsWith('.json')) { try { db = JSON.parse(t); } catch(err) { alert("Fout!"); } }
+                if(f.name.endsWith('.json')) { try { db = JSON.parse(t); } catch(err) { alert("JSON Fout!"); } }
                 else db.push({title: f.name.replace('.txt',''), content: t});
             }
             localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
