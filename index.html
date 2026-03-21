@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>TDF Stage Pilot v7.12 - Full List Fix</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>TDF Stage Pilot v7.13</title>
     <style>
         :root { 
             --bg-dark: #121212; --top-bar-bg: #1a1a1a;
@@ -12,7 +13,14 @@
             --header-height: 85px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; }
+        
+        /* WebApp Full Height Fix */
+        html, body { 
+            height: -webkit-fill-available; 
+            height: fill-available;
+            margin: 0; padding: 0; background-color: var(--bg-dark); 
+            overflow: hidden; position: fixed; width: 100%; 
+        }
         body { font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace; display: flex; flex-direction: column; padding-top: var(--header-height); }
 
         .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; }
@@ -20,30 +28,37 @@
 
         /* Dashboard */
         #setlistDashboard { position: fixed; top: var(--header-height); left: 0; width: 100%; height: calc(100% - var(--header-height)); background: rgba(10, 10, 10, 0.98); z-index: 35000; display: none; overflow-y: auto; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
-        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; margin: 20px auto; display: block; }
         .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; border-radius: 8px; margin: 6px 15px; height: 60px; color: white; cursor: pointer; }
         .dash-num { width: 50px; text-align: center; color: var(--griffin-orange); font-weight: bold; border-right: 1px solid #333; }
-        .dash-name { flex-grow: 1; padding: 0 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dash-name { flex-grow: 1; padding: 0 15px; font-weight: bold; }
 
-        /* Menu met Scroll-Fix */
-        .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        /* Menu met WebApp Scroll Fix */
+        .songs-menu { 
+            position: fixed; top: 0; left: -100%; width: 85%; height: 100%; 
+            background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; 
+            display: flex; flex-direction: column; 
+            padding-top: env(safe-area-inset-top);
+        }
         .songs-menu.open { left: 0; }
-        .tab-bar { display: flex; background: #1a1a1a; flex-shrink: 0; }
+        .tab-bar { display: flex; background: #1a1a1a; flex-shrink: 0; border-bottom: 1px solid #333; }
         .tab-btn { flex: 1; padding: 20px; color: #666; background: none; border: none; font-weight: bold; }
         .tab-btn.active { color: var(--griffin-orange); border-bottom: 2px solid var(--griffin-orange); }
         
         #indexContent { 
-            flex-grow: 1; overflow-y: auto; background: #121212; 
-            -webkit-overflow-scrolling: touch; /* Vloeiend scrollen op iPad */
-            padding-bottom: 80px; /* Ruimte onderaan voor laatste liedje */
+            flex: 1; 
+            overflow-y: auto; 
+            background: #121212; 
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            padding-bottom: env(safe-area-inset-bottom, 50px);
         }
 
-        .index-item-wrapper { position: relative; width: 100%; overflow: hidden; border-bottom: 1px solid #333; background: var(--griffin-red); min-height: 70px; flex-shrink: 0; }
-        .index-item-content { position: relative; width: 100%; height: 70px; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 15px; transition: transform 0.2s ease; z-index: 2; touch-action: pan-x; }
+        .index-item-wrapper { position: relative; width: 100%; border-bottom: 1px solid #333; background: var(--griffin-red); min-height: 75px; }
+        .index-item-content { position: relative; width: 100%; min-height: 75px; background: #1c1c1e; color: white; display: flex; align-items: center; padding: 0 15px; transition: transform 0.2s ease; z-index: 2; }
         .delete-btn { position: absolute; right: 0; top: 0; width: 100px; height: 100%; background: var(--griffin-red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         /* Content Area */
-        .lyrics-container { background: #fff; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .lyrics-container { flex: 1; background: #fff; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #lyricsArea { padding: 30px; font-size: 1.4rem; color: #000; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-family: inherit; font-size: 1.4rem; background: #fff; border: none; outline: none; }
 
@@ -56,12 +71,11 @@
     <div class="top-bar">
         <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
         <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:5px 15px;border-radius:5px;">SET</button>
-        <h2 id="displayTitle" style="color:white;font-size:1rem;margin:0;">v7.12</h2>
+        <h2 id="displayTitle" style="color:white;font-size:1rem;margin:0;">v7.13</h2>
         <button class="top-bar-btn" onclick="startEdit()">✎</button>
     </div>
 
     <div id="setlistDashboard">
-        <button class="whatsapp-btn" onclick="copyForWhatsApp()">📋 WHATSAPP LIJST</button>
         <div id="dashList"></div>
         <div style="text-align:center; padding:30px;"><button class="top-bar-btn" onclick="toggleDashboard()">SLUIT</button></div>
     </div>
@@ -72,7 +86,7 @@
             <button class="tab-btn" id="tabSet" onclick="switchTab('set')">SET</button>
         </div>
         <div id="indexContent"></div>
-        <button class="tab-btn" style="color:var(--griffin-orange); background:#1a1a1a; flex-shrink:0; border-top:1px solid #333;" onclick="toggleMenu()">SLUIT MENU</button>
+        <button class="tab-btn" style="color:var(--griffin-orange); background:#1a1a1a; flex-shrink:0;" onclick="toggleMenu()">SLUIT MENU</button>
     </div>
 
     <div class="lyrics-container">
@@ -120,8 +134,8 @@
                 content.ontouchstart = (e) => startX = e.touches[0].clientX;
                 content.ontouchmove = (e) => {
                     let diff = startX - e.touches[0].clientX;
-                    if(diff > 40) content.style.transform = "translateX(-100px)";
-                    if(diff < -40) content.style.transform = "translateX(0)";
+                    if(diff > 50) content.style.transform = "translateX(-100px)";
+                    if(diff < -50) content.style.transform = "translateX(0)";
                 };
                 wrapper.appendChild(del); wrapper.appendChild(content); c.appendChild(wrapper);
             });
@@ -130,7 +144,7 @@
         function deleteFromLib(t) { if(confirm(`"${t}" wissen?`)) { db = db.filter(s => s.title !== t); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); } }
         function remFromSet(i) { setlist.splice(i, 1); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); renderIndex(); }
         function switchTab(t) { currentTab = t; document.getElementById('tabLib').classList.toggle('active', t==='lib'); document.getElementById('tabSet').classList.toggle('active', t==='set'); renderIndex(); }
-        function addToSet(t) { if(currentTab !== 'lib') return; const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("Toegevoegd!"); } }
+        function addToSet(t) { if(currentTab !== 'lib') return; const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); alert("OK"); } }
         function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
 
         function loadSong(t) {
@@ -157,7 +171,6 @@
 
         function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value = cur.content; }
         function finishEdit() { const idx = db.findIndex(s => s.title === cur.title); db[idx].content = document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; draw(); }
-        function copyForWhatsApp() { let txt = "*SETLIST:*\n"; setlist.forEach((s, i) => txt += `${i+1}. ${s.title}\n`); navigator.clipboard.writeText(txt).then(() => alert("Gekopieerd!")); }
     </script>
 </body>
 </html>
