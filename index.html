@@ -222,6 +222,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
             display: none;
         }
+        .joy-container {
+            display: grid;
+            grid-template-areas: ". up ." "left . right" ". down .";
+            gap: 5px;
+        }
     </style>
 </head>
 <body>
@@ -275,7 +280,7 @@
     </div>
 
     <div id="joyPad" class="draggable-box">
-        <div class="drag-handle">MOVE</div>
+        <div class="drag-handle" style="color:white; text-align:center; font-size:10px; cursor:move; padding-bottom:5px;">MOVE</div>
         <div class="joy-container">
             <button class="joy-btn" style="grid-area:up" onclick="moveLine(-1)">↑</button>
             <button class="joy-btn" style="grid-area:left" onclick="moveCursor(-1)">←</button>
@@ -285,7 +290,7 @@
     </div>
 
     <div id="chordStrip" class="draggable-box">
-        <div class="drag-handle">CHORDS</div>
+        <div class="drag-handle" style="color:white; text-align:center; font-size:10px; cursor:move; padding-bottom:5px;">CHORDS</div>
         <div id="chordBar"></div>
     </div>
 
@@ -404,7 +409,7 @@
             let move = touchStartX - e.changedTouches[0].clientX;
             if (move > 60) {
                 if(isGlobal) {
-                    if(confirm("Wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
+                    if(confirm("Wissen uit database?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
                 } else {
                     setlist.splice(i,1); saveSet(); renderDashboard();
                 }
@@ -458,7 +463,8 @@
         function moveLine(n) {
             const ed = document.getElementById('editorArea');
             const lines = ed.value.split('\n');
-            let currentLine = ed.value.substr(0, ed.selectionStart).split('\n').length - 1;
+            const pos = ed.selectionStart;
+            let currentLine = ed.value.substr(0, pos).split('\n').length - 1;
             let targetLine = Math.max(0, Math.min(lines.length - 1, currentLine + n));
             let newPos = 0;
             for(let i=0; i<targetLine; i++) newPos += lines[i].length + 1;
@@ -468,16 +474,18 @@
 
         function initDrag(el) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            el.querySelector('.drag-handle').onmousedown = dragMouseDown;
-            el.querySelector('.drag-handle').ontouchstart = dragMouseDown;
+            const handle = el.querySelector('.drag-handle');
+            handle.onmousedown = dragMouseDown;
+            handle.ontouchstart = dragMouseDown;
+
             function dragMouseDown(e) {
                 e.preventDefault();
                 pos3 = e.clientX || e.touches[0].clientX;
                 pos4 = e.clientY || e.touches[0].clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-                document.ontouchend = closeDragElement;
-                document.ontouchmove = elementDrag;
+                document.onmouseup = dragEnd;
+                document.onmousemove = dragMove;
+                document.ontouchend = dragEnd;
+                document.ontouchmove = dragMove;
             }
             function elementDrag(e) {
                 pos1 = pos3 - (e.clientX || e.touches[0].clientX);
@@ -487,7 +495,7 @@
                 el.style.top = (el.offsetTop - pos2) + "px";
                 el.style.left = (el.offsetLeft - pos1) + "px";
             }
-            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; }
+            function dragEnd() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; }
         }
 
         function copySetWhatsApp() {
@@ -495,6 +503,31 @@
             navigator.clipboard.writeText(t);
             alert("Gekopieerd!");
         }
+
+        function startEdit() {
+            if(!cur) return;
+            document.getElementById('lyricsArea').style.display='none';
+            document.getElementById('editorArea').style.display='block';
+            document.getElementById('editorArea').value = cur.content;
+            document.getElementById('saveBtn').style.display='block';
+            document.getElementById('joyPad').style.display='block';
+            document.getElementById('chordStrip').style.display='block';
+        }
+
+        function finishEdit() {
+            cur.content = document.getElementById('editorArea').value;
+            const idx = db.findIndex(s => s.title === cur.title);
+            if(idx !== -1) db[idx].content = cur.content;
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            document.getElementById('lyricsArea').style.display='block';
+            document.getElementById('editorArea').style.display='none';
+            document.getElementById('saveBtn').style.display='none';
+            document.getElementById('joyPad').style.display='none';
+            document.getElementById('chordStrip').style.display='none';
+            draw();
+        }
+
+        function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
     </script>
 </body>
 </html>
