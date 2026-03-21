@@ -52,7 +52,7 @@
             cursor: pointer; 
         }
 
-        /* Logo Stack */
+        /* Logo Stack (Oorspronkelijk) */
         .logo-container { 
             position: relative; 
             width: 50px; 
@@ -66,6 +66,7 @@
             position: absolute; 
             max-width: 100%; 
             max-height: 100%; 
+            padding: 2px;
             object-fit: contain; 
         }
         .base-logo { z-index: 1; }
@@ -150,7 +151,7 @@
 </head>
 <body>
 
-    <input type="file" id="importInput" accept=".json,.txt" multiple style="display:none;">
+    <input type="file" id="bulkFiles" accept=".json,.txt" multiple style="display:none;">
 
     <div class="top-bar">
         <div style="display:flex; gap:12px; align-items:center;">
@@ -188,7 +189,7 @@
     <div class="songs-menu" id="songsMenu">
         <div id="indexContent"></div>
         <div style="padding:15px; background:#111; display:flex; gap:10px;">
-            <button class="top-bar-btn" onclick="document.getElementById('importInput').click()" style="flex:1; background:#333; color:white; padding:10px; border-radius:5px;">IMPORT</button>
+            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="flex:1; background:#333; color:white; padding:10px; border-radius:5px;">IMPORT</button>
             <button class="top-bar-btn" onclick="toggleMenu()" style="flex:1; background:#333; color:white;">TERUG</button>
         </div>
     </div>
@@ -201,10 +202,10 @@
     <div id="joyPad" class="draggable-box" style="bottom: 20px; left: 20px;">
         <div class="drag-handle">MOVE</div>
         <div class="joy-container">
-            <button class="joy-btn" style="grid-area:up" onclick="moveCursorVertical(-1)">↑</button>
-            <button class="joy-btn" style="grid-area:left" onclick="moveCursorHorizontal(-1)">←</button>
-            <button class="joy-btn" style="grid-area:right" onclick="moveCursorHorizontal(1)">→</button>
-            <button class="joy-btn" style="grid-area:down" onclick="moveCursorVertical(1)">↓</button>
+            <button class="joy-btn" style="grid-area:up" onclick="moveLine(-1)">↑</button>
+            <button class="joy-btn" style="grid-area:left" onclick="moveCursor(-1)">←</button>
+            <button class="joy-btn" style="grid-area:right" onclick="moveCursor(1)">→</button>
+            <button class="joy-btn" style="grid-area:down" onclick="moveLine(1)">↓</button>
         </div>
     </div>
 
@@ -223,30 +224,55 @@
             renderIndex();
             buildChordStrip();
             ['chordStrip', 'joyPad'].forEach(id => initDrag(document.getElementById(id)));
-            
-            // Nieuwe event listener voor import
-            document.getElementById('importInput').addEventListener('change', async (e) => {
-                for (let file of e.target.files) {
-                    const text = await readFileAsText(file);
-                    if (file.name.endsWith('.json')) {
-                        try {
+            setupImport(); // Import initialiseren
+        };
+
+        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
+        function toggleDashboard() {
+            const d = document.getElementById('setlistDashboard');
+            d.style.display = (d.style.display === 'flex') ? 'none' : 'flex';
+            if(d.style.display === 'flex') renderDashboard();
+        }
+
+        // --- IMPORT LOGICA (GECORRIGEERD VOOR FIREFOX IPAD) ---
+        function setupImport() {
+            const input = document.getElementById('bulkFiles');
+            input.addEventListener('change', async (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+
+                for (let file of files) {
+                    try {
+                        const text = await readFileAsText(file);
+                        if (file.name.endsWith('.json')) {
+                            // JSON verwerken
                             const imported = JSON.parse(text);
                             if (Array.isArray(imported)) {
                                 imported.forEach(s => addUniqueToDb(s));
                             } else {
                                 addUniqueToDb(imported);
                             }
-                        } catch (err) { alert("Fout in JSON bestand."); }
-                    } else {
-                        addUniqueToDb({ title: file.name.replace('.txt',''), content: text });
+                        } else if (file.name.endsWith('.txt')) {
+                            // TXT verwerken
+                            addUniqueToDb({ 
+                                title: file.name.replace('.txt',''), 
+                                content: text 
+                            });
+                        }
+                    } catch (err) {
+                        alert(`Fout bij bestand: ${file.name}. Is dit een geldig bestand?`);
+                        console.error(err);
                     }
                 }
+
                 saveDb();
                 renderIndex();
-                alert("Import voltooid!");
+                input.value = ""; // Input resetten
+                alert("Bestanden verwerkt!");
             });
-        };
+        }
 
+        // Robuuste methode om bestanden als tekst te lezen
         function readFileAsText(file) {
             return new Promise((resolve, reject) => {
                 const fr = new FileReader();
@@ -256,8 +282,10 @@
             });
         }
 
+        // Liedje uniek toevoegen aan DB (overschrijven indien titel bestaat)
         function addUniqueToDb(newSong) {
             if (!newSong.title || !newSong.content) return;
+            newSong.content = newSong.content.replace(/\r\n/g, '\n'); // Line endings fix
             const exists = db.findIndex(s => s.title === newSong.title);
             if (exists !== -1) db[exists] = newSong;
             else db.push(newSong);
@@ -266,13 +294,7 @@
         function saveDb() { localStorage.setItem('tdfSongs', JSON.stringify(db)); }
         function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
 
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
-        function toggleDashboard() {
-            const d = document.getElementById('setlistDashboard');
-            d.style.display = (d.style.display === 'flex') ? 'none' : 'flex';
-            if(d.style.display === 'flex') renderDashboard();
-        }
-
+        // --- RENDER FUNCTIES ---
         function renderIndex() {
             const c = document.getElementById('indexContent');
             c.innerHTML = "";
@@ -368,7 +390,7 @@
             let move = touchStartX - e.changedTouches[0].clientX;
             if (move > 60) {
                 if(isGlobal) {
-                    if(confirm("Wissen uit database?")) { db.splice(i,1); saveDb(); renderIndex(); }
+                    if(confirm(`"${db[i].title}" definitief wissen?`)) { db.splice(i,1); saveDb(); renderIndex(); }
                 } else {
                     setlist.splice(i,1); saveSet(); renderDashboard();
                 }
@@ -378,7 +400,11 @@
 
         function addToSet(t) {
             const s = db.find(x=>x.title===t);
-            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); saveSet(); alert(t + " toegevoegd"); }
+            if(s) { 
+                setlist.push(JSON.parse(JSON.stringify(s))); // Deep copy
+                saveSet(); 
+                alert(t + " toegevoegd aan set"); 
+            }
         }
 
         function moveSetItem(idx, dir) {
@@ -396,8 +422,7 @@
 
         function buildChordStrip() {
             const bar = document.getElementById('chordBar');
-            const chords = ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"];
-            chords.forEach(c => {
+            ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => {
                 const b = document.createElement('button');
                 b.style.cssText = "width:65px; height:45px; background:#333; color:white; border:1px solid #444; border-radius:6px; margin-bottom:5px; font-weight:bold;";
                 b.textContent = c;
@@ -420,12 +445,11 @@
             ed.focus();
         }
 
-        function moveCursorVertical(n) {
+        function moveLine(n) {
             const ed = document.getElementById('editorArea');
-            const text = ed.value;
-            const lines = text.split('\n');
+            const lines = ed.value.split('\n');
             const pos = ed.selectionStart;
-            let currentLine = text.substr(0, pos).split('\n').length - 1;
+            let currentLine = ed.value.substr(0, pos).split('\n').length - 1;
             let targetLine = Math.max(0, Math.min(lines.length - 1, currentLine + n));
             let newPos = 0;
             for(let i=0; i<targetLine; i++) newPos += lines[i].length + 1;
@@ -436,10 +460,9 @@
         function initDrag(el) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             const handle = el.querySelector('.drag-handle');
-            handle.onmousedown = dragStart;
-            handle.ontouchstart = dragStart;
-
-            function dragStart(e) {
+            handle.onmousedown = dragMouseDown;
+            handle.ontouchstart = dragMouseDown;
+            function dragMouseDown(e) {
                 e.preventDefault();
                 pos3 = e.clientX || e.touches[0].clientX;
                 pos4 = e.clientY || e.touches[0].clientY;
@@ -460,7 +483,7 @@
         function copySetWhatsApp() {
             let t = "*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n");
             navigator.clipboard.writeText(t);
-            alert("Gekopieerd!");
+            alert("Gekopieerd voor WhatsApp!");
         }
 
         function startEdit() {
@@ -474,7 +497,6 @@
         }
 
         function finishEdit() {
-            if(!cur) return;
             cur.content = document.getElementById('editorArea').value;
             const idx = db.findIndex(s => s.title === cur.title);
             if(idx !== -1) db[idx].content = cur.content;
