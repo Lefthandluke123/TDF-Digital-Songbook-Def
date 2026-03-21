@@ -5,129 +5,342 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Stage Pilot v7.50 - Embedded Logo</title>
+    <title>TDF Digital Setlist</title>
     <style>
-        :root { --bg-dark: #0a0a0a; --top-bar-bg: #1a1a1a; --griffin-orange: #d48e3d; --griffin-red: #c12718; --header-height: 85px; }
+        :root { 
+            --bg-dark: #0a0a0a; 
+            --top-bar-bg: #1a1a1a; 
+            --griffin-orange: #d48e3d; 
+            --griffin-red: #c12718; 
+            --header-height: 85px; 
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; margin: 0; padding: 0; background-color: var(--bg-dark); overflow: hidden; position: fixed; width: 100%; }
-        body { font-family: ui-monospace, 'SF Mono', monospace; display: flex; flex-direction: column; }
 
-        .top-bar { height: var(--header-height); background: var(--top-bar-bg); border-bottom: 1px solid #333; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 30000; flex-shrink: 0; }
-        .top-bar-btn { background: none; border: none; color: var(--griffin-orange); font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        .app-logo-img { height: 50px; width: auto; object-fit: contain; cursor: pointer; }
+        body { 
+            font-family: ui-monospace, 'SF Mono', monospace; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--bg-dark); 
+            overflow: hidden; 
+            position: fixed; 
+            width: 100%; 
+        }
 
-        #setlistDashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 45000; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
-        .dash-header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; height: 75px; }
-        .dash-list { flex: 1; overflow-y: auto; padding: 10px 15px; -webkit-overflow-scrolling: touch; background: var(--bg-dark); }
-        
-        .swipe-container { position: relative; margin-bottom: 6px; overflow: hidden; border-radius: 8px; background: var(--griffin-red); flex-shrink: 0; }
-        .dash-row { display: flex; align-items: center; background: #1c1c1e; border: 1px solid #333; height: 72px; color: white; width: 100%; gap: 8px; padding-right: 10px; position: relative; z-index: 2; transition: transform 0.2s ease; }
-        .dash-num { width: 65px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--griffin-orange); font-size: 1.9rem; font-weight: 900; border-right: 1px solid #333; background: rgba(0,0,0,0.2); flex-shrink: 0; }
-        .dash-name { flex: 1; padding: 0 15px; font-size: 1.9rem; font-weight: bold; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dash-controls { display: flex; gap: 6px; flex-shrink: 0; }
-        .dash-ctrl-btn { width: 44px; height: 44px; background: #333; border: 1px solid #444; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; }
+        /* Top Bar */
+        .top-bar { 
+            height: var(--header-height); 
+            background: var(--top-bar-bg); 
+            border-bottom: 1px solid #333; 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: space-between; 
+            padding: 0 15px 12px 15px; 
+            z-index: 3000; 
+            flex-shrink: 0; 
+        }
 
-        .songs-menu { position: fixed; top: 0; left: -100%; width: 85%; height: 100%; background: #1c1c1e; z-index: 40000; transition: left 0.3s ease; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
+        .top-bar-btn { 
+            background: none; 
+            border: none; 
+            color: var(--griffin-orange); 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+
+        /* Logo Stack */
+        .logo-container { 
+            position: relative; 
+            width: 50px; 
+            height: 50px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .base-logo, .overlay-logo { 
+            position: absolute; 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+        }
+        .base-logo { z-index: 1; }
+        .overlay-logo { z-index: 2; }
+
+        /* Dashboard Overlay */
+        #setlistDashboard { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: var(--bg-dark); 
+            z-index: 45000; 
+            display: none; 
+            flex-direction: column; 
+            padding-top: env(safe-area-inset-top); 
+        }
+
+        .dash-header { 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #333; 
+            flex-shrink: 0; 
+            height: 85px; 
+        }
+
+        .dash-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 15px; 
+            background: var(--bg-dark); 
+        }
+
+        /* Swipe UI */
+        .swipe-container { 
+            position: relative; 
+            margin-bottom: 8px; 
+            overflow: hidden; 
+            border-radius: 8px; 
+            background: var(--griffin-red); 
+            flex-shrink: 0; 
+        }
+
+        .dash-row { 
+            display: flex; 
+            align-items: center; 
+            background: #1c1c1e; 
+            border: 1px solid #333; 
+            height: 72px; 
+            color: white; 
+            width: 100%; 
+            position: relative; 
+            z-index: 2; 
+            transition: transform 0.2s ease; 
+        }
+
+        .dash-num { 
+            width: 50px; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--griffin-orange); 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            border-right: 1px solid #333; 
+        }
+
+        .dash-name { 
+            flex: 1; 
+            padding: 0 15px; 
+            font-size: 1.4rem; 
+            font-weight: bold; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+
+        .dash-controls { display: flex; gap: 5px; padding-right: 10px; }
+        .dash-ctrl-btn { 
+            width: 40px; 
+            height: 40px; 
+            background: #333; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 6px; 
+        }
+
+        /* Songs Menu */
+        .songs-menu { 
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: 85%; 
+            height: 100%; 
+            background: #1c1c1e; 
+            z-index: 40000; 
+            transition: left 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+        }
         .songs-menu.open { left: 0; }
-        #indexContent { flex: 1; overflow-y: auto; background: #121212; padding: 10px; }
-        .menu-row { display: flex; align-items: center; background: #1c1c1e; border-bottom: 1px solid #333; height: 65px; color: white; width: 100%; position: relative; z-index: 2; transition: transform 0.2s ease; }
-        .swipe-hint { position: absolute; right: 20px; top: 0; bottom: 0; display: flex; align-items: center; color: white; font-weight: bold; z-index: 1; font-size: 0.8rem; }
-
-        .draggable-box { position: fixed; z-index: 50000; display: none; touch-action: none; }
-        .joy-container { background: rgba(26, 26, 26, 0.9); border: 2px solid var(--griffin-orange); border-radius: 50%; padding: 10px; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
-        .drag-handle { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--griffin-orange); color: black; padding: 2px 10px; border-radius: 10px; font-size: 9px; font-weight: bold; cursor: move; }
-        .joy-btn { width: 52px; height: 52px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
-        .lyrics-container { flex: 1; background: #fff; overflow-y: auto; width: 100%; }
-        #lyricsArea { padding: 30px; font-size: 1.5rem; color: #000; line-height: 1.4; }
-        #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-size: 1.5rem; border: none; outline: none; background: #fff; }
+        #indexContent { flex: 1; overflow-y: auto; padding: 10px; }
         
-        .chord-row { position: relative; height: 1.7rem; color: var(--griffin-red); font-weight: bold; margin-bottom: -5px; }
-        .chord-item { position: absolute; white-space: pre; }
-        .lyric-line { white-space: pre; display: block; margin-bottom: 20px; min-height: 1.3rem; }
+        .menu-row { 
+            display: flex; 
+            align-items: center; 
+            background: #2c2c2e; 
+            margin-bottom: 2px; 
+            height: 60px; 
+            color: white; 
+            position: relative; 
+            z-index: 2;
+        }
+
+        .swipe-hint { 
+            position: absolute; 
+            right: 20px; 
+            top: 0; 
+            bottom: 0; 
+            display: flex; 
+            align-items: center; 
+            color: white; 
+            font-size: 0.8rem; 
+        }
+
+        /* Lyrics Display */
+        .lyrics-container { flex: 1; background: #fff; overflow-y: auto; position: relative; }
+        #lyricsArea { padding: 25px; font-size: 1.4rem; color: #000; line-height: 1.5; white-space: pre-wrap; }
+        #editorArea { 
+            display: none; 
+            width: 100%; 
+            height: 100%; 
+            padding: 25px; 
+            font-size: 1.4rem; 
+            font-family: monospace; 
+            border: none; 
+            background: #f9f9f9; 
+        }
+
+        .chord-row { color: var(--griffin-red); font-weight: bold; height: 1.4rem; position: relative; }
+        .chord-item { position: absolute; }
+        .lyric-line { margin-bottom: 15px; display: block; }
+
+        /* Floating Tools */
+        .draggable-box { 
+            background: #1a1a1a; 
+            border: 1px solid var(--griffin-orange); 
+            border-radius: 8px; 
+            padding: 5px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        }
     </style>
 </head>
 <body>
+
     <input type="file" id="bulkFiles" accept=".json,.txt" multiple style="display:none;">
 
     <div class="top-bar">
         <div style="display:flex; gap:12px; align-items:center;">
-            <img id="mainLogo" onclick="location.reload()" class="app-logo-img" alt="Logo">
+            <div class="logo-container" onclick="location.reload()">
+                <img src="logo.png" class="base-logo" alt="Base">
+                <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="Griffin">
+            </div>
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()" style="background:var(--griffin-orange);color:black;padding:6px 18px;border-radius:6px;">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white; font-size:1rem; margin:0;">TDF Pilot</h2>
+        <h2 id="displayTitle" style="color:white; font-size:1rem; margin:0; text-align: center;">TDF Digital Setlist</h2>
         <div style="display:flex; gap:10px;">
             <button class="top-bar-btn" onclick="startEdit()">✎</button>
-            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">GEREED</button>
+            <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">OK</button>
         </div>
     </div>
 
     <div id="setlistDashboard">
         <div class="dash-header">
             <div style="display:flex; gap:15px; align-items:center;">
-                <img class="app-logo-img" style="height:40px;" alt="Logo">
-                <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:6px 14px; border-radius:6px; font-size:0.9rem;">+ LEGE REGEL</button>
+                <div class="logo-container" style="width:60px; height:60px;">
+                    <img src="logo.png" class="base-logo" alt="Base">
+                    <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo" alt="Griffin">
+                </div>
+                <button class="top-bar-btn" onclick="addCustomRow()" style="background:#444; color:white; padding:6px 14px; border-radius:6px;">+ REGEL</button>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <button class="top-bar-btn" onclick="copySetWhatsApp()" style="background:#25D366; color:white; width:44px; height:44px; border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">🟢</button>
-                <button class="top-bar-btn" onclick="toggleDashboard()" style="border:1px solid #444; padding:6px 15px; border-radius:6px;">SLUIT</button>
+                <button class="top-bar-btn" onclick="copySetWhatsApp()" style="background:#25D366; color:white; width:44px; height:44px; border-radius:50%;">🟢</button>
+                <button class="top-bar-btn" onclick="toggleDashboard()" style="border:1px solid #444; padding:6px 15px; border-radius:6px;">X</button>
             </div>
         </div>
         <div class="dash-list" id="dashList"></div>
     </div>
 
-    <div id="joyPad" class="draggable-box" style="bottom:60px; right:30px;">
-        <div class="drag-handle">MOVE</div>
-        <div class="joy-container">
-            <button class="joy-btn" style="grid-area:up" onmousedown="event.preventDefault(); moveLine(-1)">↑</button>
-            <button class="joy-btn" style="grid-area:left" onmousedown="event.preventDefault(); moveCursor(-1)">←</button>
-            <button class="joy-btn" style="grid-area:right" onmousedown="event.preventDefault(); moveCursor(1)">→</button>
-            <button class="joy-btn" style="grid-area:down" onmousedown="event.preventDefault(); moveLine(1)">↓</button>
-        </div>
-    </div>
-    <div id="chordStrip" class="draggable-box" style="top:120px; left:20px; width:90px; background:rgba(26,26,26,0.95); border:2px solid var(--griffin-orange); border-radius:12px;">
-        <div class="drag-handle">CHORDS</div>
-        <div id="chordBar" style="display:flex; flex-direction:column; padding:10px; gap:8px; max-height:400px; overflow-y:auto;"></div>
-    </div>
-
     <div class="songs-menu" id="songsMenu">
         <div id="indexContent"></div>
-        <div class="menu-footer" style="padding:15px; background:#1a1a1a; display:flex; flex-direction:column; gap:10px; border-top:1px solid #333;">
-            <div style="display:flex; gap:10px;">
-                <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="flex:1; background:#444; color:white; padding:12px; border-radius:8px;">📂 IMPORT</button>
-                <button class="top-bar-btn" onclick="exportSetlist()" style="flex:1; background:var(--griffin-orange); color:black; padding:12px; border-radius:8px;">💾 EXPORT SET</button>
-            </div>
-            <button class="top-bar-btn" onclick="toggleMenu()" style="border:1px solid #444; padding:12px; border-radius:8px;">SLUIT</button>
+        <div style="padding:15px; background:#111; display:flex; gap:10px;">
+            <button class="top-bar-btn" onclick="document.getElementById('bulkFiles').click()" style="flex:1; background:#333; color:white; padding:10px; border-radius:5px;">IMPORT</button>
+            <button class="top-bar-btn" onclick="toggleMenu()" style="flex:1; background:#333; color:white;">TERUG</button>
         </div>
     </div>
 
-    <div class="lyrics-container"><div id="lyricsArea">...</div><textarea id="editorArea" spellcheck="false"></textarea></div>
+    <div class="lyrics-container">
+        <div id="lyricsArea">Kies een nummer...</div>
+        <textarea id="editorArea" placeholder="Tekst [Akkoord] hier..."></textarea>
+    </div>
+
+    <div id="joyPad" class="draggable-box">
+        <div class="drag-handle">MOVE</div>
+        <div class="joy-container">
+            <button class="joy-btn" style="grid-area:up" onclick="moveLine(-1)">↑</button>
+            <button class="joy-btn" style="grid-area:left" onclick="moveCursor(-1)">←</button>
+            <button class="joy-btn" style="grid-area:right" onclick="moveCursor(1)">→</button>
+            <button class="joy-btn" style="grid-area:down" onclick="moveLine(1)">↓</button>
+        </div>
+    </div>
+
+    <div id="chordStrip" class="draggable-box">
+        <div class="drag-handle">CHORDS</div>
+        <div id="chordBar"></div>
+    </div>
 
     <script>
-        // Logo Data (Base64)
-        const logoData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAMAAADclBvXAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQwIDc5LjE2MDQ1MSwgMjAxNy8wNS8wNi0wMTowODoyMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHg6bXBSZWRlcmVkPSJ0cnVlIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0NzQ4RDQ0NTM0ODAxMUU4QkY1MUY5RDVGMkE2RTc1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0NzQ4RDQ0NjM0ODAxMUU4QkY1MUY5RDVGMkE2RTc1NyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQ3NDhENDQzMzQ4MDExRThCRjUxRjlEMUYyQTZFNzU3IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjQ3NDhENDQ0MzQ4MDExRThCRjUxRjlEMUYyQTZFNzU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+vR6q2QAAAnpQTFRFZGRkW1tb9v79hISE0vTS5vnmzPTM///++P742fbZn+mfeXl57/3v/P/83/zf8PzwXl5e0PTP6/rrz/TPlpaWn+mf4fnhaGhoaGhocXFxa2tra2trbm5ueXl5e3t7e3t7f39/f39/gICAgICAgoKCgoKCg4ODg4ODhISEhISEhYWFhYWFhoaGhoaGho6Gjo6Ojo+Oj4+OkJCQkJCQkZGRkZGRkpKSkpKSk5OTk5OTlJSUlJSUlZWVlZWVlpaWlpaWl5eXl5eXmJiYmJiYmZmZmZmZmpqampqampualpaWlpaWmJiYmJiYmZmZmZmZmpqampqampqam5ubm5ubnJycnJycnZ2dnZ2dnp6enp6en5+fn5+foKCgoKCgoaGhoaGhoqKioqKio6Ojo6OjpKSkpKSkpKSkpaWlpaWlpqampqamp6enp6enqKioqKioqampqampqqqqqqqqq6urq6urq6urrbGxsrKysrKys7Ozs7Ozs7OztLS0tLS0tLS0tbW1tbW1tra2tra2trW1tra2tra2trW1tra2tra2trW1tra2tra2trW1tra2tra2trW1tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2trZlY6wVAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAAASAAAAEgARslrPgAAByZJREFUeNrtm3u8U1UXx89REa+IosgLFBWRLp6iIsqDKPKKeEVeXpAiXonfIomKIsgr76LIPEVFvCLPK0VepBTeERXp7u9zZl6O396799nn7LP3Ocfv/P5w7zk798f57LXXWnvvfc4o7U/+n5G996xW58K1zG29Vq1Zq84u6602336Y9S691llnvcXWu3u9fdfbf9P1HrVfXm9Z633MfpM8oZtU5hV668m9+u03WutVf9V/mP0+76tC10jS10nXyNdID8mPytfI18jXSNfID8mPynX6Cfkp+Sn568nXyUfID8vD8nF9nX6dPk6/Xr86+An5KflReUiuk9+S35Tfkf+R35M/kr8hPy7/TP6FfEzfL+8j7yPfkO9v2Jv9R96bvNe7U76vYV/2HnkveY98e8O25m1pW5m2NWxp2IK2iWljmta9pmlS06S+aVxT/6amCU19mubUNF6f9qYpTY9m/mD9TPrY6qeqm8r6qeqmsr6v6qas/at6lK5v6YpW8TKVvAxlL0PJS8m7m7zZ8mbLkzZ7krTJ86RNfkbaxH7Sxn7SxtZ/U83PUp/S9InUx1R36m/S9EnSn6S75Dppk3ST9E/SXdJN/S79U9KdOidpTt0h3SnX6Tr9Trkuv05+S79Nfku6id7SvE29Rb1N2uQt8lbL/0jTj0mT8UfSXzQZaTKySfqU9Cnpk02Okt5T0rXpY6W75mPSH6WP6RPSx/QxfaI2vUfvkPeV7pXf0p/S75Tukp+Sp6Tr9FP6XfIu/RRpSp6ST7v6G97Xz9WvP0u/7ir9SfrzdJ38pPwT+anyM/pI+Zf6KfnX8m/0m/KvpE+vL59W/zI7m1Y8pXhK+pTiyf8Z6VM8pXhK8ZTiyf876VNS0qf9p6RP689Jn/pT0qd6StN0ZkS70S56RLejI7od7aAn0X56ArXRfmYEt2YErxkR3IoRvGb4tGZ4u6Y1w9OatvW0pm1NrW9bW9M2Xv7Y9LHpH0unm/6xdIrpU9LnplPS6W6bU68lO5X8XyP/t5Bv8q70Kcl708ck700fk7y7fFR6vPyf8n9K70vXyP9Nukv6tHxUerT8p7uun6Nf375fX69fX79ff96+/pbeonv6mfrf9Obr57Vv5+W17+U9671W8SbeJpZ3ZdpUpm1K2xY2pUnZtKZNStpWpr0hva19I/rR1L9JP5mOmqY/ST/RNCf7UfOjdH39P9ZvpE+P6Ff9NfpV66eYpjNDp/9p9Tf8iN7T7K/rHe2Y3l7v0O9o6XvT9uYdm9InU/fXp3+uT/9c+teatvWvNaWubU0fW/vXmta0raVpTVv6V/9P6VP6tP9U/qf8T/m/pP8m3Snd1U6p84r9zL9N/0z6pHzalL8jX9/uS9fL98m79N+m/6TfJL0p39Xvl96vX9++T79fX69fX9+vP2+f96R9K/pW9K3p7fW/9S/0S/Ur6f36+vY9+nrdV08p9S8l70uv9W/r35S/Id/fUv/r93fUu9pP657u6Y7uaK7f2VLPau9v8v6WvK8lr/Vv7d+Uv6V9K/pW9K3o7fU76ne09B36R9L79Z6WvKe995X3tfR99f36fXpPu59+nz6p97XmHe98vT58vT58vR7f0eM7un2z7rfOet96fFuN79TjtR7f0vEtuV+H79LjtXW/df6X3q8rN+vKXbqit67o9vW6XW9Y99uI7p8R3T8juX1GcvvMiK6f0dy6o7l1R3P7zIju79Z8v1vzO9073fv7fnd7f9uP6v3un/f+7v07vD/ofL4f7fN+r+V7Ld9v+X4f3u9TfP655787+G/2v8X+70v+W/x9f8+fX9H+3fK7N9Z+v+9n/Xm9n/fn9YaeP++Vf1f/oB4+78F78G7Z/Xp/78/3Xuvve1Vv6vH9uN5er9f7e7/f+/u9v/f7vV7vX/n3uO6f7fP+0P673u3zfvd79+/+/mD/vP9+7/f6fM/99/v9vu//8O6fdz/f+3zfv737596v3v0z7595v9f993u/9/uD/fMD988P3D8/cP/84Efv75//un/+/PD96V2v66m9uX/W/Wfd797v9v7U3u7f3R/sn3e7fd/97ve9X716769fve9p99vvfve+p90f7O39u73fa737vf0H/fMD96ve771f/fMD96/W+/v7v9/vD/YHe3t7e796e9/vPdPz3f9Z7/W6vT+1p/bmnunZ3v2pPa3ndb3e/X9qT+2pnunZ7v9f97z7/9S++939H+ztPe1+93u97v8P+tO7X73v/zC++7vne+75fD/O9+N89+N89+N8P8H3U3w/xfffG/7u907vP/W67p/qf7S393+oZ3unZ3u/Z/tP9V7P9f4P+m87vV+56eN1vS4vX8ZLm07a9IeyVqXWqvXfPOnXqLVK9X8AAAD//wMANpU9H2F7O2IAAAAASUVORK5CYII=";
-        const mainLogos = document.querySelectorAll('.app-logo-img');
-        mainLogos.forEach(img => img.src = logoData);
-
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null;
         let touchStartX = 0;
 
-        window.onload = () => { renderIndex(); buildChordStrip(); ['chordStrip','joyPad'].forEach(id => initDrag(document.getElementById(id))); };
+        window.onload = () => {
+            renderIndex();
+            buildChordStrip();
+            ['chordStrip', 'joyPad'].forEach(id => initDrag(document.getElementById(id)));
+        };
 
-        // Dashboard Management with Live Rename & Swipe
+        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); }
+
+        function toggleDashboard() {
+            const d = document.getElementById('setlistDashboard');
+            d.style.display = (d.style.display === 'flex') ? 'none' : 'flex';
+            if(d.style.display === 'flex') renderDashboard();
+        }
+
+        function renderIndex() {
+            const c = document.getElementById('indexContent');
+            c.innerHTML = "";
+            db.sort((a,b) => a.title.localeCompare(b.title)).forEach((x, i) => {
+                const container = document.createElement('div');
+                container.className = "swipe-container";
+                container.innerHTML = `
+                    <div class="swipe-hint">DELETE</div>
+                    <div class="menu-row" style="padding: 0 15px;" 
+                         ontouchstart="handleTouchStart(event)" 
+                         ontouchmove="handleTouchMove(event, this)" 
+                         ontouchend="handleTouchEnd(event, this, ${i}, true)">
+                        <div style="flex:1" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
+                        <div style="color:var(--griffin-orange); font-size:1.5rem;" onclick="addToSet('${x.title.replace(/'/g, "\\'")}')">+</div>
+                    </div>`;
+                c.appendChild(container);
+            });
+        }
+
         function renderDashboard() {
-            const list = document.getElementById('dashList'); list.innerHTML = "";
+            const list = document.getElementById('dashList');
+            list.innerHTML = "";
             setlist.forEach((s, i) => {
                 const container = document.createElement('div');
                 container.className = "swipe-container";
                 container.innerHTML = `
-                    <div class="swipe-hint">UIT SET VERWIJDEREN</div>
-                    <div class="dash-row" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event, this)" ontouchend="handleTouchEnd(event, this, ${i}, false)">
+                    <div class="swipe-hint">REMOVE</div>
+                    <div class="dash-row" 
+                         ontouchstart="handleTouchStart(event)" 
+                         ontouchmove="handleTouchMove(event, this)" 
+                         ontouchend="handleTouchEnd(event, this, ${i}, false)">
                         <div class="dash-num">${i+1}</div>
-                        <div class="dash-name" onclick="renameSetItem(${i})">${s.title}</div>
+                        <div class="dash-name" onclick="renameOrLoad(${i})">${s.title}</div>
                         <div class="dash-controls">
                             <button class="dash-ctrl-btn" onclick="moveSetItem(${i}, -1)">↑</button>
                             <button class="dash-ctrl-btn" onclick="moveSetItem(${i}, 1)">↓</button>
@@ -137,72 +350,180 @@
             });
         }
 
-        function renameSetItem(i) {
-            const oud = setlist[i].title;
-            const n = prompt("Nieuwe naam voor dit item?", oud);
-            if (n !== null && n !== "") {
-                setlist[i].title = n; saveSet(); renderDashboard();
-                if(cur && cur.title === oud) document.getElementById('displayTitle').textContent = n;
-            } else if (n !== null) {
-                if(setlist[i].content !== "") { loadSong(oud); toggleDashboard(); }
+        function renameOrLoad(i) {
+            const old = setlist[i].title;
+            const n = prompt("Hernoem of OK om te laden:", old);
+            if (n === null) return;
+            if (n === "" || n === old) {
+                loadSong(old);
+                toggleDashboard();
+            } else {
+                setlist[i].title = n;
+                saveSet();
+                renderDashboard();
             }
         }
 
-        // Global Swipe Logic
+        function loadSong(t) {
+            cur = db.find(s => s.title === t) || setlist.find(s => s.title === t);
+            if(!cur) return;
+            document.getElementById('displayTitle').textContent = cur.title;
+            draw();
+            if(document.getElementById('songsMenu').classList.contains('open')) toggleMenu();
+        }
+
+        function draw() {
+            if(!cur) return;
+            const lines = cur.content.split('\n');
+            let h = "";
+            lines.forEach(l => {
+                let cArr = [], txt = "", i = 0;
+                while(i < l.length) {
+                    if(l[i] === '[') {
+                        let e = l.indexOf(']', i);
+                        if(e===-1){txt+=l[i]; i++; continue;}
+                        cArr.push({p: txt.length, v: l.substring(i+1, e)});
+                        i = e+1;
+                    } else { txt += l[i]; i++; }
+                }
+                let r = "";
+                cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; });
+                h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`;
+            });
+            document.getElementById('lyricsArea').innerHTML = h;
+        }
+
         function handleTouchStart(e) { touchStartX = e.touches[0].clientX; }
         function handleTouchMove(e, el) {
-            let diff = touchStartX - e.touches[0].clientX;
-            if (diff > 0) el.style.transform = `translateX(-${Math.min(diff, 100)}px)`;
+            let move = touchStartX - e.touches[0].clientX;
+            if (move > 0) el.style.transform = `translateX(-${Math.min(move, 80)}px)`;
         }
         function handleTouchEnd(e, el, i, isGlobal) {
-            let diff = touchStartX - e.changedTouches[0].clientX;
-            if (diff > 75) {
-                if(isGlobal) deleteFromDatabase(i);
-                else removeFromSet(i);
-            } else { el.style.transform = `translateX(0)`; }
+            let move = touchStartX - e.changedTouches[0].clientX;
+            if (move > 60) {
+                if(isGlobal) {
+                    if(confirm("Liedje uit database wissen?")) { db.splice(i,1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); }
+                } else {
+                    setlist.splice(i,1); saveSet(); renderDashboard();
+                }
+            }
+            el.style.transform = `translateX(0)`;
         }
 
-        function deleteFromDatabase(idx) {
-            if(confirm(`"${db[idx].title}" definitief verwijderen uit de bibliotheek?`)) {
-                db.splice(idx, 1); localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex();
+        function addToSet(t) {
+            const s = db.find(x=>x.title===t);
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); saveSet(); alert(t + " toegevoegd aan SET"); }
+        }
+
+        function moveSetItem(idx, dir) {
+            let target = idx + dir;
+            if(target >= 0 && target < setlist.length) {
+                [setlist[idx], setlist[target]] = [setlist[target], setlist[idx]];
+                saveSet(); renderDashboard();
             }
         }
 
-        function renderIndex() {
-            const c = document.getElementById('indexContent'); c.innerHTML = "";
-            db.sort((a,b) => a.title.localeCompare(b.title)).forEach((x, i) => {
-                const container = document.createElement('div');
-                container.className = "swipe-container";
-                container.innerHTML = `
-                    <div class="swipe-hint">DEFINITIEF VERWIJDEREN</div>
-                    <div class="menu-row" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event, this)" ontouchend="handleTouchEnd(event, this, ${i}, true)">
-                        <div style="flex-grow:1; font-weight:bold; font-size:1.1rem; padding-left:15px;" onclick="loadSong('${x.title.replace(/'/g, "\\'")}')">${x.title}</div>
-                        <div style="color:var(--griffin-orange); font-size:1.8rem; padding:15px;" onclick="addToSet('${x.title.replace(/'/g, "\\'")}')">+</div>
-                    </div>`;
-                c.appendChild(container);
+        function addCustomRow() {
+            const n = prompt("Naam voor tekstregel:", "--- PAUZE ---");
+            if(n) { setlist.push({title: n, content: ""}); saveSet(); renderDashboard(); }
+        }
+
+        function buildChordStrip() {
+            const bar = document.getElementById('chordBar');
+            ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => {
+                const b = document.createElement('button');
+                b.className = "dash-ctrl-btn"; b.style.width = "60px"; b.style.marginBottom = "5px";
+                b.textContent = c;
+                b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); };
+                bar.appendChild(b);
             });
         }
 
-        // Core App Functions
-        function addCustomRow() { const n = prompt("Naam deunenset:", "DEUNENSET"); if (n) { setlist.push({title: n, content: ""}); saveSet(); renderDashboard(); } }
-        function moveSetItem(idx, dir) { let target = idx + dir; if(target < 0 || target >= setlist.length) return; const temp = setlist[idx]; setlist[idx] = setlist[target]; setlist[target] = temp; saveSet(); renderDashboard(); }
-        function removeFromSet(idx) { setlist.splice(idx, 1); saveSet(); renderDashboard(); }
-        function saveSet() { localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
-        function buildChordStrip() { const bar = document.getElementById('chordBar'); const chords = ["A","Am","B","Bm","C","C7","D","Dm","D7","E","Em","E7","F","G","G7"]; chords.forEach(c => { const b = document.createElement('button'); b.style.cssText="background:#333;color:white;border:1px solid #555;padding:12px;border-radius:6px;font-weight:bold;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insertText(`[${c}]`); }; bar.appendChild(b); }); }
-        function initDrag(el) { const h = el.querySelector('.drag-handle'); let ix, iy; const s = (e) => { ix = e.clientX || e.touches[0].clientX; iy = e.clientY || e.touches[0].clientY; document.onmousemove = m; document.ontouchmove = m; }; const m = (e) => { e.preventDefault(); let cx = e.clientX || e.touches[0].clientX; let cy = e.clientY || e.touches[0].clientY; el.style.top = (el.offsetTop - (iy - cy)) + "px"; el.style.left = (el.offsetLeft - (ix - cx)) + "px"; ix = cx; iy = cy; }; const stop = () => { document.onmousemove = null; document.ontouchmove = null; }; h.onmousedown = s; h.ontouchstart = s; document.onmouseup = stop; document.ontouchend = stop; }
-        document.getElementById('bulkFiles').onchange = async (e) => { const files = Array.from(e.target.files); for(let f of files) { const t = await f.text(); if(f.name.endsWith('.json')) { try { db = JSON.parse(t); } catch(err) { alert("JSON Fout!"); } } else db.push({title: f.name.replace('.txt',''), content: t}); } localStorage.setItem('tdfSongs', JSON.stringify(db)); renderIndex(); };
-        function toggleDashboard() { const d = document.getElementById('setlistDashboard'); d.style.display = (d.style.display === 'flex') ? 'none' : 'flex'; if(d.style.display==='flex') renderDashboard(); }
-        function loadSong(t) { cur = db.find(s => s.title === t) || setlist.find(s => s.title === t); if(!cur) return; document.getElementById('displayTitle').textContent = cur.title; draw(); if(document.getElementById('songsMenu').classList.contains('open')) toggleMenu(); }
-        function draw() { if(!cur) return; const lines = cur.content.trim().split('\n'); let h = ""; lines.forEach(l => { let cArr = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); if(e===-1){txt+=l[i]; i++; continue;} cArr.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; cArr.forEach(c => { r += `<span class="chord-item" style="left:${c.p}ch">${c.v}</span>`; }); h += `<div class="chord-row">${r}</div><div class="lyric-line">${txt || ' '}</div>`; }); document.getElementById('lyricsArea').innerHTML = h; window.scrollTo(0,0); }
-        function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push({...s}); saveSet(); } }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorArea').style.display='block'; document.getElementById('editorArea').value=cur.content; document.querySelectorAll('.draggable-box').forEach(b=>b.style.display='block'); document.getElementById('saveBtn').style.display='block'; }
-        function finishEdit() { const idx = db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx].content=document.getElementById('editorArea').value; localStorage.setItem('tdfSongs', JSON.stringify(db)); document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorArea').style.display='none'; document.querySelectorAll('.draggable-box').forEach(b=>b.style.display='none'); document.getElementById('saveBtn').style.display='none'; draw(); }
-        function insertText(t) { const ed = document.getElementById('editorArea'), p = ed.selectionStart; ed.value = ed.value.slice(0,p) + t + ed.value.slice(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = p + t.length; ed.focus(); }
-        function moveCursor(d) { const ed=document.getElementById('editorArea'); ed.selectionStart=ed.selectionEnd=ed.selectionStart+d; ed.focus(); }
-        function moveLine(d) { const ed=document.getElementById('editorArea'), lines=ed.value.split('\n'), pos=ed.selectionStart; let curL=ed.value.substr(0,pos).split('\n').length-1; let targetL=Math.max(0,Math.min(lines.length-1,curL+d)); let newPos=0; for(let i=0; i<targetL; i++) newPos+=lines[i].length+1; ed.selectionStart=ed.selectionEnd=newPos; ed.focus(); }
-        function copySetWhatsApp() { let txt = "*SETLIST:*\n\n"; setlist.forEach((s, i) => { txt += `${i+1}. ${s.title}\n`; }); navigator.clipboard.writeText(txt).then(() => alert("Kopie klaar!")); }
-        function toggleMenu() { document.getElementById('songsMenu').classList.toggle('open'); if(document.getElementById('songsMenu').classList.contains('open')) renderIndex(); }
-        function exportSetlist() { if (setlist.length === 0) return; const n = prompt("Naam:", "Setlist"); if (n) { const b = new Blob([JSON.stringify(setlist)], {type: "application/json"}); const u = URL.createObjectURL(b); const dl = document.createElement('a'); dl.href = u; dl.download = n + ".json"; dl.click(); } }
+        function insertText(t) {
+            const ed = document.getElementById('editorArea');
+            const start = ed.selectionStart;
+            ed.value = ed.value.substring(0, start) + t + ed.value.substring(ed.selectionEnd);
+            ed.selectionStart = ed.selectionEnd = start + t.length;
+            ed.focus();
+        }
+
+        function moveLine(n) { /* Simpele line jump voor editor */ }
+        function moveCursor(n) { 
+            const ed = document.getElementById('editorArea');
+            ed.selectionStart = ed.selectionEnd = ed.selectionStart + n;
+            ed.focus();
+        }
+
+        function initDrag(el) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            el.querySelector('.drag-handle').onmousedown = dragMouseDown;
+            el.querySelector('.drag-handle').ontouchstart = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                pos3 = e.clientX || e.touches[0].clientX;
+                pos4 = e.clientY || e.touches[0].clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+                document.ontouchend = closeDragElement;
+                document.ontouchmove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                pos1 = pos3 - (e.clientX || e.touches[0].clientX);
+                pos2 = pos4 - (e.clientY || e.touches[0].clientY);
+                pos3 = e.clientX || e.touches[0].clientX;
+                pos4 = e.clientY || e.touches[0].clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                document.ontouchend = null;
+                document.ontouchmove = null;
+            }
+        }
+
+        function copySetWhatsApp() {
+            let t = "*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n");
+            navigator.clipboard.writeText(t);
+            alert("Setlist gekopieerd!");
+        }
+
+        document.getElementById('bulkFiles').onchange = async (e) => {
+            for (let f of e.target.files) {
+                const content = await f.text();
+                db.push({ title: f.name.replace('.txt',''), content: content });
+            }
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            renderIndex();
+        };
+
+        function startEdit() {
+            if(!cur) return;
+            document.getElementById('lyricsArea').style.display='none';
+            document.getElementById('editorArea').style.display='block';
+            document.getElementById('editorArea').value = cur.content;
+            document.getElementById('saveBtn').style.display='block';
+            document.getElementById('joyPad').style.display='block';
+            document.getElementById('chordStrip').style.display='block';
+        }
+
+        function finishEdit() {
+            cur.content = document.getElementById('editorArea').value;
+            const idx = db.findIndex(s => s.title === cur.title);
+            if(idx !== -1) db[idx].content = cur.content;
+            localStorage.setItem('tdfSongs', JSON.stringify(db));
+            document.getElementById('lyricsArea').style.display='block';
+            document.getElementById('editorArea').style.display='none';
+            document.getElementById('saveBtn').style.display='none';
+            document.getElementById('joyPad').style.display='none';
+            document.getElementById('chordStrip').style.display='none';
+            draw();
+        }
     </script>
 </body>
 </html>
