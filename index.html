@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital Setlist v7.54</title>
+    <title>TDF Digital Setlist v7.55</title>
     <style>
         :root { 
             --bg-deep-black: #000000; 
@@ -19,14 +19,37 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; display: flex; flex-direction: column; height: 100vh; margin: 0; background-color: var(--bg-deep-black); overflow: hidden; position: fixed; width: 100%; }
 
+        /* Top Bar */
         .top-bar { height: var(--header-height); background: var(--stage-dark-grey); border-bottom: 2px solid #222; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; z-index: 3000; }
         .top-bar-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber-glow); font-size: 1rem; font-weight: bold; cursor: pointer; padding: 8px 18px; border-radius: 6px; text-shadow: 0 0 6px var(--amber-glow); }
 
-        /* Logo Stack v7.50 herstel */
-        .logo-container { position: relative; width: 55px; height: 55px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .base-logo { position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 10; }
-        .overlay-logo { position: absolute; width: 85%; height: 85%; object-fit: contain; z-index: 20; }
+        /* --- LOGO STACK REPAIR --- */
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .logo-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            object-fit: contain;
+        }
+        .logo-overlay {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            z-index: 2;
+            object-fit: contain;
+        }
 
+        /* Dashboard & Menus */
         #setlistDashboard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-deep-black); z-index: 45000; display: none; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .dash-header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222; height: 85px; }
         .dash-list { flex: 1; overflow-y: auto; padding: 10px 15px; }
@@ -49,7 +72,7 @@
 
         .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
         .drag-handle { color: rgba(255,255,255,0.6); text-align: center; font-size: 11px; cursor: move; padding: 6px; background: #2a2a2a; border-radius: 6px; margin-bottom: 8px; }
-        .joy-glow-btn, .chord-glow-btn { background: #222; color: var(--amber-glow); border: 1px solid var(--amber-dim); text-shadow: 0 0 8px var(--amber-glow); }
+        .joy-glow-btn, .chord-glow-btn { background: #222; color: var(--amber-glow); border: 1px solid var(--amber-dim); text-shadow: 0 0 8px var(--amber-glow); min-width: 50px; min-height: 45px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -57,15 +80,15 @@
     <input type="file" id="bulkFiles" accept=".json,.txt" multiple style="display:none;">
 
     <div class="top-bar">
-        <div style="display:flex; gap:12px; align-items:center;">
-            <div class="logo-container" onclick="location.reload()">
-                <img src="logo.png" class="base-logo">
-                <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="overlay-logo">
+        <div style="display:flex; gap:5px; align-items:center;">
+            <div class="logo-wrapper" onclick="location.reload()">
+                <img src="logo.png" class="logo-base" alt="Base">
+                <img src="https://i.ibb.co/3S432pG/griffin-logo.png" class="logo-overlay" alt="Griffin">
             </div>
             <button class="top-bar-btn" onclick="toggleMenu()">SONGS</button>
             <button class="top-bar-btn" onclick="toggleDashboard()">SET</button>
         </div>
-        <h2 id="displayTitle" style="color:white; font-size:1.1rem; margin:0;">TDF Digital Setlist</h2>
+        <h2 id="displayTitle" style="color:white; font-size:1.1rem; margin:0; padding-bottom: 5px;">TDF Digital Setlist</h2>
         <div style="display:flex; gap:10px;">
             <button class="top-bar-btn" onclick="startEdit()">✎</button>
             <button class="top-bar-btn" id="saveBtn" style="display:none; color:#34c759;" onclick="finishEdit()">OK</button>
@@ -117,10 +140,10 @@
                             try {
                                 const data = JSON.parse(content);
                                 if (Array.isArray(data)) data.forEach(s => addSong(s)); else addSong(data);
-                            } catch (err) { alert("JSON Fout in: " + file.name); }
+                            } catch (err) { alert("JSON Fout"); }
                         } else addSong({ title: file.name.replace('.txt',''), content: content });
                         loaded++;
-                        if(loaded === files.length) { saveAll(); renderIndex(); alert(loaded + " bestand(en) geïmporteerd."); input.value = ""; }
+                        if(loaded === files.length) { saveAll(); renderIndex(); alert(loaded + " geïmporteerd"); input.value = ""; }
                     };
                     reader.readAsText(file);
                 });
@@ -129,7 +152,7 @@
 
         async function pasteFromWA() {
             let text = "";
-            try { text = await navigator.clipboard.readText(); } catch (err) { text = prompt("Plak hier de tekst:"); }
+            try { text = await navigator.clipboard.readText(); } catch (err) { text = prompt("Plak de tekst:"); }
             if (!text) return;
             const lines = text.split('\n');
             const newSet = [];
