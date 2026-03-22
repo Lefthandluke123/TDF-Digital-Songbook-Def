@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v7.73</title>
+    <title>TDF Digital v7.76</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,6 +19,9 @@
         .btn-green { background: #25D366; color: white; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 6px; font-weight: bold; }
         
+        .search-wrap { padding: 10px 15px; background: #000; border-bottom: 1px solid #222; }
+        .search-input { width: 100%; background: #1c1c1e; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 1.1rem; outline: none; }
+
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; }
         #lyricsArea { height: 100%; overflow-y: auto; padding: 30px; color: #000; font-size: 1.5rem; line-height: 1.6; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
@@ -28,8 +31,9 @@
         .menu-header { padding: 15px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .menu-scroll { flex: 1; overflow-y: auto; padding: 15px; }
         
-        .row-item { background: #1c1c1e; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; }
+        .row-item { background: #1c1c1e; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; transition: transform 0.2s, background 0.2s; overflow: hidden; position: relative; }
         .row-name { flex: 1; padding: 20px; font-size: 1.8rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .swiping-left { background: #400000 !important; transform: translateX(-15px); }
         
         .chord-row { color: var(--red); font-weight: bold; height: 1.5rem; position: relative; }
         .chord-item { position: absolute; }
@@ -48,7 +52,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.73</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.76</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -56,16 +60,20 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Lokaal v7.73 actief.</div>
+        <div id="lyricsArea">Zoek in SONGS of swipe om te verwijderen.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
     <div id="songsMenu" class="full-menu">
         <div class="menu-header"><h2 style="color:var(--amber);">SONGS</h2><button class="btn" onclick="closeMenus()">X</button></div>
+        <div class="search-wrap">
+            <input type="text" id="songSearch" class="search-input" placeholder="Zoek liedje..." oninput="render()">
+        </div>
         <div class="menu-scroll" id="dbList"></div>
-        <div style="padding:15px; background:#111; display:flex; gap:8px;">
-            <button class="btn" style="flex:1;" onclick="document.getElementById('impDB').click()">IMPORT DB</button>
-            <button class="btn" style="flex:1;" onclick="exportDB()">EXPORT DB</button>
+        <div style="padding:15px; background:#111; display:flex; gap:5px; flex-wrap:wrap;">
+            <button class="btn" style="flex:1;" onclick="document.getElementById('impDB').click()">IMPORT</button>
+            <button class="btn" style="flex:1;" onclick="exportDB()">EXPORT</button>
+            <button class="btn-red" style="flex:1;" onclick="cleanDatabase()">CLEAN</button>
         </div>
     </div>
 
@@ -95,6 +103,7 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null;
+        let touchStartX = 0;
 
         window.onload = () => { render(); buildChordStrip(); ['chordStrip', 'joyPad'].forEach(id => initDrag(document.getElementById(id))); };
 
@@ -103,18 +112,65 @@
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
 
         function render() {
+            const query = document.getElementById('songSearch').value.toLowerCase();
+            
+            // SONGS LIST
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            db.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="row-name" onclick="load('${s.title.replace(/'/g,"\\'")}')">${s.title}</div><button class="btn" style="margin-right:10px" onclick="addToSet('${s.title.replace(/'/g,"\\'")}')">+</button>`;
+            db.filter(s => s.title.toLowerCase().includes(query))
+              .sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+                const idx = db.indexOf(s);
+                const d = createSwipeRow(s.title, () => load(s.title), () => deleteFromDb(idx), true, s.title);
                 dbl.appendChild(d);
             });
+            
+            // SETLIST
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
-                const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div style="width:40px; text-align:center; color:var(--amber); font-weight:bold;">${i+1}</div><div class="row-name" onclick="load('${s.title.replace(/'/g,"\\'")}')">${s.title}</div><button class="btn-red" style="margin-right:10px; padding:10px;" onclick="removeFromSet(${i})">X</button>`;
+                const d = createSwipeRow(s.title, () => load(s.title), () => removeFromSet(i), false, i+1);
                 setl.appendChild(d);
             });
+        }
+
+        function createSwipeRow(title, clickFn, deleteFn, isDb, prefix) {
+            const d = document.createElement('div');
+            d.className = "row-item";
+            
+            d.ontouchstart = (e) => { touchStartX = e.touches[0].clientX; };
+            d.ontouchmove = (e) => { 
+                let diff = touchStartX - e.touches[0].clientX;
+                if(diff > 30) d.classList.add('swiping-left');
+                else d.classList.remove('swiping-left');
+            };
+            d.ontouchend = (e) => {
+                let diff = touchStartX - e.changedTouches[0].clientX;
+                if(diff > 80) deleteFn();
+                else d.classList.remove('swiping-left');
+            };
+
+            let prefixHtml = isDb ? "" : `<div style="width:40px; text-align:center; color:var(--amber); font-weight:bold;">${prefix}</div>`;
+            let actionBtn = isDb ? `<button class="btn" style="margin-right:10px" onclick="event.stopPropagation(); addToSet('${title.replace(/'/g,"\\'")}')">+</button>` : "";
+            
+            d.innerHTML = `${prefixHtml}<div class="row-name" onclick="${clickFn}">${title}</div>${actionBtn}`;
+            d.onclick = (e) => { if(e.target.tagName !== 'BUTTON') clickFn(); };
+            return d;
+        }
+
+        function deleteFromDb(idx) { if(confirm("Liedje definitief verwijderen uit database?")) { db.splice(idx, 1); save(); render(); } }
+        function removeFromSet(idx) { setlist.splice(idx, 1); save(); render(); render(); }
+
+        function cleanDatabase() {
+            if(!confirm("Dubbele liedjes en lege entries verwijderen?")) return;
+            const originalCount = db.length;
+            const uniqueTitles = new Set();
+            const cleanedDb = [];
+            db.forEach(song => {
+                if(song.title && song.title.trim() !== "" && !uniqueTitles.has(song.title.toLowerCase())) {
+                    uniqueTitles.add(song.title.toLowerCase());
+                    cleanedDb.push(song);
+                }
+            });
+            db = cleanedDb; save(); render();
+            alert("Database opgeschoond! Van " + originalCount + " naar " + db.length + " liedjes.");
         }
 
         function load(t) {
@@ -158,91 +214,18 @@
         }
 
         function addCustomRow() { const n = prompt("Tekst:", "--- PAUZE ---"); if(n) { setlist.push({title: n, content: ""}); save(); render(); } }
-
-        function startEdit() {
-            if(!cur) return;
-            document.getElementById('lyricsArea').style.display = 'none'; document.getElementById('editorArea').style.display = 'block';
-            document.getElementById('editorArea').value = cur.content; document.getElementById('saveBtn').style.display = 'block';
-            document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'block');
-        }
-
-        function finishEdit() {
-            cur.content = document.getElementById('editorArea').value;
-            let idx = db.findIndex(s => s.title === cur.title); if(idx !== -1) db[idx].content = cur.content;
-            save(); document.getElementById('lyricsArea').style.display = 'block';
-            document.getElementById('editorArea').style.display = 'none'; document.getElementById('saveBtn').style.display = 'none';
-            document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'none'); drawLyrics();
-        }
-
-        function buildChordStrip() {
-            const bar = document.getElementById('chordBar');
-            ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => {
-                const b = document.createElement('button'); b.className = "chord-glow-btn"; b.style.cssText = "width:65px; height:45px; border-radius:8px; margin-bottom:5px;";
-                b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insert(`[${c}]`); }; bar.appendChild(b);
-            });
-        }
-
-        function insert(t) {
-            const ed = document.getElementById('editorArea'); const s = ed.selectionStart;
-            ed.value = ed.value.substring(0, s) + t + ed.value.substring(ed.selectionEnd);
-            ed.selectionStart = ed.selectionEnd = s + t.length; ed.focus();
-        }
-
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display = 'none'; document.getElementById('editorArea').style.display = 'block'; document.getElementById('editorArea').value = cur.content; document.getElementById('saveBtn').style.display = 'block'; document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'block'); }
+        function finishEdit() { cur.content = document.getElementById('editorArea').value; let idx = db.findIndex(s => s.title === cur.title); if(idx !== -1) db[idx].content = cur.content; save(); document.getElementById('lyricsArea').style.display = 'block'; document.getElementById('editorArea').style.display = 'none'; document.getElementById('saveBtn').style.display = 'none'; document.querySelectorAll('.draggable-box').forEach(b => b.style.display = 'none'); drawLyrics(); }
+        function buildChordStrip() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => { const b = document.createElement('button'); b.className = "chord-glow-btn"; b.style.cssText = "width:65px; height:45px; border-radius:8px; margin-bottom:5px;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insert(`[${c}]`); }; bar.appendChild(b); }); }
+        function insert(t) { const ed = document.getElementById('editorArea'); const s = ed.selectionStart; ed.value = ed.value.substring(0, s) + t + ed.value.substring(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = s + t.length; ed.focus(); }
         function moveCursorHorizontal(n) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + n; ed.focus(); }
-        function moveCursorVertical(n) {
-            const ed = document.getElementById('editorArea'); const lines = ed.value.split('\n'); const pos = ed.selectionStart;
-            let curL = ed.value.substr(0, pos).split('\n').length - 1; let tarL = Math.max(0, Math.min(lines.length - 1, curL + n));
-            let newP = 0; for(let i=0; i<tarL; i++) newP += lines[i].length + 1; ed.selectionStart = ed.selectionEnd = newP; ed.focus();
-        }
-
+        function moveCursorVertical(n) { const ed = document.getElementById('editorArea'); const lines = ed.value.split('\n'); const pos = ed.selectionStart; let curL = ed.value.substr(0, pos).split('\n').length - 1; let tarL = Math.max(0, Math.min(lines.length - 1, curL + n)); let newP = 0; for(let i=0; i<tarL; i++) newP += lines[i].length + 1; ed.selectionStart = ed.selectionEnd = newP; ed.focus(); }
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); } }
-        function removeFromSet(i) { setlist.splice(i, 1); save(); render(); }
-        
         function exportDB() { download(db, 'TDF_Database'); }
-        function exportSet() { 
-            const name = prompt("Naam voor setlist:", "Setlist");
-            if (name) download(setlist, name);
-        }
-
-        // FIREFOX-VRIENDELIJKE DOWNLOAD METHODE
-        function download(d, n) {
-            const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = n + ".json";
-            document.body.appendChild(a);
-            a.click();
-            
-            // Toon een duidelijke melding voor Firefox gebruikers
-            alert("Bestand '" + n + ".json' is aangemaakt.\n\nGa naar Firefox menu (≡) -> Downloads om het te verplaatsen naar je map.");
-            
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-        }
-
-        function importFiles(e, type) {
-            const r = new FileReader(); r.onload = (p) => { 
-                try {
-                    const data = JSON.parse(p.target.result); 
-                    if(type==='db') db = data; else setlist = data; 
-                    save(); render(); alert("Geladen!"); 
-                } catch(err) { alert("Fout bij laden."); }
-            };
-            r.readAsText(e.target.files[0]);
-        }
-
-        function initDrag(el) {
-            let p1=0, p2=0, p3=0, p4=0; const h = el.querySelector('.drag-handle');
-            h.onmousedown = h.ontouchstart = (e) => {
-                e.preventDefault(); p3 = e.clientX || e.touches[0].clientX; p4 = e.clientY || e.touches[0].clientY;
-                document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
-                document.onmousemove = document.ontouchmove = (me) => {
-                    p1 = p3 - (me.clientX || me.touches[0].clientX); p2 = p4 - (me.clientY || me.touches[0].clientY);
-                    p3 = me.clientX || me.touches[0].clientX; p4 = me.clientY || me.touches[0].clientY;
-                    el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px";
-                }
-            }
-        }
+        function exportSet() { const name = prompt("Naam:", "Setlist"); if (name) download(setlist, name); }
+        function download(d, n) { const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = n + ".json"; document.body.appendChild(a); a.click(); alert("Bestand '" + n + ".json' aangemaakt.\nVerplaats het via Firefox menu -> Downloads."); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500); }
+        function importFiles(e, type) { const r = new FileReader(); r.onload = (p) => { try { const data = JSON.parse(p.target.result); if(type==='db') { if(Array.isArray(data)) db = [...db, ...data]; else db.push(data); } else setlist = data; save(); render(); alert("Geïmporteerd! Gebruik 'CLEAN' om dubbelen te verwijderen."); } catch(err) { alert("Fout bij laden."); } }; r.readAsText(e.target.files[0]); }
+        function initDrag(el) { let p1=0, p2=0, p3=0, p4=0; const h = el.querySelector('.drag-handle'); h.onmousedown = h.ontouchstart = (e) => { e.preventDefault(); p3 = e.clientX || (e.touches ? e.touches[0].clientX : 0); p4 = e.clientY || (e.touches ? e.touches[0].clientY : 0); document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; }; document.onmousemove = document.ontouchmove = (me) => { p1 = p3 - (me.clientX || me.touches[0].clientX); p2 = p4 - (me.clientY || me.touches[0].clientY); p3 = me.clientX || me.touches[0].clientX; p4 = me.clientY || me.touches[0].clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; } } }
     </script>
 </body>
 </html>
