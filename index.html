@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v7.65</title>
+    <title>TDF Digital v7.66</title>
     <style>
         :root { 
             --bg-black: #000; 
@@ -17,6 +17,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
         
+        /* Top Bar */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; z-index: 3000; }
         .logo-box { width: 60px; height: 60px; margin-right: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -29,18 +30,21 @@
         #lyricsArea { height: 100%; overflow-y: auto; padding: 30px; color: #000; font-size: 1.5rem; line-height: 1.6; }
         #editorArea { display: none; width: 100%; height: 100%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
 
+        /* Menus */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .full-menu.open { left: 0; }
         .menu-header { padding: 15px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .menu-scroll { flex: 1; overflow-y: auto; padding: 15px; }
         
         .row-item { background: #1c1c1e; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; }
-        .row-name { flex: 1; padding: 20px; font-size: 1.8rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; }
+        .row-name { flex: 1; padding: 20px; font-size: 1.8rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
+        /* Lyrics & Chords */
         .chord-row { color: var(--red); font-weight: bold; height: 1.5rem; position: relative; }
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 18px; display: block; white-space: pre; }
 
+        /* Floating Tools */
         .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
         .drag-handle { color: rgba(255,255,255,0.6); text-align: center; font-size: 11px; cursor: move; padding: 6px; background: #2a2a2a; border-radius: 6px; margin-bottom: 8px; }
         .joy-btn, .chord-glow-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); text-shadow: 0 0 8px var(--amber); width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
@@ -54,7 +58,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.65</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.66</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -62,7 +66,7 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Lokaal v7.65 geladen...</div>
+        <div id="lyricsArea">Lokaal v7.66 geladen...</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
@@ -208,10 +212,21 @@
             const name = prompt("Naam voor setlist:", "Setlist");
             if (name) { download(setlist, `${name}_${new Date().toISOString().slice(0,10)}`); }
         }
+
         function download(d, n) {
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], {type:'application/json'}));
-            a.download = `${n}.json`; a.click();
+            const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${n}.json`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
         }
+
         function importFiles(e, type) {
             const r = new FileReader(); r.onload = (p) => { 
                 const data = JSON.parse(p.target.result); 
@@ -220,6 +235,7 @@
             };
             r.readAsText(e.target.files[0]);
         }
+
         function initDrag(el) {
             let p1=0, p2=0, p3=0, p4=0; const h = el.querySelector('.drag-handle');
             h.onmousedown = h.ontouchstart = (e) => {
