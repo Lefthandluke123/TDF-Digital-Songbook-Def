@@ -208,11 +208,16 @@
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); } }
         function removeFromSet(i) { setlist.splice(i, 1); save(); render(); }
         function exportDB() { download(db, 'tdf_database'); }
+        
         function exportSet() { 
-            const name = prompt("Naam voor setlist:", "Setlist");
-            if (name) { download(setlist, `${name}_${new Date().toISOString().slice(0,10)}`); }
+            const name = prompt("Naam voor deze setlist:", "Setlist");
+            if (name) { 
+                const date = new Date().toISOString().slice(0,10);
+                download(setlist, `${name}_${date}`); 
+            }
         }
 
+        // VERBETERDE DOWNLOAD METHODE VOOR IPAD
         function download(d, n) {
             const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
@@ -229,9 +234,11 @@
 
         function importFiles(e, type) {
             const r = new FileReader(); r.onload = (p) => { 
-                const data = JSON.parse(p.target.result); 
-                if(type==='db') db = data; else setlist = data; 
-                save(); render(); alert("Geladen!"); 
+                try {
+                    const data = JSON.parse(p.target.result); 
+                    if(type==='db') db = data; else setlist = data; 
+                    save(); render(); alert("Geladen!"); 
+                } catch(err) { alert("Fout bij laden van bestand."); }
             };
             r.readAsText(e.target.files[0]);
         }
