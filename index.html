@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v7.70</title>
+    <title>TDF Digital v7.73</title>
     <style>
-        :root { 
-            --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; 
-        }
+        :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
         
@@ -37,12 +35,9 @@
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 18px; display: block; white-space: pre; }
 
-        /* Export Overlay */
-        #exportOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 60000; display: none; flex-direction: column; padding: 40px 20px; }
-
-        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; }
         .drag-handle { color: rgba(255,255,255,0.6); text-align: center; font-size: 11px; cursor: move; padding: 6px; background: #2a2a2a; border-radius: 6px; margin-bottom: 8px; }
-        .joy-btn, .chord-glow-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); text-shadow: 0 0 8px var(--amber); width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .joy-btn, .chord-glow-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -53,7 +48,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.70</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v7.73</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -61,15 +56,8 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Lokaal v7.70 geladen...</div>
+        <div id="lyricsArea">Lokaal v7.73 actief.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
-    </div>
-
-    <div id="exportOverlay">
-        <h2 id="exportTitle" style="color:var(--amber);">Bestand voorbereiden...</h2>
-        <p>Tik op de knop hieronder en kies daarna <b>'Bewaar in Bestanden'</b> om de map en naam te kiezen.</p>
-        <button id="finalDownloadBtn" class="btn" style="padding:20px; font-size:1.5rem; margin-top:20px;">BEWAAR BESTAND</button>
-        <button class="btn-red" style="margin-top:40px; padding:10px;" onclick="document.getElementById('exportOverlay').style.display='none'">ANNULEREN</button>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -166,10 +154,10 @@
 
         function copySetWhatsApp() {
             let t = "*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n");
-            navigator.clipboard.writeText(t); alert("Tekst gekopieerd!");
+            navigator.clipboard.writeText(t); alert("Gekopieerd!");
         }
 
-        function addCustomRow() { const n = prompt("Tekst voor nieuwe regel:", "--- PAUZE ---"); if(n) { setlist.push({title: n, content: ""}); save(); render(); } }
+        function addCustomRow() { const n = prompt("Tekst:", "--- PAUZE ---"); if(n) { setlist.push({title: n, content: ""}); save(); render(); } }
 
         function startEdit() {
             if(!cur) return;
@@ -210,43 +198,26 @@
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); } }
         function removeFromSet(i) { setlist.splice(i, 1); save(); render(); }
         
-        function exportDB() { 
-            const name = prompt("Naam voor database backup:", "TDF_Database");
-            if(name) prepareDownload(db, name); 
-        }
-        
+        function exportDB() { download(db, 'TDF_Database'); }
         function exportSet() { 
-            const name = prompt("Naam voor deze setlist:", "Setlist");
-            if (name) { 
-                const date = new Date().toISOString().slice(0,10);
-                prepareDownload(setlist, `${name}_${date}`); 
-            }
+            const name = prompt("Naam voor setlist:", "Setlist");
+            if (name) download(setlist, name);
         }
 
-        // GEWELDLOZE EXPORT VOOR FIREFOX IPAD
-        function prepareDownload(data, filename) {
-            const json = JSON.stringify(data, null, 2);
-            const overlay = document.getElementById('exportOverlay');
-            const btn = document.getElementById('finalDownloadBtn');
-            const title = document.getElementById('exportTitle');
+        // FIREFOX-VRIENDELIJKE DOWNLOAD METHODE
+        function download(d, n) {
+            const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = n + ".json";
+            document.body.appendChild(a);
+            a.click();
             
-            title.innerText = "Bestand: " + filename + ".json";
-            overlay.style.display = 'flex';
+            // Toon een duidelijke melding voor Firefox gebruikers
+            alert("Bestand '" + n + ".json' is aangemaakt.\n\nGa naar Firefox menu (≡) -> Downloads om het te verplaatsen naar je map.");
             
-            btn.onclick = () => {
-                const blob = new Blob([json], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename + ".json";
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    overlay.style.display = 'none';
-                }, 500);
-            };
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
         }
 
         function importFiles(e, type) {
