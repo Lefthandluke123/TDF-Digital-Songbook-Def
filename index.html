@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.46</title>
+    <title>TDF Digital v9.48</title>
     <style>
-        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
+        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
+        .top-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .top-center { flex: 2; text-align: center; font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 10px; }
+        .top-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; margin: 2px 0; }
+        .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; }
         .btn-danger { border-color: var(--red); color: var(--red); }
 
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
@@ -24,16 +28,16 @@
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 50px; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; outline: none; font-family: monospace; }
 
-        .search-area { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; }
+        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
+        .full-menu.open { left: 0; }
+        .menu-scroll { flex: 1; overflow-y: auto; }
+
+        .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; }
         .search-bar { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         
         #tagCloud { display: none; padding: 15px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; gap: 8px; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
-        
-        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
-        .full-menu.open { left: 0; }
-        .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
         .swipe-container { position: relative; overflow: hidden; background: var(--red); margin-bottom: 2px; }
         .row-item { background: var(--row-bg); display: flex; align-items: center; padding: 15px 20px; min-height: 75px; position: relative; z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; }
@@ -41,8 +45,11 @@
 
         .select-check { display: none; transform: scale(1.8); margin-right: 25px; accent-color: var(--amber); }
         .is-selecting .select-check { display: block; }
-        .edit-only { display: none !important; }
-        .is-editing .edit-only { display: flex !important; flex-direction: column; margin-right: 15px; }
+
+        .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; gap: 10px; justify-content: space-around; flex-wrap: wrap; }
+
+        /* Toast Feedback */
+        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
@@ -52,26 +59,28 @@
         .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); z-index: 5; pointer-events: none; }
 
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; }
-        .footer-actions { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; gap: 10px; justify-content: center; }
     </style>
 </head>
 <body>
 
+    <div id="toast">TOEGEVOEGD</div>
+
     <div class="top-bar">
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div class="top-left">
+            <button class="btn" style="border:none; padding-left:0; color:#555;" onclick="location.reload()">TDF</button>
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.46</div>
-        <div style="display:flex; gap:8px;">
+        <div id="title" class="top-center">TDF v9.48</div>
+        <div class="top-right">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
-            <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
+            <button class="btn" id="saveBtn" style="display:none; color:var(--green); border-color:var(--green);" onclick="finishEdit()">OK</button>
             <button class="btn" id="liveBtn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button>
         </div>
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Selecteer een liedje.</div>
+        <div id="lyricsArea">Selecteer een liedje uit SONGS of SET.</div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
             <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
@@ -92,10 +101,7 @@
 
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; gap:8px;">
-                <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
-                <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
-            </div>
+            <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="search-area">
@@ -104,14 +110,18 @@
         </div>
         <div id="tagCloud"></div>
         <div id="dbList" class="menu-scroll"></div>
-        <div class="footer-actions">
-            <button class="btn" style="width:100%" onclick="exportDB()">DOWNLOAD BACKUP (JSON)</button>
+        <div class="menu-footer">
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
+            <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT</button>
+            <button class="btn" onclick="exportDB()">EXPORT</button>
+            <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
+            <input type="file" id="importFile" style="display:none" onchange="importDB(event)">
         </div>
     </div>
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn" id="setEditToggle" onclick="toggleSetEdit()">EDIT</button>
+            <button class="btn" id="setEditToggle" onclick="toggleSetEdit()">EDIT MODE</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
@@ -130,10 +140,16 @@
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
         function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
         
+        function showToast(msg) {
+            const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 1500);
+        }
+
         function toggleSelectMode() { 
             selectMode = !selectMode; 
             selectedSongs = []; 
             document.getElementById('songsMenu').classList.toggle('is-selecting', selectMode); 
+            document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
             if(selectMode) document.getElementById('tagCloud').style.display = 'flex';
             render(); 
         }
@@ -144,22 +160,45 @@
             render(); 
         }
 
+        function addSelectedToSet() {
+            if(selectedSongs.length === 0) return;
+            selectedSongs.forEach(title => {
+                const s = db.find(x => x.title === title);
+                if(s) setlist.push(JSON.parse(JSON.stringify(s)));
+            });
+            save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode();
+        }
+
+        function addToSetlist(title) {
+            const s = db.find(x => x.title === title);
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); }
+        }
+
         function cleanDuplicates() {
             if(!confirm("Dubbele liedjes verwijderen? (Laatste versie blijft behouden)")) return;
             const unique = {}; db.forEach(s => unique[s.title] = s);
             db = Object.values(unique); save(); render();
         }
 
-        function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
-
         function exportDB() {
             const data = JSON.stringify(db, null, 2);
             const blob = new Blob([data], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `tdf_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.href = URL.createObjectURL(blob);
+            a.download = `tdf_backup_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
         }
+
+        function importDB(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imported = JSON.parse(event.target.result);
+                if(confirm(`Wil je ${imported.length} liedjes importeren?`)) { db = imported; save(); render(); }
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
@@ -195,18 +234,9 @@
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
                 p.innerText = t; p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
-                        db.forEach(s => { 
-                            if(selectedSongs.includes(s.title)) { 
-                                let tags = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; 
-                                if(!tags.includes(t)) tags.push(t); 
-                                s.tags = tags.join(', '); 
-                            } 
-                        });
-                        save(); toggleSelectMode();
-                    } else { 
-                        if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); 
-                        else activeTags.push(t); render(); 
-                    }
+                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let tags = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!tags.includes(t)) tags.push(t); s.tags = tags.join(', '); } });
+                        save(); showToast("TAGS BIJGEWERKT"); toggleSelectMode();
+                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
                 }; cloud.appendChild(p);
             });
 
@@ -214,21 +244,20 @@
             setlist.forEach((s, i) => { 
                 const d = document.createElement('div'); d.className = "row-item"; 
                 d.innerHTML = `
-                    <div class="edit-only">
+                    <div style="display:${setEditMode?'flex':'none'}; flex-direction:column; margin-right:15px;">
                         <button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button>
                         <button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button>
                     </div>
                     <div style="flex:1" onclick="loadSongByIndex(${i})"><span class="song-title">${i+1}. ${s.title}</span></div>
-                    <button class="btn edit-only" style="color:var(--red); border-color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`; 
+                    <button class="btn" style="display:${setEditMode?'block':'none'}; color:var(--red); border-color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`; 
                 setl.appendChild(d); 
             });
         }
 
-        function handleTouchStart(e) { startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
-        function handleTouchMove(e) { let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
-        function handleTouchEnd(e) { let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
+        function handleTouchStart(e) { if(selectMode) return; startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
+        function handleTouchMove(e) { if(selectMode || !currentSwipeItem) return; let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
+        function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
 
-        function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); } }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
         function moveSetItem(index, dir) { let target = index + dir; if (target >= 0 && target < setlist.length) { [setlist[index], setlist[target]] = [setlist[target], setlist[index]]; save(); render(); } }
         
