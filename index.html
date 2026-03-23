@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.12</title>
+    <title>TDF Digital v8.15</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,11 +26,13 @@
 
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; }
         #lyricsArea { height: 100%; overflow-y: auto; padding: 30px; color: #000; font-size: 1.5rem; line-height: 1.6; }
-        #editorArea { display: none; width: 100%; height: 85%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
+        #editorArea { display: none; width: 100%; height: 75%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
         
-        /* Tag Editor onderaan het scherm bij bewerken */
-        #tagEditor { display: none; background: #222; padding: 15px 30px; border-top: 2px solid var(--amber); color: #fff; height: 15%; }
-        #tagInput { width: 80%; background: #000; border: 1px solid #444; color: var(--amber); padding: 10px; border-radius: 6px; }
+        /* Tag Editor & Suggesties */
+        #tagEditor { display: none; background: #222; padding: 10px 20px; border-top: 2px solid var(--amber); color: #fff; height: 25%; flex-direction: column; gap: 10px; }
+        #tagSuggestions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; min-height: 35px; white-space: nowrap; }
+        .tag-sug { background: #444; color: #fff; padding: 4px 12px; border-radius: 15px; font-size: 0.85rem; cursor: pointer; border: 1px solid #666; }
+        #tagInput { width: 100%; background: #000; border: 1px solid #444; color: var(--amber); padding: 12px; border-radius: 6px; font-size: 1rem; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
         .full-menu.open { left: 0; }
@@ -42,7 +44,7 @@
         .tag-pill { font-size: 0.75rem; color: var(--amber); background: rgba(255,191,0,0.1); padding: 2px 8px; border-radius: 4px; margin-left: 8px; border: 1px solid rgba(255,191,0,0.3); font-weight: normal; }
         .swiping-left { background: #400000 !important; transform: translateX(-15px); }
         
-        #toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 25px; font-weight: bold; display: none; z-index: 20000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 25px; font-weight: bold; display: none; z-index: 20000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
 
         .chord-row { color: var(--red); font-weight: bold; height: 1.5rem; position: relative; }
         .chord-item { position: absolute; }
@@ -61,7 +63,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.12</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.15</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -71,11 +73,11 @@
     <div id="toast">Gereed</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Zoek op TITEL of TAG in het SONGS menu.</div>
+        <div id="lyricsArea">Gebruik de AUTO-COMPLETE bij het typen van tags.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
-            <span style="font-size: 0.9rem; margin-right: 10px;">TAGS:</span>
-            <input type="text" id="tagInput" placeholder="bijv. Rock, Set1, Ballad">
+            <div id="tagSuggestions"></div>
+            <input type="text" id="tagInput" placeholder="Typ tags (scheiden met komma)..." oninput="updateSuggestions()">
         </div>
     </div>
 
@@ -151,11 +153,9 @@
             d.ontouchstart = (e) => { touchStartX = e.touches[0].clientX; };
             d.ontouchmove = (e) => { if(touchStartX - e.touches[0].clientX > 30) d.classList.add('swiping-left'); else d.classList.remove('swiping-left'); };
             d.ontouchend = (e) => { if(touchStartX - e.changedTouches[0].clientX > 80) deleteFn(); else d.classList.remove('swiping-left'); };
-            
             let prefixHtml = isDb ? "" : `<div style="width:40px; text-align:center; color:var(--amber); font-weight:bold;">${arguments[4]}</div>`;
             let buttons = isDb ? `<button class="btn" style="margin-right:8px; padding:8px 12px;" onclick="event.stopPropagation(); editInDb('${rawTitle.replace(/'/g,"\\'")}')">✎</button>
                                  <button class="btn" style="margin-right:10px; padding:8px 12px;" onclick="event.stopPropagation(); addToSet('${rawTitle.replace(/'/g,"\\'")}')">+</button>` : "";
-            
             d.innerHTML = `${prefixHtml}<div class="row-name">${html}</div>${buttons}`;
             d.onclick = (e) => { if(e.target.tagName !== 'BUTTON') clickFn(); };
             return d;
@@ -167,6 +167,34 @@
         function addToSet(t) { 
             const s = db.find(x=>x.title===t); 
             if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("Toegevoegd aan SET"); } 
+        }
+
+        // AUTO-COMPLETE TAGS LOGICA
+        function updateSuggestions() {
+            const input = document.getElementById('tagInput');
+            const currentVal = input.value.split(',').pop().trim().toLowerCase();
+            const sugBox = document.getElementById('tagSuggestions');
+            sugBox.innerHTML = "";
+            
+            if(currentVal.length < 1) return;
+
+            const allTags = new Set();
+            db.forEach(s => { if(s.tags) s.tags.split(',').forEach(t => allTags.add(t.trim())); });
+
+            Array.from(allTags).filter(t => t.toLowerCase().startsWith(currentVal)).forEach(t => {
+                const span = document.createElement('div');
+                span.className = "tag-sug";
+                span.innerText = t;
+                span.onclick = () => {
+                    const parts = input.value.split(',');
+                    parts.pop();
+                    parts.push(" " + t);
+                    input.value = parts.join(',').trim() + ", ";
+                    input.focus();
+                    sugBox.innerHTML = "";
+                };
+                sugBox.appendChild(span);
+            });
         }
 
         async function importAnyFile(e) {
@@ -218,18 +246,6 @@
             document.getElementById('lyricsArea').innerHTML = h; document.getElementById('lyricsArea').scrollTop = 0;
         }
 
-        async function pasteFromWA() {
-            let text = ""; try { text = await navigator.clipboard.readText(); } catch (err) { text = prompt("Tekst:"); }
-            if (!text) return;
-            const lines = text.split('\n'); const newSet = [];
-            lines.forEach(line => {
-                const clean = line.replace(/^\d+[\s.)]*/, '').trim(); if (!clean) return;
-                const song = db.find(s => s.title.toLowerCase() === clean.toLowerCase());
-                newSet.push(song ? JSON.parse(JSON.stringify(song)) : { title: clean, content: "", tags: "" });
-            });
-            setlist = newSet; save(); render();
-        }
-
         function startEdit() {
             if(!cur) return;
             document.getElementById('lyricsArea').style.display = 'none'; 
@@ -243,7 +259,7 @@
 
         function finishEdit() {
             cur.content = document.getElementById('editorArea').value; 
-            cur.tags = document.getElementById('tagInput').value;
+            cur.tags = document.getElementById('tagInput').value.trim().replace(/,\s*$/, "");
             let idx = db.findIndex(s => s.title === cur.title); 
             if(idx !== -1) { db[idx].content = cur.content; db[idx].tags = cur.tags; }
             save(); 
@@ -255,6 +271,20 @@
             drawLyrics(); render();
         }
 
+        async function pasteFromWA() {
+            let text = ""; try { text = await navigator.clipboard.readText(); } catch (err) { text = prompt("Tekst:"); }
+            if (!text) return;
+            const lines = text.split('\n'); const newSet = [];
+            lines.forEach(line => {
+                const clean = line.replace(/^\d+[\s.)]*/, '').trim(); if (!clean) return;
+                const song = db.find(s => s.title.toLowerCase() === clean.toLowerCase());
+                newSet.push(song ? JSON.parse(JSON.stringify(song)) : { title: clean, content: "", tags: "" });
+            });
+            setlist = newSet; save(); render();
+        }
+
+        function copySetWhatsApp() { navigator.clipboard.writeText("*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n")); alert("Kopie!"); }
+        function addCustomRow() { const n = prompt("Tekst:"); if(n) { setlist.push({title: n, content: "", tags: ""}); save(); render(); } }
         function buildChordStrip() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => { const b = document.createElement('button'); b.className = "chord-glow-btn"; b.style.cssText = "width:65px; height:45px; border-radius:8px; margin-bottom:5px;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insert(`[${c}]`); }; bar.appendChild(b); }); }
         function insert(t) { const ed = document.getElementById('editorArea'); const s = ed.selectionStart; ed.value = ed.value.substring(0, s) + t + ed.value.substring(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = s + t.length; ed.focus(); }
         function moveCursorHorizontal(n) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + n; ed.focus(); }
