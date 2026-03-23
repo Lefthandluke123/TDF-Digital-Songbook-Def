@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.00</title>
+    <title>TDF Digital v9.03</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; --row-bg: #1c1c1e; --row-header: #252525; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
         
-        /* HEADER UI */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; z-index: 3000; }
         .logo-box { width: 55px; height: 55px; min-width: 55px; margin-right: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #000; border-radius: 8px; overflow: hidden; }
         .logo-box img { width: 100%; height: 100%; object-fit: contain; }
@@ -19,40 +18,38 @@
         .btn-green { background: #25D366; color: white; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 8px; }
 
-        /* CONTENT AREAS */
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; }
         #editorContainer { display: none; flex: 1; flex-direction: column; background:#1a1a1a; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.4rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
 
-        /* LISTS & TAGS */
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; border-left: 4px solid transparent; }
         .row-item.alpha-header { background: var(--row-header); border-top: 1px solid #444; border-left-color: var(--amber); margin-top: 15px; }
         .alpha-label { width: 35px; text-align: center; color: var(--amber); font-weight: bold; font-size: 1.2rem; display: none; }
         .row-item.alpha-header .alpha-label { display: block; }
-        .row-name { flex: 1; padding: 12px 18px; overflow: hidden; cursor: pointer; }
+        .row-name { flex: 1; padding: 12px 18px; overflow: hidden; }
         .song-title { font-size: 1.4rem; font-weight: bold; color: #fff; display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-        .tag-display { font-size: 0.9rem; color: var(--amber-dim); display: block; margin-top: 2px; font-style: italic; }
-        .tag-field { width: 100%; background: #000; border: 1px solid #444; color: var(--amber); padding: 8px; border-radius: 5px; font-size: 0.9rem; margin-top: 5px; }
+        .tag-display { font-size: 0.9rem; color: var(--amber-dim); display: block; margin-top: 2px; font-style: italic; min-height: 1.2rem; }
+        .tag-input-wrap { display: flex; gap: 5px; margin-top: 5px; }
+        .tag-field { flex: 1; background: #000; border: 1px solid #444; color: var(--amber); padding: 8px; border-radius: 5px; font-size: 0.9rem; }
+        .tag-close-btn { background: #333; color: #fff; border: none; border-radius: 5px; padding: 0 10px; font-weight: bold; }
         .drag-handle { padding: 15px 20px; color: var(--amber); font-size: 1.8rem; cursor: move; }
 
-        /* SMART TAG CLOUD */
-        #tagCloud { display: none; padding: 10px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; gap: 8px; scrollbar-width: none; }
+        #tagCloud { display: none; padding: 10px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; gap: 8px; }
         .cloud-tag { display: inline-block; padding: 5px 12px; background: #333; color: #888; border-radius: 15px; font-size: 0.85rem; cursor: pointer; border: 1px solid #444; margin-right: 5px; }
         .cloud-tag.present { background: var(--amber); color: #000; font-weight: bold; }
 
-        /* LIVE OVERLAY & MOTOR */
-        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; }
+        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; scroll-behavior: auto; }
         #liveView .lyric-line { font-size: 2.3rem; line-height: 1.3; margin-bottom: 35px; color: #eee; font-weight: bold; white-space: pre-wrap; }
         #liveView .chord-row { font-size: 2.8rem; height: 3.2rem; margin-bottom: 5px; color: var(--amber); white-space: pre; position: relative; }
+        
         .live-controls { position: fixed; top: 0; left: 0; width: 100%; height: 120px; background: rgba(15,15,15,0.98); padding: 10px 25px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); }
         .wheel-wrap { position: relative; width: 110px; height: 95px; background: #000; border: 2px solid #555; border-radius: 12px; overflow: hidden; touch-action: none; display: flex; align-items: center; justify-content: center; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; transition: transform 0.08s ease-out; pointer-events: none; }
         .wheel-num { height: 30px; line-height: 30px; font-size: 1.4rem; font-weight: 800; color: #777; }
         .wheel-num.active { color: #fff; text-shadow: 0 0 15px #fff; font-size: 2.1rem; }
-        .wheel-overlay { position: absolute; width: 100%; height: 38px; border-top: 3px solid var(--amber); border-bottom: 3px solid var(--amber); pointer-events: none; background: rgba(255,191,0,0.1); z-index: 5; }
+        .wheel-overlay { position: absolute; width: 100%; height: 38px; border-top: 3px solid var(--amber); border-bottom: 3px solid var(--amber); pointer-events: none; background: rgba(255,191,0,0.15); z-index: 5; }
 
-        /* FULL MENUS */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-header { padding: 20px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
@@ -70,7 +67,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v9.00</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v9.03</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" style="border-color:#34c759; color:#34c759;" onclick="enterLiveView()">LIVE</button>
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
@@ -81,7 +78,7 @@
     <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">V9.00 Master Edition Geladen. Importeer SONGS of plak een SET.</div>
+        <div id="lyricsArea">V9.03 Real-Time Speed Master. Scroll reageert direct op wiel.</div>
         <div id="editorContainer"><textarea id="editorArea" spellcheck="false"></textarea></div>
     </div>
 
@@ -132,7 +129,8 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, draggingIdx = null, isScrolling = false, isTagMode = false, activeTagInput = null;
-        let scrollY = 0, currentSpeed = 0;
+        let scrollPosAccumulator = 0;
+        let currentSpeed = 0;
 
         window.onload = () => { createWheelNodes(); initThumbWheel(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
 
@@ -151,11 +149,14 @@
                 const isNew = L !== lastL; if(isNew) lastL = L;
                 const d = document.createElement('div');
                 d.className = "row-item" + (isNew ? " alpha-header" : "");
-                d.innerHTML = `<div class="alpha-label">${L}</div><div class="row-name" onclick="${isTagMode ? '' : `loadSong('${s.title.replace(/'/g,"\\")}')`}">
-                    <span class="song-title">${s.title}</span>
-                    ${isTagMode ? `<input type="text" class="tag-field" value="${s.tags||''}" onfocus="activeTagInput=this; updateTagCloud();" oninput="updateSongTag('${s.title.replace(/'/g,"\\")}', this.value)">` : `<span class="tag-display">${s.tags||''}</span>`}
-                </div><button class="btn" onclick="addToSet('${s.title.replace(/'/g,"\\")}')">+</button>`;
-                dbl.appendChild(d);
+                let content = `<div class="alpha-label">${L}</div><div class="row-name"><span class="song-title" onclick="loadSong('${s.title.replace(/'/g,"\\")}')">${s.title}</span>`;
+                if(isTagMode) {
+                    content += `<div class="tag-input-wrap"><input type="text" class="tag-field" value="${s.tags||''}" onfocus="activeTagInput=this; updateTagCloud();" oninput="updateSongTag('${s.title.replace(/'/g,"\\")}', this.value)" placeholder="Tags..."><button class="tag-close-btn" onclick="this.previousElementSibling.blur();">X</button></div>`;
+                } else {
+                    content += `<span class="tag-display" onclick="loadSong('${s.title.replace(/'/g,"\\")}')">${s.tags||''}</span>`;
+                }
+                content += `</div><button class="btn" onclick="addToSet('${s.title.replace(/'/g,"\\")}')">+</button>`;
+                d.innerHTML = content; dbl.appendChild(d);
             });
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
@@ -169,26 +170,48 @@
             });
         }
 
-        function toggleTagMode() { isTagMode = !isTagMode; document.getElementById('tagModeBtn').style.background = isTagMode ? "var(--amber)" : "none"; document.getElementById('tagModeBtn').style.color = isTagMode ? "#000" : "var(--amber)"; document.getElementById('tagCloud').style.display = isTagMode ? "flex" : "none"; if(isTagMode) updateTagCloud(); render(); }
-        function updateTagCloud() {
-            const cloud = document.getElementById('tagCloud'); cloud.innerHTML = "";
-            let tags = new Set();
-            db.forEach(s => { if(s.tags) s.tags.split(',').forEach(t => { if(t.trim()) tags.add(t.trim()); }); });
-            Array.from(tags).sort().forEach(t => {
-                const span = document.createElement('span'); span.className = 'cloud-tag';
-                if(activeTagInput && activeTagInput.value.split(',').map(p=>p.trim()).includes(t)) span.classList.add('present');
-                span.innerText = t; span.onclick = () => { if(activeTagInput) toggleTagInInput(t, span); };
-                cloud.appendChild(span);
-            });
+        function scrollEngine() {
+            const lv = document.getElementById('liveView');
+            if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
+                // De motor haalt elke frame de actuele currentSpeed op
+                const increment = (currentSpeed * 0.38) + 0.02;
+                scrollPosAccumulator += increment;
+                lv.scrollTop = Math.floor(scrollPosAccumulator);
+            }
+            requestAnimationFrame(scrollEngine);
         }
 
-        function toggleTagInInput(tag, el) {
-            let parts = activeTagInput.value.split(',').map(p => p.trim()).filter(p => p);
-            if(parts.includes(tag)) parts = parts.filter(p => p !== tag); else parts.push(tag);
-            activeTagInput.value = parts.join(', '); activeTagInput.dispatchEvent(new Event('input')); updateTagCloud();
+        function initThumbWheel() {
+            const wheel = document.getElementById('thumbWheel');
+            let dragging = false, sY = 0, sSpeed = 0;
+            const move = (e) => {
+                if(!dragging) return;
+                const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                // Real-time speed update: beïnvloedt scrollEngine direct
+                currentSpeed = Math.max(0, Math.min(15, sSpeed + (sY - y) / 12));
+                updateWheelPosition();
+            };
+            wheel.addEventListener('mousedown', (e) => { dragging=true; sY=e.clientY; sSpeed=currentSpeed; });
+            wheel.addEventListener('touchstart', (e) => { dragging=true; sY=e.touches[0].clientY; sSpeed=currentSpeed; });
+            window.addEventListener('mousemove', move); window.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', () => dragging=false); window.addEventListener('touchend', () => dragging=false);
         }
 
-        function updateSongTag(t, v) { let s = db.find(x => x.title === t); if(s) { s.tags = v; save(); } }
+        function updateWheelPosition() {
+            const strip = document.getElementById('wheelStrip');
+            strip.style.transform = `translateY(${47.5 - 15 - (currentSpeed * 300)}px)`;
+            const nums = strip.querySelectorAll('.wheel-num');
+            nums.forEach((n, i) => n.classList.toggle('active', Math.abs(currentSpeed - i/10) < 0.05));
+        }
+
+        function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); } }
+        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics(document.getElementById('liveContent')); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
+        function exitLiveView() { saveCurrentSpeed(); isScrolling=false; document.getElementById('liveView').style.display='none'; }
+        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
+        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
+        function saveCurrentSpeed() { if(cur) { cur.scrollSpeed = currentSpeed; let idx = db.findIndex(x=>x.title===cur.title); if(idx!==-1) db[idx].scrollSpeed=currentSpeed; save(); } }
+        function navSong(dir) { saveCurrentSpeed(); const idx = setlist.findIndex(s=>s.title===cur.title); const nIdx = idx+dir; if(nIdx>=0 && nIdx<setlist.length) { cur=setlist[nIdx]; document.getElementById('title').innerText=cur.title; scrollPosAccumulator = 0; enterLiveView(); } }
+        
         function drawLyrics(container) {
             if(!cur) return;
             const lines = cur.content.split('\n'); let h = "";
@@ -203,39 +226,26 @@
                 let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch">${c.v}</span>`; });
                 h += `<div class="chord-row" style="height:1.8rem; color:var(--amber); font-weight:bold; position:relative;">${r}</div><div class="lyric-line" style="margin-bottom:15px; white-space:pre; color:inherit;">${txt || ' '}</div>`;
             });
-            container.innerHTML = h; container.scrollTop = 0; scrollY = 0;
+            container.innerHTML = h; container.scrollTop = 0; scrollPosAccumulator = 0;
         }
 
-        function initThumbWheel() { const wheel = document.getElementById('thumbWheel'); let dragging = false, sY = 0, sSpeed = 0; const move = (e) => { if(!dragging) return; const y = e.clientY || (e.touches ? e.touches[0].clientY : 0); currentSpeed = Math.max(0, Math.min(15, sSpeed + (sY - y) / 10)); updateWheelPosition(); }; wheel.addEventListener('mousedown', (e) => { dragging=true; sY=e.clientY; sSpeed=currentSpeed; }); wheel.addEventListener('touchstart', (e) => { dragging=true; sY=e.touches[0].clientY; sSpeed=currentSpeed; }); window.addEventListener('mousemove', move); window.addEventListener('touchmove', move); window.addEventListener('mouseup', () => dragging=false); window.addEventListener('touchend', () => dragging=false); }
-        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${47.5 - 15 - (currentSpeed * 300)}px)`; const nums = strip.querySelectorAll('.wheel-num'); nums.forEach((n, i) => n.classList.toggle('active', Math.abs(currentSpeed - i/10) < 0.05)); }
-        function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); } }
-        function scrollEngine() { const lv = document.getElementById('liveView'); if(lv.style.display==='block' && isScrolling && currentSpeed>0) { scrollY += (currentSpeed * 0.35) + 0.05; lv.scrollTop = Math.floor(scrollY); } requestAnimationFrame(scrollEngine); }
-        
-        function importAnyFile(e) {
-            Array.from(e.target.files).forEach(f => {
-                const reader = new FileReader(); reader.onload = (ev) => {
-                    const content = ev.target.result;
-                    if(f.name.endsWith('.json')) {
-                        const p = JSON.parse(content); if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p);
-                    } else { db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0}); }
-                    save(); render();
-                }; reader.readAsText(f);
-            });
-            showToast("Import klaar!");
-        }
-
-        function exportDatabase() {
-            const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_v9_backup.json`; a.click();
-        }
-
+        function importAnyFile(e) { Array.from(e.target.files).forEach(f => { const reader = new FileReader(); reader.onload = (ev) => { const content = ev.target.result; if(f.name.endsWith('.json')) { const p = JSON.parse(content); if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p); } else { db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0}); } save(); render(); }; reader.readAsText(f); }); showToast("Import klaar!"); }
+        function exportDatabase() { const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_backup.json`; a.click(); }
         function cleanDatabase() { const u = new Set(); db = db.filter(s => { const t = s.title.toLowerCase().trim(); if(u.has(t)) return false; u.add(t); return true; }); save(); render(); showToast("Gecleand!"); }
-        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics(document.getElementById('liveContent')); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
-        function exitLiveView() { saveCurrentSpeed(); isScrolling=false; document.getElementById('liveView').style.display='none'; }
-        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
-        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
-        function saveCurrentSpeed() { if(cur) { cur.scrollSpeed = currentSpeed; let idx = db.findIndex(x=>x.title===cur.title); if(idx!==-1) db[idx].scrollSpeed=currentSpeed; save(); } }
-        function navSong(dir) { saveCurrentSpeed(); const idx = setlist.findIndex(s=>s.title===cur.title); const nIdx = idx+dir; if(nIdx>=0 && nIdx<setlist.length) { cur=setlist[nIdx]; document.getElementById('title').innerText=cur.title; enterLiveView(); } }
+        function toggleTagMode() { isTagMode = !isTagMode; document.getElementById('tagModeBtn').style.background = isTagMode ? "var(--amber)" : "none"; render(); }
+        function updateSongTag(t, v) { let s = db.find(x => x.title === t); if(s) { s.tags = v; save(); } }
+        function toggleTagInInput(tag, el) { let parts = activeTagInput.value.split(',').map(p => p.trim()).filter(p => p); if(parts.includes(tag)) parts = parts.filter(p => p !== tag); else parts.push(tag); activeTagInput.value = parts.join(', '); activeTagInput.dispatchEvent(new Event('input')); updateTagCloud(); }
+        function updateTagCloud() {
+            const cloud = document.getElementById('tagCloud'); cloud.innerHTML = "";
+            let tags = new Set();
+            db.forEach(s => { if(s.tags) s.tags.split(',').forEach(t => { if(t.trim()) tags.add(t.trim()); }); });
+            Array.from(tags).sort().forEach(t => {
+                const span = document.createElement('span'); span.className = 'cloud-tag';
+                if(activeTagInput && activeTagInput.value.split(',').map(p=>p.trim()).includes(t)) span.classList.add('present');
+                span.innerText = t; span.onclick = () => { if(activeTagInput) toggleTagInInput(t, span); };
+                cloud.appendChild(span);
+            });
+        }
         function loadSong(t) { cur = db.find(x=>x.title===t) || setlist.find(x=>x.title===t); if(cur) { document.getElementById('title').innerText = cur.title; drawLyrics(document.getElementById('lyricsArea')); closeMenus(); } }
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("Toegevoegd!"); } }
         function removeFromSet(i) { setlist.splice(i, 1); save(); render(); }
