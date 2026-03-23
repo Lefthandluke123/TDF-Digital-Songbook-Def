@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.43</title>
+    <title>TDF Digital v9.44</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -14,9 +14,8 @@
         /* HEADER */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; }
 
-        /* CONTENT */
+        /* MAIN CONTENT */
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; }
 
@@ -29,22 +28,21 @@
         /* MENUS */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
-        .menu-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .menu-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         
-        .search-area { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; }
+        /* DE CRUCIALE FIX VOOR DE FOOTER */
+        .menu-content { height: 100%; display: flex; flex-direction: column; }
+        .menu-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #222; }
+        
+        .search-area { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; flex-shrink: 0; }
         .search-bar { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
-        #tagCloud { display: none; padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; margin-right: 8px; cursor: pointer; }
-        .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
-
-        /* FOOTER BALK IN MENU (v9.31 STIJL) */
-        .menu-footer { height: 90px; background: #111; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-around; padding: 0 15px; flex-shrink: 0; }
+        #tagCloud { display: none; padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
+        
+        .menu-footer { height: 100px; background: #1a1a1a; border-top: 2px solid #333; display: flex; align-items: center; justify-content: space-around; padding: 0 15px; flex-shrink: 0; z-index: 11000; }
 
         /* ROW ITEMS */
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; }
-        .is-selecting .select-check { display: block; transform: scale(1.8); margin-right: 20px; }
-        .select-check { display: none; }
+        .select-check { display: none; transform: scale(1.8); margin-right: 20px; }
+        .is-selecting .select-check { display: block; }
         .edit-only { display: none; }
         .is-editing .edit-only { display: flex; flex-direction: column; margin-right: 15px; }
 
@@ -64,7 +62,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.43</div>
+        <div id="title" style="font-weight:bold; color:#555;">TDF v9.44</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
@@ -91,19 +89,19 @@
 
     <div id="songsMenu" class="full-menu">
         <div class="menu-content">
-            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                 <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
                 <button class="btn" onclick="closeMenus()">SLUIT X</button>
             </div>
             <div class="search-area">
-                <input type="text" id="songSearch" class="search-bar" placeholder="Zoek titel of tag..." oninput="render()">
+                <input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()">
                 <button class="btn" onclick="toggleCloud()">TAGS</button>
             </div>
             <div id="tagCloud"></div>
             <div class="menu-scroll" id="dbList"></div>
             <div class="menu-footer">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">IMPORT JSON</button>
-                <button class="btn" onclick="exportFullDB()">EXPORT DB</button>
+                <button class="btn" style="background:#222;" onclick="document.getElementById('fileInput').click()">IMPORT JSON</button>
+                <button class="btn" style="background:#222;" onclick="exportFullDB()">EXPORT DB</button>
             </div>
         </div>
         <input type="file" id="fileInput" style="display:none;" onchange="handleImport(this)">
@@ -111,7 +109,7 @@
 
     <div id="setMenu" class="full-menu">
         <div class="menu-content">
-            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                 <button class="btn" onclick="toggleSetEdit()">EDIT</button>
                 <button class="btn" onclick="closeMenus()">X</button>
             </div>
@@ -127,16 +125,18 @@
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
 
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
+        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
+        function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
         
-        // --- IMPORT / EXPORT (v9.31 Stijl) ---
         function handleImport(input) {
             const file = input.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if(Array.isArray(parsed)) { db = parsed; save(); render(); alert(db.length + " liedjes geladen!"); }
-                } catch(err) { alert("Geen geldig TDF bestand."); }
+                    if(Array.isArray(parsed)) { db = parsed; save(); render(); alert(db.length + " songs geladen!"); }
+                } catch(err) { alert("Fout bij laden JSON."); }
                 input.value = "";
             };
             reader.readAsText(file);
@@ -146,9 +146,7 @@
             const data = JSON.stringify(db);
             const blob = new Blob([data], {type: "application/json"});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `tdf_backup_${new Date().toLocaleDateString()}.json`;
-            a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `tdf_backup.json`; a.click();
         }
 
         function render() {
@@ -188,14 +186,13 @@
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="edit-only"><button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button><button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button></div>
+                d.innerHTML = `<div class="edit-only" style="flex-direction:column; margin-right:15px;"><button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button><button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button></div>
                     <div style="flex:1" onclick="loadSongByIndex(${i})"><span style="font-size:1.4rem; font-weight:bold;">${i+1}. ${s.title}</span></div>
                     <button class="btn edit-only" style="color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
             });
         }
 
-        // --- CORE LOGICA ---
         function createWheelNodes() { const s = document.getElementById('wheelStrip'); s.innerHTML=""; for(let i=0;i<=150;i++){ const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(1); s.appendChild(d); } }
         function initTouchWheel() {
             const w = document.getElementById('thumbWheel'); let sy = 0, ss = 0;
@@ -212,13 +209,10 @@
         function exitLiveView() { if(cur){cur.scrollSpeed=currentSpeed;save();} document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; }
         function toggleScroll() { isScrolling=!isScrolling; document.getElementById('playBtn').innerText=isScrolling?"⏸":"▶"; }
         function updateClock() { document.getElementById('liveClock').innerText=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
-        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
         function toggleSetEdit() { setEditMode=!setEditMode; document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); render(); }
         function toggleSelectMode() { selectMode=!selectMode; selectedSongs=[]; render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs=selectedSongs.filter(s=>s!==t); else selectedSongs.push(t); }
         function moveSetItem(i,d) { let t=i+d; if(t>=0&&t<setlist.length){ [setlist[i],setlist[t]]=[setlist[t],setlist[i]]; save(); render(); } }
-        function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
         function loadSongByIndex(i) { cur=setlist[i]; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function loadSongByName(t) { cur=db.find(x=>x.title===t); document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
     </script>
