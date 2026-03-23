@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.30</title>
+    <title>TDF Digital v8.40</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -15,44 +15,50 @@
         .logo-box { width: 60px; height: 60px; margin-right: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; text-shadow: 0 0 5px var(--amber); }
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-shadow: 0 0 5px var(--amber); font-size: 1rem; }
         .btn-green { background: #25D366; color: white; border: none; }
-        .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 6px; }
+        .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 8px; }
 
         .search-wrap { padding: 10px 15px; background: #000; border-bottom: 1px solid #222; }
-        .search-input { width: 100%; background: #1c1c1e; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 1.1rem; outline: none; }
+        .search-input { width: 100%; background: #1c1c1e; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 10px; font-size: 1.2rem; outline: none; }
 
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; }
-        #lyricsArea { height: 100%; overflow-y: auto; padding: 30px; color: #000; font-size: 1.5rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
-        #editorArea { display: none; width: 100%; height: 65%; padding: 20px; font-size: 1.4rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
+        #lyricsArea { height: 100%; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
+        #editorArea { display: none; width: 100%; height: 65%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
         
-        #tagEditor { display: none; background: #222; padding: 10px 20px; border-top: 2px solid var(--amber); height: 35%; flex-direction: column; gap: 8px; z-index: 4000; }
-        #tagSuggestions { display: flex; gap: 8px; overflow-x: auto; min-height: 35px; padding-bottom: 5px; }
-        .tag-sug { background: #444; padding: 6px 14px; border-radius: 15px; font-size: 0.85rem; border: 1px solid #666; white-space: nowrap; }
+        #tagEditor { display: none; background: #222; padding: 15px 25px; border-top: 3px solid var(--amber); height: 35%; flex-direction: column; gap: 10px; z-index: 4000; }
+        #tagSuggestions { display: flex; gap: 10px; overflow-x: auto; min-height: 40px; padding-bottom: 8px; }
+        .tag-sug { background: #444; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; border: 1px solid #666; white-space: nowrap; }
 
-        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 100px 40px; }
+        /* LIVE VIEW XL */
+        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 50px 400px 50px; }
+        #liveView .lyric-line { font-size: 3.5rem; line-height: 1.2; margin-bottom: 40px; color: #eee; font-weight: bold; }
+        #liveView .chord-row { font-size: 4rem; height: 5rem; margin-bottom: 10px; color: var(--amber); }
+        
         #liveView.only-chords .lyric-line { display: none; }
-        #liveView.only-chords .chord-row { font-size: 4.5rem; height: 5.5rem; margin-bottom: 40px; }
-        .live-controls { position: fixed; top: 0; left: 0; width: 100%; background: rgba(20,20,20,0.95); padding: 15px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 1px solid #333; }
-        .scroll-slider { -webkit-appearance: none; flex: 1; margin: 0 20px; height: 12px; background: #333; border-radius: 6px; }
-
-        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
-        .full-menu.open { left: 0; }
-        .menu-header { padding: 15px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .menu-scroll { flex: 1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch; }
+        #liveView.only-chords .chord-row { font-size: 6rem; height: 7.5rem; margin-bottom: 60px; }
         
-        .row-item { background: #1c1c1e; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; }
-        .row-name { flex: 1; padding: 18px; font-size: 1.6rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .drag-handle { padding: 18px; color: var(--amber); font-size: 2rem; cursor: move; user-select: none; }
-        .alpha-divider { padding: 15px 10px 5px 10px; color: var(--amber); font-size: 0.9rem; font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 10px; text-transform: uppercase; }
+        .live-controls { position: fixed; top: 0; left: 0; width: 100%; background: rgba(15,15,15,0.9); padding: 20px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); }
+        .scroll-slider { -webkit-appearance: none; flex: 1; margin: 0 30px; height: 15px; background: #333; border-radius: 10px; outline: none; border: 1px solid #444; }
+        .scroll-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 35px; height: 35px; background: var(--amber); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--amber); }
 
-        .chord-row { color: var(--red); font-weight: bold; height: 1.5rem; position: relative; }
+        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; }
+        .full-menu.open { left: 0; }
+        .menu-header { padding: 20px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .menu-scroll { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        
+        .row-item { background: #1c1c1e; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; display: flex; align-items: center; }
+        .row-name { flex: 1; padding: 22px; font-size: 1.8rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .drag-handle { padding: 22px; color: var(--amber); font-size: 2.2rem; cursor: move; user-select: none; }
+        .alpha-divider { padding: 20px 10px 8px 10px; color: var(--amber); font-size: 1rem; font-weight: bold; border-bottom: 2px solid #333; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .chord-row { color: var(--red); font-weight: bold; height: 1.8rem; position: relative; }
         .chord-item { position: absolute; }
-        .lyric-line { margin-bottom: 18px; display: block; white-space: pre; }
+        .lyric-line { margin-bottom: 22px; display: block; white-space: pre; }
 
-        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 10px; display: none; z-index: 50000; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .joy-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 65px; height: 65px; border-radius: 50%; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
-        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 25px; font-weight: bold; display: none; z-index: 60000; }
+        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 15px; padding: 12px; display: none; z-index: 50000; border: 2px solid #444; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
+        .joy-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 70px; height: 70px; border-radius: 50%; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; }
+        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 15px 30px; border-radius: 30px; font-weight: bold; display: none; z-index: 60000; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -61,10 +67,10 @@
         <div style="display:flex; align-items:center;">
             <div class="logo-box" onclick="location.reload()"><img src="logo.png" alt="TDF"></div>
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
-            <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
+            <button class="btn" style="margin-left:10px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.30</div>
-        <div style="display:flex; gap:8px;">
+        <div id="title" style="font-weight:bold; font-size: 1.2rem; text-align:center; flex:1;">TDF v8.40</div>
+        <div style="display:flex; gap:10px;">
             <button class="btn" style="border-color:#34c759; color:#34c759;" onclick="enterLiveView()">LIVE</button>
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -74,19 +80,19 @@
     <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Database v8.30 geladen. Kies een song of importeer bestanden.</div>
+        <div id="lyricsArea">Kies een song. Snelheid wordt opgeslagen bij exit LIVE mode.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
             <div id="tagSuggestions"></div>
-            <input type="text" id="tagInput" placeholder="Tags (komma-gescheiden)..." oninput="updateSuggestions()">
+            <input type="text" id="tagInput" placeholder="Tags..." oninput="updateSuggestions()">
         </div>
     </div>
 
     <div id="liveView">
         <div class="live-controls">
-            <button class="btn" onclick="exitLiveView()">STOP</button>
-            <input type="range" id="scrollSpeed" class="scroll-slider" min="0" max="10" step="0.5" value="0">
-            <button class="btn" onclick="toggleOnlyChords()">CHORDS</button>
+            <button class="btn-red" style="padding:10px 25px;" onclick="exitLiveView()">STOP</button>
+            <input type="range" id="scrollSpeed" class="scroll-slider" min="0" max="15" step="0.1" value="0">
+            <button class="btn" id="chordToggleBtn" onclick="toggleOnlyChords()">CHORDS</button>
         </div>
         <div id="liveContent"></div>
     </div>
@@ -95,7 +101,7 @@
         <div class="menu-header"><h2>SONGS</h2><button class="btn" onclick="closeMenus()">X</button></div>
         <div class="search-wrap"><input type="text" id="songSearch" class="search-input" placeholder="Zoek op titel of tag..." oninput="render()"></div>
         <div class="menu-scroll" id="dbList"></div>
-        <div style="padding:15px; background:#111; display:flex; gap:8px;">
+        <div style="padding:20px; background:#111; display:flex; gap:10px;">
             <button class="btn" style="flex:1;" onclick="document.getElementById('impAny').click()">IMPORT</button>
             <button class="btn" style="flex:1;" onclick="exportDB()">EXPORT</button>
             <button class="btn-red" style="flex:1;" onclick="cleanDatabase()">CLEAN</button>
@@ -104,22 +110,19 @@
 
     <div id="setMenu" class="full-menu">
         <div class="menu-header">
-            <div style="display:flex; gap:8px;">
-                <button class="btn-green" style="padding:8px 15px; border-radius:6px; font-weight:bold;" onclick="pasteFromWA()">PLAK WA</button>
-                <button class="btn" onclick="addCustomRow()">+ REGEL</button>
-            </div>
+            <button class="btn-green" onclick="pasteFromWA()">PLAK WA</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
-        <div style="padding:15px; background:#111; display:flex; gap:8px;">
+        <div style="padding:20px; background:#111; display:flex; gap:10px;">
             <button class="btn" style="flex:1;" onclick="document.getElementById('impSet').click()">LOAD SET</button>
             <button class="btn" style="flex:1;" onclick="exportSet()">SAVE SET</button>
         </div>
     </div>
 
-    <div id="joyPad" class="draggable-box" style="top:150px; left:30px;">
-        <div class="drag-handle" style="font-size:11px; padding:5px; background:#333; border-radius:4px; margin-bottom:8px;">DRAG</div>
-        <div style="display:grid; grid-template-areas: '. u .' 'l . r' '. d .'; gap:10px;">
+    <div id="joyPad" class="draggable-box" style="top:200px; left:40px;">
+        <div class="drag-handle" style="font-size:12px; padding:8px; background:#333; border-radius:6px; margin-bottom:10px; text-align:center;">DRAG</div>
+        <div style="display:grid; grid-template-areas: '. u .' 'l . r' '. d .'; gap:12px;">
             <button class="joy-btn" style="grid-area:u" onclick="moveCursorVertical(-1)">↑</button>
             <button class="joy-btn" style="grid-area:l" onclick="moveCursorHorizontal(-1)">←</button>
             <button class="joy-btn" style="grid-area:r" onclick="moveCursorHorizontal(1)">→</button>
@@ -150,14 +153,14 @@
                 const first = s.title[0].toUpperCase();
                 if (first !== currentLetter && !query) { currentLetter = first; const d = document.createElement('div'); d.className="alpha-divider"; d.innerText=first; dbl.appendChild(d); }
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="row-name" onclick="loadSong('${s.title.replace(/'/g,"\\'")}')">${s.title}</div><button class="btn" style="margin-right:8px" onclick="editInDb('${s.title.replace(/'/g,"\\'")}')">✎</button><button class="btn" onclick="addToSet('${s.title.replace(/'/g,"\\'")}')">+</button>`;
+                d.innerHTML = `<div class="row-name" onclick="loadSong('${s.title.replace(/'/g,"\\'")}')">${s.title}</div><button class="btn" style="margin-right:10px" onclick="editInDb('${s.title.replace(/'/g,"\\'")}')">✎</button><button class="btn" onclick="addToSet('${s.title.replace(/'/g,"\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
 
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item"; d.draggable = true;
-                d.innerHTML = `<div class="drag-handle">≡</div><div class="row-name" onclick="loadSong('${s.title.replace(/'/g,"\\'")}')">${i+1}. ${s.title}</div><button class="btn-red" style="margin-right:8px; padding:10px;" onclick="removeFromSet(${i})">X</button>`;
+                d.innerHTML = `<div class="drag-handle">≡</div><div class="row-name" onclick="loadSong('${s.title.replace(/'/g,"\\'")}')">${i+1}. ${s.title}</div><button class="btn-red" style="margin-right:10px; padding:12px;" onclick="removeFromSet(${i})">X</button>`;
                 d.ondragstart = () => { draggingIdx = i; d.style.opacity = "0.4"; };
                 d.ondragend = () => { d.style.opacity = "1"; draggingIdx = null; };
                 d.ondragover = (e) => e.preventDefault();
@@ -166,7 +169,15 @@
             });
         }
 
-        function loadSong(t) { cur = db.find(x=>x.title===t) || setlist.find(x=>x.title===t); if(cur) { document.getElementById('title').innerText = cur.title; drawLyrics(document.getElementById('lyricsArea')); closeMenus(); } }
+        function loadSong(t) { 
+            cur = db.find(x=>x.title===t) || setlist.find(x=>x.title===t); 
+            if(cur) { 
+                document.getElementById('title').innerText = cur.title; 
+                drawLyrics(document.getElementById('lyricsArea')); 
+                closeMenus(); 
+            } 
+        }
+        
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("Toegevoegd!"); } }
         function removeFromSet(i) { setlist.splice(i, 1); save(); render(); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 1000); }
@@ -189,17 +200,54 @@
             container.innerHTML = h; container.scrollTop = 0;
         }
 
-        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display = 'block'; drawLyrics(document.getElementById('liveContent')); }
-        function exitLiveView() { document.getElementById('liveView').style.display = 'none'; document.getElementById('scrollSpeed').value = 0; }
-        function toggleOnlyChords() { document.getElementById('liveView').classList.toggle('only-chords'); }
-        function startAutoScrollLoop() { const lv = document.getElementById('liveView'); const sp = document.getElementById('scrollSpeed'); function step() { if(lv.style.display==='block' && sp.value > 0) lv.scrollTop += parseFloat(sp.value)/3; requestAnimationFrame(step); } requestAnimationFrame(step); }
+        function enterLiveView() { 
+            if(!cur) return; 
+            document.getElementById('liveView').style.display = 'block'; 
+            drawLyrics(document.getElementById('liveContent'));
+            // Zet slider op opgeslagen snelheid
+            document.getElementById('scrollSpeed').value = cur.scrollSpeed || 0;
+        }
+
+        function exitLiveView() { 
+            if(cur) {
+                // Sla huidige snelheid op bij het liedje
+                const speed = document.getElementById('scrollSpeed').value;
+                cur.scrollSpeed = parseFloat(speed);
+                // Update ook in de hoofd-database als het daaruit komt
+                let dbIdx = db.findIndex(s => s.title === cur.title);
+                if(dbIdx !== -1) db[dbIdx].scrollSpeed = cur.scrollSpeed;
+                save();
+                showToast("Snelheid bewaard: " + speed);
+            }
+            document.getElementById('liveView').style.display = 'none'; 
+            document.getElementById('scrollSpeed').value = 0; 
+        }
+
+        function toggleOnlyChords() { 
+            const lv = document.getElementById('liveView');
+            lv.classList.toggle('only-chords');
+            document.getElementById('chordToggleBtn').innerText = lv.classList.contains('only-chords') ? "LYRICS" : "CHORDS";
+        }
+
+        function startAutoScrollLoop() { 
+            const lv = document.getElementById('liveView'); 
+            const sp = document.getElementById('scrollSpeed'); 
+            function step() { 
+                if(lv.style.display==='block' && sp.value > 0) {
+                    const actualSpeed = Math.pow(parseFloat(sp.value), 1.5) / 10;
+                    lv.scrollTop += actualSpeed; 
+                }
+                requestAnimationFrame(step); 
+            } 
+            requestAnimationFrame(step); 
+        }
 
         async function importAnyFile(e) {
             const files = e.target.files; if(!files.length) return;
             for(let f of files) {
                 const content = await f.text(); const ext = f.name.split('.').pop().toLowerCase();
                 if(ext === 'json') { const d = JSON.parse(content); if(Array.isArray(d)) db=[...db, ...d]; else db.push(d); }
-                else { let t = f.name.replace(/\.[^/.]+$/, ""); const m = content.match(/\{(?:title|t):\s*(.*)\}/i); if(m) t=m[1]; db.push({title:t, content:content, tags:""}); }
+                else { let t = f.name.replace(/\.[^/.]+$/, ""); const m = content.match(/\{(?:title|t):\s*(.*)\}/i); if(m) t=m[1]; db.push({title:t, content:content, tags:"", scrollSpeed:0}); }
             }
             save(); render(); showToast("Geïmporteerd!");
         }
@@ -223,10 +271,11 @@
 
         function moveCursorHorizontal(n) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + n; ed.focus(); }
         function moveCursorVertical(n) { const ed = document.getElementById('editorArea'); const lines = ed.value.split('\n'); const pos = ed.selectionStart; let curL = ed.value.substr(0, pos).split('\n').length - 1; let tarL = Math.max(0, Math.min(lines.length - 1, curL + n)); let newP = 0; for(let i=0; i<tarL; i++) newP += lines[i].length + 1; ed.selectionStart = ed.selectionEnd = newP; ed.focus(); }
-        function initDrag(el) { const h = el.querySelector('.drag-handle'); let p1=0,p2=0,p3=0,p4=0; h.onmousedown = h.ontouchstart = (e) => { e.preventDefault(); p3=e.clientX||e.touches[0].clientX; p4=e.clientY||e.touches[0].clientY; document.onmouseup=document.ontouchend=()=>{document.onmousemove=document.ontouchmove=null;}; document.onmousemove=document.ontouchmove=(me)=>{p1=p3-(me.clientX||me.touches[0].clientX); p2=p4-(me.clientY||me.touches[0].clientY); p3=me.clientX||me.touches[0].clientX; p4=me.clientY||me.touches[0].clientY; el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px";}} }
+        function initDrag(el) { const h = el.querySelector('.drag-handle'); let p1=0,p2=0,p3=0,p4=0; h.onmousedown = h.ontouchstart = (e) => { e.preventDefault(); p3=e.clientX||(e.touches?e.touches[0].clientX:0); p4=e.clientY||(e.touches?e.touches[0].clientY:0); document.onmouseup=document.ontouchend=()=>{document.onmousemove=document.ontouchmove=null;}; document.onmousemove=document.ontouchmove=(me)=>{p1=p3-(me.clientX||(me.touches?me.touches[0].clientX:0)); p2=p4-(me.clientY||(me.touches?me.touches[0].clientY:0)); p3=me.clientX||(me.touches?me.touches[0].clientX:0); p4=me.clientY||(me.touches?me.touches[0].clientY:0); el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px";}} }
         function exportDB() { download(db, 'TDF_Database'); }
         function exportSet() { const name = prompt("Naam:"); if (name) download(setlist, name); }
         function download(d, n) { const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = n + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500); }
+        function importFiles(e, type) { const r = new FileReader(); r.onload = (p) => { try { const data = JSON.parse(p.target.result); if(type==='db') db = [...db, ...data]; else setlist = data; save(); render(); } catch(err) {} }; r.readAsText(e.target.files[0]); }
         function cleanDatabase() { const unique = new Set(); const cleaned = []; db.forEach(s => { if(s.title && !unique.has(s.title.toLowerCase())) { unique.add(s.title.toLowerCase()); cleaned.push(s); }}); db = cleaned; save(); render(); showToast("Clean klaar!"); }
     </script>
 </body>
