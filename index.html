@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.40</title>
+    <title>TDF Digital v9.42</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,25 +28,18 @@
         #tagCloud { display: none; padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; margin-right: 8px; cursor: pointer; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
-        .bulk-hint { display: none; background: var(--amber); color: #000; padding: 8px; text-align: center; font-weight: bold; font-size: 0.8rem; }
-        .is-selecting .bulk-hint { display: block; }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
         .wheel-num { height: 28px; line-height: 28px; font-size: 1.1rem; color: #444; }
         .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; }
-        .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); z-index: 5; pointer-events: none; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; }
-        .select-check { display: none; transform: scale(1.8); margin-right: 20px; }
-        .is-selecting .select-check { display: block; }
-
         .edit-only { display: none; }
         .is-editing .edit-only { display: flex; flex-direction: column; margin-right: 15px; }
-
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 200px 35px; }
     </style>
 </head>
@@ -57,7 +50,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.40</div>
+        <div id="title" style="font-weight:bold; color:#555;">TDF v9.42</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
@@ -66,7 +59,7 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Selecteer een liedje.</div>
+        <div id="lyricsArea">Open SONGS om te importeren of liedjes te laden.</div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
             <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
@@ -76,32 +69,27 @@
     </div>
 
     <div id="liveFooter">
-        <button class="btn" style="border-radius:50%; width:55px; height:55px; font-size:1.5rem;" onclick="exitLiveView()">X</button>
-        <button id="playBtn" class="btn" style="width:75px; font-size:1.8rem; height:55px;" onclick="toggleScroll()">▶</button>
-        <div class="wheel-wrap" id="thumbWheel">
-            <div class="wheel-overlay"></div>
-            <div class="wheel-strip" id="wheelStrip"></div>
-        </div>
-        <div id="liveClock" style="font-weight:bold; font-size:1.3rem; color:var(--amber);">00:00</div>
+        <button class="btn" style="border-radius:50%; width:55px; height:55px;" onclick="exitLiveView()">X</button>
+        <button id="playBtn" class="btn" style="width:75px; height:55px; font-size:1.5rem;" onclick="toggleScroll()">▶</button>
+        <div class="wheel-wrap" id="thumbWheel"><div class="wheel-overlay" style="position:absolute; width:100%; height:30px; top:27px; border-top:1px solid var(--amber); border-bottom:1px solid var(--amber); background:rgba(255,191,0,0.05); z-index:5; pointer-events:none;"></div><div class="wheel-strip" id="wheelStrip"></div></div>
+        <div id="liveClock" style="font-weight:bold; color:var(--amber);">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <button class="btn" onclick="triggerImport()">IMPORT JSON</button>
             <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div class="search-area">
-            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()">
-            <button class="btn" onclick="toggleCloud()">TAGS</button>
-        </div>
+        <div class="search-area"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()"><button class="btn" onclick="toggleCloud()">TAGS</button></div>
         <div id="tagCloud"></div>
-        <div class="bulk-hint">KLIK OP EEN TAG HIERBOVEN VOOR BULK-EDIT</div>
         <div class="menu-scroll" id="dbList"></div>
+        <input type="file" id="fileInput" style="display:none;" onchange="handleFile(this)">
     </div>
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn" id="setEditToggle" onclick="toggleSetEdit()">EDIT</button>
+            <button class="btn" onclick="toggleSetEdit()">EDIT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
@@ -115,56 +103,25 @@
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
 
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
-        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
-        function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
-        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; document.getElementById('songsMenu').classList.toggle('is-selecting', selectMode); if(selectMode) document.getElementById('tagCloud').style.display = 'flex'; render(); }
-        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); render(); }
-
-        function moveSetItem(index, direction) {
-            let target = index + direction;
-            if (target >= 0 && target < setlist.length) {
-                [setlist[index], setlist[target]] = [setlist[target], setlist[index]];
-                save(); render();
-            }
-        }
-
-        function createChordBar() {
-            const bar = document.getElementById('chordBar');
-            ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => {
-                const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c;
-                b.onclick = () => {
-                    const a = document.getElementById('editorArea'); const s = a.selectionStart;
-                    a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd);
-                    a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2;
-                }; bar.appendChild(b);
-            });
-        }
-
-        function createWheelNodes() {
-            const strip = document.getElementById('wheelStrip'); strip.innerHTML = "";
-            for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); }
-        }
-
-        function initTouchWheel() {
-            const wheel = document.getElementById('thumbWheel');
-            let startY = 0, startS = 0;
-            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive: false});
-            wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(0, Math.min(15, startS + ((startY - e.touches[0].clientY) / 15))); updateWheelPosition(); e.preventDefault(); }, {passive: false});
-        }
-
-        function updateWheelPosition() {
-            const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${28.5 - (currentSpeed * 280)}px)`;
-            const activeIdx = Math.round(currentSpeed * 10);
-            strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx));
-        }
-
-        function scrollEngine() {
-            const lv = document.getElementById('liveView');
-            if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
-                scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc);
-            }
-            requestAnimationFrame(scrollEngine);
+        
+        // --- ROBUUSTE IMPORT (v9.31 stijl) ---
+        function triggerImport() { document.getElementById('fileInput').click(); }
+        function handleFile(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(Array.isArray(parsed)) {
+                        db = parsed;
+                        save(); render();
+                        alert(db.length + " songs geladen!");
+                    }
+                } catch(err) { alert("JSON fout!"); }
+                input.value = "";
+            };
+            reader.readAsText(file);
         }
 
         function render() {
@@ -182,10 +139,11 @@
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
                 const isSelected = selectedSongs.includes(s.title);
-                d.innerHTML = `<input type="checkbox" class="select-check" ${isSelected ? 'checked' : ''} onchange="toggleSongSelection('${s.title.replace(/'/g,"\\")}')">
-                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g,"\\")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g,"\\")+"')" }">
+                d.innerHTML = `<input type="checkbox" style="display:${selectMode?'block':'none'}; transform:scale(1.8); margin-right:20px;" ${isSelected?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g,"\\")}')">
+                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g,"\\")+"');render();" : "loadSongByName('"+s.title.replace(/'/g,"\\")+"')" }">
                         <span style="font-size:1.4rem; font-weight:bold; display:block;">${s.title}</span><span style="font-size:0.8rem; color:#666;">${s.tags||''}</span>
-                    </div><button class="btn" style="display:${selectMode?'none':'block'}" onclick="setlist.push(JSON.parse(JSON.stringify(s))); save(); render();">+</button>`;
+                    </div>
+                    <button class="btn" style="display:${selectMode?'none':'block'}" onclick="setlist.push(JSON.parse(JSON.stringify(s))); save(); render();">+</button>`;
                 dbl.appendChild(d);
             });
 
@@ -193,35 +151,44 @@
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
                 p.innerText = t; p.onclick = () => {
                     if(selectMode) {
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let tags = s.tags ? s.tags.split(',').map(x=>x.trim()) : []; if(!tags.includes(t)) tags.push(t); s.tags = tags.join(', '); } });
+                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let tags = s.tags?s.tags.split(',').map(x=>x.trim()):[]; if(!tags.includes(t)) tags.push(t); s.tags=tags.join(', '); } });
                         save(); toggleSelectMode();
-                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
+                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x=>x!==t); else activeTags.push(t); render(); }
                 }; cloud.appendChild(p);
             });
 
             const setl = document.getElementById('setList'); setl.innerHTML = "";
-            setlist.forEach((s, i) => { 
-                const d = document.createElement('div'); d.className = "row-item"; 
-                d.innerHTML = `
-                    <div class="edit-only">
-                        <button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button>
-                        <button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button>
-                    </div>
-                    <div style="flex:1" onclick="loadSongByIndex(${i})"><span class="song-title">${i+1}. ${s.title}</span></div>
-                    <button class="btn edit-only" style="color:red; border-color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`; 
-                setl.appendChild(d); 
+            setlist.forEach((s, i) => {
+                const d = document.createElement('div'); d.className = "row-item";
+                d.innerHTML = `<div class="edit-only" style="flex-direction:column; margin-right:15px;"><button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button><button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button></div>
+                    <div style="flex:1" onclick="loadSongByIndex(${i})"><span style="font-size:1.4rem; font-weight:bold;">${i+1}. ${s.title}</span></div>
+                    <button class="btn edit-only" style="color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                setl.appendChild(d);
             });
         }
 
-        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; }
-        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); }
-        function drawLyrics(id) { const container=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l => { let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); container.innerHTML=h; container.scrollTop=0; scrollAcc=0; }
-        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
-        function exitLiveView() { if(cur){cur.scrollSpeed = currentSpeed; save();} document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; }
-        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
-        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
-        function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
+        function createWheelNodes() { const s = document.getElementById('wheelStrip'); s.innerHTML=""; for(let i=0;i<=150;i++){ const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(1); s.appendChild(d); } }
+        function initTouchWheel() {
+            const w = document.getElementById('thumbWheel'); let sy = 0, ss = 0;
+            w.addEventListener('touchstart', (e)=>{ sy=e.touches[0].clientY; ss=currentSpeed; e.preventDefault(); }, {passive:false});
+            w.addEventListener('touchmove', (e)=>{ currentSpeed=Math.max(0,Math.min(15,ss+((sy-e.touches[0].clientY)/15))); updateWheelPosition(); e.preventDefault(); }, {passive:false});
+        }
+        function updateWheelPosition() { const s=document.getElementById('wheelStrip'); s.style.transform=`translateY(${28.5-(currentSpeed*280)}px)`; s.querySelectorAll('.wheel-num').forEach((n,i)=>n.classList.toggle('active', i===Math.round(currentSpeed*10))); }
+        function scrollEngine() { const lv=document.getElementById('liveView'); if(lv.style.display==='block'&&isScrolling&&currentSpeed>0){ scrollAcc+=(currentSpeed*0.4); lv.scrollTop=Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
+        function createChordBar() { const bar=document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c=>{ const b=document.createElement('div'); b.className='chord-btn'; b.innerText=c; b.onclick=()=>{ const a=document.getElementById('editorArea'); const s=a.selectionStart; a.value=a.value.substring(0,s)+`[${c}]`+a.value.substring(a.selectionEnd); a.focus(); a.selectionStart=a.selectionEnd=s+c.length+2; }; bar.appendChild(b); }); }
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; }
+        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; drawLyrics('lyricsArea'); }
+        function drawLyrics(id) { const c=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l=>{ let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length,v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(ch=>{ r+=`<span style="position:absolute; left:${ch.p}ch; color:var(--amber); font-weight:bold;">${ch.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); c.innerHTML=h; c.scrollTop=0; scrollAcc=0; }
+        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; document.getElementById('playBtn').innerText="▶"; }
+        function exitLiveView() { if(cur){cur.scrollSpeed=currentSpeed;save();} document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; }
+        function toggleScroll() { isScrolling=!isScrolling; document.getElementById('playBtn').innerText=isScrolling?"⏸":"▶"; }
+        function updateClock() { document.getElementById('liveClock').innerText=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
+        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
+        function toggleSetEdit() { setEditMode=!setEditMode; document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); render(); }
+        function toggleSelectMode() { selectMode=!selectMode; selectedSongs=[]; render(); }
+        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs=selectedSongs.filter(s=>s!==t); else selectedSongs.push(t); }
+        function moveSetItem(i,d) { let t=i+d; if(t>=0&&t<setlist.length){ [setlist[i],setlist[t]]=[setlist[t],setlist[i]]; save(); render(); } }
         function loadSongByIndex(i) { cur=setlist[i]; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function loadSongByName(t) { cur=db.find(x=>x.title===t); document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
     </script>
