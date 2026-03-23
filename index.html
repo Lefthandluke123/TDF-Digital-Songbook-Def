@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.42</title>
+    <title>TDF Digital v9.43</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -45,7 +45,6 @@
         .select-check { display: none; transform: scale(1.8); margin-right: 20px; }
         .is-selecting .select-check { display: block; }
 
-        /* FIX: Editmode visibility */
         .edit-only { display: none !important; }
         .is-editing .edit-only { display: flex !important; flex-direction: column; margin-right: 15px; }
 
@@ -59,7 +58,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.42</div>
+        <div id="title" style="font-weight:bold; color:#555;">TDF v9.43</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
@@ -197,14 +196,17 @@
                 const sTags = s.tags ? s.tags.split(',').map(t => t.trim().toLowerCase()) : [];
                 const mTags = activeTags.every(at => sTags.includes(at.toLowerCase()));
                 return mSearch && (selectMode || mTags);
-            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach((s, idx) => {
                 const d = document.createElement('div'); d.className = "row-item";
                 const isSelected = selectedSongs.includes(s.title);
                 const safeTitle = s.title.replace(/'/g, "\\'");
-                d.innerHTML = `<input type="checkbox" class="select-check" ${isSelected ? 'checked' : ''} onchange="toggleSongSelection('${safeTitle}')">
+                
+                d.innerHTML = `
+                    <input type="checkbox" class="select-check" ${isSelected ? 'checked' : ''} onchange="toggleSongSelection('${safeTitle}')">
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+safeTitle+"'); render();" : "loadSongByName('"+safeTitle+"')" }">
                         <span style="font-size:1.4rem; font-weight:bold; display:block;">${s.title}</span><span style="font-size:0.8rem; color:#666;">${s.tags||''}</span>
-                    </div><button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${safeTitle}')">+</button>`;
+                    </div>
+                    <button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${safeTitle}')">+</button>`;
                 dbl.appendChild(d);
             });
 
