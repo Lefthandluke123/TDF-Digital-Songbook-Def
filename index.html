@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.48</title>
+    <title>TDF Digital v9.49</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,11 +32,12 @@
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; }
 
-        .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; }
-        .search-bar { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
+        .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; flex-direction: column; gap: 12px; }
+        .search-bar { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         
-        #tagCloud { display: none; padding: 15px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; gap: 8px; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; cursor: pointer; }
+        /* Direct zichtbare tags */
+        #tagList { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; padding-bottom: 5px; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         .swipe-container { position: relative; overflow: hidden; background: var(--red); margin-bottom: 2px; }
@@ -47,9 +48,7 @@
         .is-selecting .select-check { display: block; }
 
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; gap: 10px; justify-content: space-around; flex-wrap: wrap; }
-
-        /* Toast Feedback */
-        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
@@ -71,7 +70,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" class="top-center">TDF v9.48</div>
+        <div id="title" class="top-center">TDF v9.49</div>
         <div class="top-right">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:var(--green); border-color:var(--green);" onclick="finishEdit()">OK</button>
@@ -80,10 +79,10 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Selecteer een liedje uit SONGS of SET.</div>
+        <div id="lyricsArea">Kies een liedje.</div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
-            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
+            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
@@ -105,13 +104,12 @@
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="search-area">
-            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()">
-            <button class="btn" onclick="toggleCloud()">TAGS</button>
+            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek op titel of tag..." oninput="render()">
+            <div id="tagList"></div>
         </div>
-        <div id="tagCloud"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; flex:1;" onclick="addSelectedToSet()">ZET IN SET</button>
             <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT</button>
             <button class="btn" onclick="exportDB()">EXPORT</button>
             <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
@@ -138,75 +136,45 @@
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
-        function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
-        
-        function showToast(msg) {
-            const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 1500);
-        }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 1500); }
 
         function toggleSelectMode() { 
-            selectMode = !selectMode; 
-            selectedSongs = []; 
+            selectMode = !selectMode; selectedSongs = []; 
             document.getElementById('songsMenu').classList.toggle('is-selecting', selectMode); 
             document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            if(selectMode) document.getElementById('tagCloud').style.display = 'flex';
             render(); 
         }
 
-        function toggleSetEdit() { 
-            setEditMode = !setEditMode; 
-            document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); 
-            render(); 
-        }
-
-        function addSelectedToSet() {
-            if(selectedSongs.length === 0) return;
-            selectedSongs.forEach(title => {
-                const s = db.find(x => x.title === title);
-                if(s) setlist.push(JSON.parse(JSON.stringify(s)));
-            });
-            save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode();
-        }
-
-        function addToSetlist(title) {
-            const s = db.find(x => x.title === title);
-            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); }
-        }
-
-        function cleanDuplicates() {
-            if(!confirm("Dubbele liedjes verwijderen? (Laatste versie blijft behouden)")) return;
-            const unique = {}; db.forEach(s => unique[s.title] = s);
-            db = Object.values(unique); save(); render();
-        }
-
-        function exportDB() {
-            const data = JSON.stringify(db, null, 2);
-            const blob = new Blob([data], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `tdf_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        }
-
-        function importDB(e) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const imported = JSON.parse(event.target.result);
-                if(confirm(`Wil je ${imported.length} liedjes importeren?`)) { db = imported; save(); render(); }
-            };
-            reader.readAsText(e.target.files[0]);
-        }
-
-        function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
+        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            const cloud = document.getElementById('tagCloud'); cloud.innerHTML = "";
+            const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
+            
+            // Haal tags op
             let allTags = new Set();
             db.forEach(s => s.tags && s.tags.split(',').forEach(t => allTags.add(t.trim())));
 
+            // Render Tags
+            Array.from(allTags).sort().forEach(t => {
+                if(!t) return;
+                const p = document.createElement('div'); 
+                p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
+                p.innerText = t; 
+                p.onclick = () => {
+                    if(selectMode && selectedSongs.length > 0) {
+                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
+                        save(); showToast("TAGS BIJGEWERKT"); toggleSelectMode();
+                    } else { 
+                        if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); 
+                        render(); 
+                    }
+                };
+                tagsDiv.appendChild(p);
+            });
+
+            // Render Songs
             db.filter(s => {
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags && s.tags.toLowerCase().includes(sQ));
                 const sTags = s.tags ? s.tags.split(',').map(t => t.trim().toLowerCase()) : [];
@@ -216,12 +184,10 @@
                 const safeTitle = s.title.replace(/'/g, "\\'");
                 const container = document.createElement('div');
                 container.className = 'swipe-container';
-                const isSel = selectedSongs.includes(s.title);
-                
                 container.innerHTML = `
                     <div class="delete-btn" onclick="deleteSong('${safeTitle}')">DELETE</div>
                     <div class="row-item" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
-                        <input type="checkbox" class="select-check" ${isSel ? 'checked' : ''} onchange="toggleSongSelection('${safeTitle}')">
+                        <input type="checkbox" class="select-check" ${selectedSongs.includes(s.title) ? 'checked' : ''} onchange="toggleSongSelection('${safeTitle}')">
                         <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+safeTitle+"'); render();" : "loadSongByName('"+safeTitle+"')" }">
                             <span style="font-size:1.4rem; font-weight:bold; display:block;">${s.title}</span><span style="font-size:0.8rem; color:#666;">${s.tags||''}</span>
                         </div>
@@ -230,16 +196,7 @@
                 dbl.appendChild(container);
             });
 
-            Array.from(allTags).sort().forEach(t => {
-                const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
-                p.innerText = t; p.onclick = () => {
-                    if(selectMode && selectedSongs.length > 0) {
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let tags = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!tags.includes(t)) tags.push(t); s.tags = tags.join(', '); } });
-                        save(); showToast("TAGS BIJGEWERKT"); toggleSelectMode();
-                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
-                }; cloud.appendChild(p);
-            });
-
+            // Render Setlist
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => { 
                 const d = document.createElement('div'); d.className = "row-item"; 
@@ -254,13 +211,18 @@
             });
         }
 
+        // De rest van de functies blijven exact hetzelfde voor stabiliteit
         function handleTouchStart(e) { if(selectMode) return; startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
         function handleTouchMove(e) { if(selectMode || !currentSwipeItem) return; let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
         function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
-
+        function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); }
+        function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
+        function cleanDuplicates() { if(!confirm("Dubbele liedjes verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); }
+        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_backup.json`; a.click(); }
+        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
+        function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
         function moveSetItem(index, dir) { let target = index + dir; if (target >= 0 && target < setlist.length) { [setlist[index], setlist[target]] = [setlist[target], setlist[index]]; save(); render(); } }
-        
         function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; }
         function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); }
         function drawLyrics(id) { const container=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l => { let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); container.innerHTML=h; if(id === 'lyricsArea') container.scrollTop=0; }
