@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.15</title>
+    <title>TDF Digital v8.20</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,10 +26,9 @@
 
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; }
         #lyricsArea { height: 100%; overflow-y: auto; padding: 30px; color: #000; font-size: 1.5rem; line-height: 1.6; }
-        #editorArea { display: none; width: 100%; height: 75%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
+        #editorArea { display: none; width: 100%; height: 70%; padding: 30px; font-size: 1.5rem; border: none; font-family: monospace; background: #fcfcfc; color: #000; resize: none; }
         
-        /* Tag Editor & Suggesties */
-        #tagEditor { display: none; background: #222; padding: 10px 20px; border-top: 2px solid var(--amber); color: #fff; height: 25%; flex-direction: column; gap: 10px; }
+        #tagEditor { display: none; background: #222; padding: 10px 20px; border-top: 2px solid var(--amber); color: #fff; height: 30%; flex-direction: column; gap: 10px; z-index: 4000; }
         #tagSuggestions { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; min-height: 35px; white-space: nowrap; }
         .tag-sug { background: #444; color: #fff; padding: 4px 12px; border-radius: 15px; font-size: 0.85rem; cursor: pointer; border: 1px solid #666; }
         #tagInput { width: 100%; background: #000; border: 1px solid #444; color: var(--amber); padding: 12px; border-radius: 6px; font-size: 1rem; }
@@ -44,15 +43,15 @@
         .tag-pill { font-size: 0.75rem; color: var(--amber); background: rgba(255,191,0,0.1); padding: 2px 8px; border-radius: 4px; margin-left: 8px; border: 1px solid rgba(255,191,0,0.3); font-weight: normal; }
         .swiping-left { background: #400000 !important; transform: translateX(-15px); }
         
-        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 25px; font-weight: bold; display: none; z-index: 20000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        #toast { position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 25px; font-weight: bold; display: none; z-index: 20000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
 
         .chord-row { color: var(--red); font-weight: bold; height: 1.5rem; position: relative; }
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 18px; display: block; white-space: pre; }
 
-        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; }
+        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 12px; padding: 8px; display: none; z-index: 50000; box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid #444; }
         .drag-handle { color: rgba(255,255,255,0.6); text-align: center; font-size: 11px; cursor: move; padding: 6px; background: #2a2a2a; border-radius: 6px; margin-bottom: 8px; }
-        .joy-btn, .chord-glow-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .joy-btn, .chord-glow-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 60px; height: 60px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -63,7 +62,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.15</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.20</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
@@ -73,11 +72,11 @@
     <div id="toast">Gereed</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Gebruik de AUTO-COMPLETE bij het typen van tags.</div>
+        <div id="lyricsArea">JoyPad is hersteld voor nauwkeurige bewerking.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
             <div id="tagSuggestions"></div>
-            <input type="text" id="tagInput" placeholder="Typ tags (scheiden met komma)..." oninput="updateSuggestions()">
+            <input type="text" id="tagInput" placeholder="Tags (scheiden met komma)..." oninput="updateSuggestions()">
         </div>
     </div>
 
@@ -108,8 +107,20 @@
         </div>
     </div>
 
-    <div id="joyPad" class="draggable-box" style="bottom:25px; left:25px;"><div class="drag-handle">MOVE</div><div style="display:grid; grid-template-areas: '. u .' 'l . r' '. d .'; gap:6px;"><button class="joy-btn" style="grid-area:u" onclick="moveCursorVertical(-1)">↑</button><button class="joy-btn" style="grid-area:l" onclick="moveCursorHorizontal(-1)">←</button><button class="joy-btn" style="grid-area:r" onclick="moveCursorHorizontal(1)">→</button><button class="joy-btn" style="grid-area:d" onclick="moveCursorVertical(1)">↓</button></div></div>
-    <div id="chordStrip" class="draggable-box" style="bottom:25px; right:25px;"><div class="drag-handle">CHORDS</div><div id="chordBar" style="display:flex; flex-direction:column; gap:6px;"></div></div>
+    <div id="joyPad" class="draggable-box" style="top:150px; left:30px;">
+        <div class="drag-handle">MOVE</div>
+        <div style="display:grid; grid-template-areas: '. u .' 'l . r' '. d .'; gap:10px;">
+            <button class="joy-btn" style="grid-area:u" onclick="moveCursorVertical(-1)">↑</button>
+            <button class="joy-btn" style="grid-area:l" onclick="moveCursorHorizontal(-1)">←</button>
+            <button class="joy-btn" style="grid-area:r" onclick="moveCursorHorizontal(1)">→</button>
+            <button class="joy-btn" style="grid-area:d" onclick="moveCursorVertical(1)">↓</button>
+        </div>
+    </div>
+
+    <div id="chordStrip" class="draggable-box" style="top:150px; right:30px;">
+        <div class="drag-handle">CHORDS</div>
+        <div id="chordBar" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
 
     <input type="file" id="impAny" multiple style="display:none;" onchange="importAnyFile(event)">
     <input type="file" id="impSet" style="display:none;" onchange="importFiles(event, 'set')">
@@ -130,7 +141,6 @@
             const query = document.getElementById('songSearch').value.toLowerCase();
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             let currentLetter = "";
-            
             db.filter(s => {
                 const tags = s.tags ? s.tags.toLowerCase() : "";
                 return s.title.toLowerCase().includes(query) || tags.includes(query);
@@ -140,9 +150,8 @@
                     currentLetter = firstLetter;
                     const div = document.createElement('div'); div.className = "alpha-divider"; div.innerText = currentLetter; dbl.appendChild(div);
                 }
-                const idx = db.indexOf(s);
                 const tagHtml = s.tags ? s.tags.split(',').map(t => `<span class="tag-pill">${t.trim()}</span>`).join('') : "";
-                dbl.appendChild(createSwipeRow(s.title + tagHtml, () => load(s.title), () => deleteFromDb(idx), true, s.title));
+                dbl.appendChild(createSwipeRow(s.title + tagHtml, () => load(s.title), () => deleteFromDb(db.indexOf(s)), true, s.title));
             });
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => setl.appendChild(createSwipeRow(s.title, () => load(s.title), () => removeFromSet(i), false, i+1)));
@@ -151,11 +160,9 @@
         function createSwipeRow(html, clickFn, deleteFn, isDb, rawTitle) {
             const d = document.createElement('div'); d.className = "row-item";
             d.ontouchstart = (e) => { touchStartX = e.touches[0].clientX; };
-            d.ontouchmove = (e) => { if(touchStartX - e.touches[0].clientX > 30) d.classList.add('swiping-left'); else d.classList.remove('swiping-left'); };
-            d.ontouchend = (e) => { if(touchStartX - e.changedTouches[0].clientX > 80) deleteFn(); else d.classList.remove('swiping-left'); };
+            d.ontouchend = (e) => { if(touchStartX - e.changedTouches[0].clientX > 80) deleteFn(); };
             let prefixHtml = isDb ? "" : `<div style="width:40px; text-align:center; color:var(--amber); font-weight:bold;">${arguments[4]}</div>`;
-            let buttons = isDb ? `<button class="btn" style="margin-right:8px; padding:8px 12px;" onclick="event.stopPropagation(); editInDb('${rawTitle.replace(/'/g,"\\'")}')">✎</button>
-                                 <button class="btn" style="margin-right:10px; padding:8px 12px;" onclick="event.stopPropagation(); addToSet('${rawTitle.replace(/'/g,"\\'")}')">+</button>` : "";
+            let buttons = isDb ? `<button class="btn" style="margin-right:8px; padding:8px 12px;" onclick="event.stopPropagation(); editInDb('${rawTitle.replace(/'/g,"\\'")}')">✎</button><button class="btn" style="margin-right:10px; padding:8px 12px;" onclick="event.stopPropagation(); addToSet('${rawTitle.replace(/'/g,"\\'")}')">+</button>` : "";
             d.innerHTML = `${prefixHtml}<div class="row-name">${html}</div>${buttons}`;
             d.onclick = (e) => { if(e.target.tagName !== 'BUTTON') clickFn(); };
             return d;
@@ -163,35 +170,21 @@
 
         function editInDb(t) { cur = db.find(x => x.title === t); if(cur) { closeMenus(); startEdit(); } }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 1500); }
+        function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("Toegevoegd aan SET"); } }
 
-        function addToSet(t) { 
-            const s = db.find(x=>x.title===t); 
-            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("Toegevoegd aan SET"); } 
-        }
-
-        // AUTO-COMPLETE TAGS LOGICA
         function updateSuggestions() {
             const input = document.getElementById('tagInput');
             const currentVal = input.value.split(',').pop().trim().toLowerCase();
             const sugBox = document.getElementById('tagSuggestions');
             sugBox.innerHTML = "";
-            
             if(currentVal.length < 1) return;
-
             const allTags = new Set();
             db.forEach(s => { if(s.tags) s.tags.split(',').forEach(t => allTags.add(t.trim())); });
-
             Array.from(allTags).filter(t => t.toLowerCase().startsWith(currentVal)).forEach(t => {
-                const span = document.createElement('div');
-                span.className = "tag-sug";
-                span.innerText = t;
+                const span = document.createElement('div'); span.className = "tag-sug"; span.innerText = t;
                 span.onclick = () => {
-                    const parts = input.value.split(',');
-                    parts.pop();
-                    parts.push(" " + t);
-                    input.value = parts.join(',').trim() + ", ";
-                    input.focus();
-                    sugBox.innerHTML = "";
+                    const parts = input.value.split(','); parts.pop(); parts.push(" " + t);
+                    input.value = parts.join(',').trim() + ", "; input.focus(); sugBox.innerHTML = "";
                 };
                 sugBox.appendChild(span);
             });
@@ -201,11 +194,12 @@
             const files = e.target.files; if(!files || !files.length) return;
             let count = 0;
             for(let i = 0; i < files.length; i++) {
-                const file = files[i]; const ext = file.name.split('.').pop().toLowerCase();
+                const file = files[i];
                 try {
                     const content = await new Promise((res, rej) => {
                         const r = new FileReader(); r.onload = (p) => res(p.target.result); r.onerror = rej; r.readAsText(file);
                     });
+                    const ext = file.name.split('.').pop().toLowerCase();
                     if (ext === 'json') {
                         const data = JSON.parse(content); if(Array.isArray(data)) db = [...db, ...data]; else db.push(data);
                     } else {
@@ -220,9 +214,9 @@
             e.target.value = "";
         }
 
-        function deleteFromDb(idx) { if(confirm("Verwijderen uit database?")) { db.splice(idx, 1); save(); render(); } }
+        function deleteFromDb(idx) { if(confirm("Verwijderen?")) { db.splice(idx, 1); save(); render(); } }
         function removeFromSet(idx) { setlist.splice(idx, 1); save(); render(); }
-        function cleanDatabase() { const orig = db.length; const unique = new Set(); const cleaned = []; db.forEach(s => { if(s.title && !unique.has(s.title.toLowerCase())) { unique.add(s.title.toLowerCase()); cleaned.push(s); }}); db = cleaned; save(); render(); showToast("Clean klaar!"); }
+        function cleanDatabase() { const unique = new Set(); const cleaned = []; db.forEach(s => { if(s.title && !unique.has(s.title.toLowerCase())) { unique.add(s.title.toLowerCase()); cleaned.push(s); }}); db = cleaned; save(); render(); showToast("Clean klaar!"); }
 
         function load(t) {
             cur = db.find(x=>x.title === t) || setlist.find(x=>x.title === t);
@@ -283,16 +277,15 @@
             setlist = newSet; save(); render();
         }
 
-        function copySetWhatsApp() { navigator.clipboard.writeText("*SETLIST TDF*\n\n" + setlist.map((s,i) => (i+1)+". "+s.title).join("\n")); alert("Kopie!"); }
-        function addCustomRow() { const n = prompt("Tekst:"); if(n) { setlist.push({title: n, content: "", tags: ""}); save(); render(); } }
-        function buildChordStrip() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => { const b = document.createElement('button'); b.className = "chord-glow-btn"; b.style.cssText = "width:65px; height:45px; border-radius:8px; margin-bottom:5px;"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insert(`[${c}]`); }; bar.appendChild(b); }); }
+        function buildChordStrip() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","D","Dm","E","Em","F","G"].forEach(c => { const b = document.createElement('button'); b.className = "chord-glow-btn"; b.textContent = c; b.onmousedown = (e) => { e.preventDefault(); insert(`[${c}]`); }; bar.appendChild(b); }); }
         function insert(t) { const ed = document.getElementById('editorArea'); const s = ed.selectionStart; ed.value = ed.value.substring(0, s) + t + ed.value.substring(ed.selectionEnd); ed.selectionStart = ed.selectionEnd = s + t.length; ed.focus(); }
         function moveCursorHorizontal(n) { const ed = document.getElementById('editorArea'); ed.selectionStart = ed.selectionEnd = ed.selectionStart + n; ed.focus(); }
         function moveCursorVertical(n) { const ed = document.getElementById('editorArea'); const lines = ed.value.split('\n'); const pos = ed.selectionStart; let curL = ed.value.substr(0, pos).split('\n').length - 1; let tarL = Math.max(0, Math.min(lines.length - 1, curL + n)); let newP = 0; for(let i=0; i<tarL; i++) newP += lines[i].length + 1; ed.selectionStart = ed.selectionEnd = newP; ed.focus(); }
+        
         function exportDB() { download(db, 'TDF_Database'); }
         function exportSet() { const name = prompt("Naam:"); if (name) download(setlist, name); }
         function download(d, n) { const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = n + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500); }
-        function importFiles(e, type) { const r = new FileReader(); r.onload = (p) => { try { const data = JSON.parse(p.target.result); if(type==='db') { if(Array.isArray(data)) db = [...db, ...data]; else db.push(data); } else setlist = data; save(); render(); alert("Geladen!"); } catch(err) {} }; r.readAsText(e.target.files[0]); }
+        function importFiles(e, type) { const r = new FileReader(); r.onload = (p) => { try { const data = JSON.parse(p.target.result); if(type==='db') db = [...db, ...data]; else setlist = data; save(); render(); } catch(err) {} }; r.readAsText(e.target.files[0]); }
         function initDrag(el) { let p1=0, p2=0, p3=0, p4=0; const h = el.querySelector('.drag-handle'); h.onmousedown = h.ontouchstart = (e) => { e.preventDefault(); p3 = e.clientX || (e.touches ? e.touches[0].clientX : 0); p4 = e.clientY || (e.touches ? e.touches[0].clientY : 0); document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; }; document.onmousemove = document.ontouchmove = (me) => { p1 = p3 - (me.clientX || me.touches[0].clientX); p2 = p4 - (me.clientY || me.touches[0].clientY); p3 = me.clientX || me.touches[0].clientX; p4 = me.clientY || me.touches[0].clientY; el.style.top = (el.offsetTop - p2) + "px"; el.style.left = (el.offsetLeft - p1) + "px"; } } }
     </script>
 </body>
