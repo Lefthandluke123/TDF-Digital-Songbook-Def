@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.75</title>
+    <title>TDF Digital v8.80</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -16,23 +16,27 @@
         .logo-box img { width: 100%; height: 100%; object-fit: contain; }
 
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; text-shadow: 0 0 5px var(--amber); font-size: 0.95rem; }
-        .btn-green { background: #25D366; color: white; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 8px; }
 
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
         #editorArea { display: none; height: 60%; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
         
-        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 120px 35px 450px 35px; scroll-behavior: auto; }
+        /* LIVE VIEW */
+        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; scroll-behavior: auto; }
         #liveView .lyric-line { font-size: 2.2rem; line-height: 1.2; margin-bottom: 35px; color: #eee; font-weight: bold; white-space: pre-wrap; word-wrap: break-word; }
         #liveView .chord-row { font-size: 2.8rem; height: 3.2rem; margin-bottom: 5px; color: var(--amber); white-space: pre; }
         
-        .live-controls { position: fixed; top: 0; left: 0; width: 100%; background: rgba(15,15,15,0.95); padding: 15px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); gap: 10px; }
-        .scroll-slider { -webkit-appearance: none; flex: 1; height: 12px; background: #333; border-radius: 10px; outline: none; border: 1px solid #444; }
-        .scroll-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 35px; height: 35px; background: var(--amber); border-radius: 50%; cursor: pointer; }
-        .speed-label { color: var(--amber); font-weight: bold; font-size: 1.4rem; min-width: 45px; text-align: center; font-variant-numeric: tabular-nums; }
+        /* SPEED DIAL CONTROLS */
+        .live-controls { position: fixed; top: 0; left: 0; width: 100%; height: 110px; background: rgba(15,15,15,0.95); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); gap: 15px; }
+        
+        .dial-container { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #222; border-radius: 50%; border: 2px solid #444; touch-action: none; }
+        .dial-value { font-size: 1.4rem; font-weight: bold; color: var(--amber); pointer-events: none; z-index: 2; font-variant-numeric: tabular-nums; }
+        .dial-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid transparent; border-top-color: var(--amber); transform: rotate(0deg); transition: transform 0.1s linear; }
+
         .time-display { font-size: 1.2rem; font-weight: bold; min-width: 85px; text-align: right; cursor: pointer; color: #fff; }
 
+        /* MENUS */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-header { padding: 20px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
@@ -57,7 +61,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1; overflow:hidden; white-space:nowrap; margin:0 5px;">TDF v8.75</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1; overflow:hidden; white-space:nowrap; margin:0 5px;">TDF v8.80</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" style="border-color:#34c759; color:#34c759;" onclick="enterLiveView()">LIVE</button>
             <button class="btn" onclick="startEdit()">✎</button>
@@ -68,7 +72,7 @@
     <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Start/Stop fix actief. Snelheid reageert live.</div>
+        <div id="lyricsArea">Nieuw: Speed Dial voor precisie-scroll. Druk op LIVE.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
     </div>
 
@@ -78,8 +82,12 @@
             <button class="btn" onclick="navSong(-1)">&lt;</button>
             <button id="playBtn" class="btn" style="width:60px" onclick="toggleScroll()">▶</button>
             <button class="btn" onclick="navSong(1)">&gt;</button>
-            <input type="range" id="scrollSpeed" class="scroll-slider" min="0" max="15" step="0.1" value="0" oninput="updateSpeedLabel()">
-            <div class="speed-label" id="speedValue">0.0</div>
+            
+            <div class="dial-container" id="speedDial">
+                <div class="dial-ring" id="dialRing"></div>
+                <div class="dial-value" id="dialValue">0.0</div>
+            </div>
+
             <button class="btn" id="chordToggleBtn" onclick="toggleOnlyChords()">CHORDS</button>
             <div id="liveClock" class="time-display" onclick="toggleTimeMode()">00:00</div>
         </div>
@@ -109,9 +117,14 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, draggingIdx = null, isScrolling = false, setStartTime = 0, isTimerMode = false;
-        let scrollY = 0; 
+        let scrollY = 0, currentSpeed = 0;
 
-        window.onload = () => { render(); startClockLoop(); requestAnimationFrame(scrollEngine); };
+        window.onload = () => { 
+            render(); 
+            startClockLoop(); 
+            initDial();
+            requestAnimationFrame(scrollEngine); 
+        };
 
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
@@ -161,34 +174,57 @@
             if(!cur) return; 
             document.getElementById('liveView').style.display = 'block'; 
             drawLyrics(document.getElementById('liveContent')); 
-            document.getElementById('scrollSpeed').value = cur.scrollSpeed || 0; 
-            updateSpeedLabel();
+            currentSpeed = cur.scrollSpeed || 0; 
+            updateDialDisplay();
             isScrolling = false; updatePlayBtn(); 
             if(!setStartTime) setStartTime = Date.now(); 
         }
 
-        function exitLiveView() { saveCurrentSpeed(); isScrolling = false; document.getElementById('liveView').style.display = 'none'; }
-        
-        function toggleScroll() { 
-            isScrolling = !isScrolling; 
-            updatePlayBtn(); 
+        function exitLiveView() { 
+            saveCurrentSpeed(); 
+            isScrolling = false; 
+            document.getElementById('liveView').style.display = 'none'; 
         }
 
-        // DE MASTER MOTOR: Controleert status en schuif elke frame
+        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
+
         function scrollEngine() {
             const lv = document.getElementById('liveView');
-            const sp = document.getElementById('scrollSpeed');
-            
-            if (lv.style.display === 'block' && isScrolling) {
-                const val = parseFloat(sp.value);
-                if (val > 0) {
-                    // Start direct vanaf 0.1 met een basis verplaatsing
-                    const step = (val * 0.35) + 0.05; 
-                    scrollY += step;
-                    lv.scrollTop = Math.floor(scrollY);
-                }
+            if (lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
+                const step = (currentSpeed * 0.35) + 0.05; 
+                scrollY += step;
+                lv.scrollTop = Math.floor(scrollY);
             }
             requestAnimationFrame(scrollEngine);
+        }
+
+        /* DIAL LOGIC */
+        function initDial() {
+            const dial = document.getElementById('speedDial');
+            let isDragging = false;
+            let startY = 0;
+            let startSpeed = 0;
+
+            const handleMove = (e) => {
+                if (!isDragging) return;
+                const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                const diff = (startY - y) / 10; // Gevoeligheid
+                currentSpeed = Math.max(0, Math.min(15, startSpeed + diff));
+                updateDialDisplay();
+            };
+
+            dial.addEventListener('mousedown', (e) => { isDragging = true; startY = e.clientY; startSpeed = currentSpeed; });
+            dial.addEventListener('touchstart', (e) => { isDragging = true; startY = e.touches[0].clientY; startSpeed = currentSpeed; });
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', handleMove);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('touchend', () => isDragging = false);
+        }
+
+        function updateDialDisplay() {
+            document.getElementById('dialValue').innerText = currentSpeed.toFixed(1);
+            const rotation = (currentSpeed / 15) * 360;
+            document.getElementById('dialRing').style.transform = `rotate(${rotation}deg)`;
         }
 
         function updatePlayBtn() { 
@@ -197,16 +233,11 @@
             btn.style.background = isScrolling ? "rgba(255,191,0,0.2)" : "none";
         }
 
-        function updateSpeedLabel() { 
-            document.getElementById('speedValue').innerText = parseFloat(document.getElementById('scrollSpeed').value).toFixed(1); 
-        }
-
         function saveCurrentSpeed() { 
             if(cur) { 
-                const s = parseFloat(document.getElementById('scrollSpeed').value); 
-                cur.scrollSpeed = s; 
+                cur.scrollSpeed = currentSpeed; 
                 let idx = db.findIndex(x => x.title === cur.title); 
-                if(idx !== -1) db[idx].scrollSpeed = s; 
+                if(idx !== -1) db[idx].scrollSpeed = currentSpeed; 
                 save(); 
             }
         }
@@ -219,9 +250,9 @@
                 cur = setlist[nIdx]; 
                 document.getElementById('title').innerText = cur.title; 
                 drawLyrics(document.getElementById('liveContent')); 
-                document.getElementById('scrollSpeed').value = cur.scrollSpeed || 0; 
+                currentSpeed = cur.scrollSpeed || 0; 
                 isScrolling = false; scrollY = 0;
-                updateSpeedLabel(); updatePlayBtn(); 
+                updateDialDisplay(); updatePlayBtn(); 
                 document.getElementById('liveView').scrollTop = 0; 
             } 
         }
