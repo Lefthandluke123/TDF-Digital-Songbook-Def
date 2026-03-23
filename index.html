@@ -5,42 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.42</title>
+    <title>TDF Digital v9.43</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
+        /* HEADER */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; margin: 2px 0; }
+        .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; }
 
+        /* CONTENT */
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; }
 
+        /* EDITOR */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; }
         .chord-bar { height: 60px; background: #222; padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #444; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 50px; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; outline: none; font-family: monospace; }
 
+        /* MENUS */
+        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
+        .full-menu.open { left: 0; }
+        .menu-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .menu-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        
         .search-area { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; display: flex; gap: 10px; }
         .search-bar { flex: 1; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         #tagCloud { display: none; padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.9rem; margin-right: 8px; cursor: pointer; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
-        #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
+        /* FOOTER BALK IN MENU (v9.31 STIJL) */
+        .menu-footer { height: 90px; background: #111; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-around; padding: 0 15px; flex-shrink: 0; }
+
+        /* ROW ITEMS */
+        .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; }
+        .is-selecting .select-check { display: block; transform: scale(1.8); margin-right: 20px; }
+        .select-check { display: none; }
+        .edit-only { display: none; }
+        .is-editing .edit-only { display: flex; flex-direction: column; margin-right: 15px; }
+
+        /* LIVE */
+        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; padding: 100px 35px 200px 35px; overflow-y: auto; }
+        #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; position: fixed; bottom: 0; width: 100%; z-index: 6000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
         .wheel-num { height: 28px; line-height: 28px; font-size: 1.1rem; color: #444; }
         .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; }
-
-        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
-        .full-menu.open { left: 0; }
-        .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; }
-        .edit-only { display: none; }
-        .is-editing .edit-only { display: flex; flex-direction: column; margin-right: 15px; }
-        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 200px 35px; }
     </style>
 </head>
 <body>
@@ -50,7 +64,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.42</div>
+        <div id="title" style="font-weight:bold; color:#555;">TDF v9.43</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
@@ -59,7 +73,7 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Open SONGS om te importeren of liedjes te laden.</div>
+        <div id="lyricsArea">Kies een liedje uit SONGS.</div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
             <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
@@ -71,28 +85,38 @@
     <div id="liveFooter">
         <button class="btn" style="border-radius:50%; width:55px; height:55px;" onclick="exitLiveView()">X</button>
         <button id="playBtn" class="btn" style="width:75px; height:55px; font-size:1.5rem;" onclick="toggleScroll()">▶</button>
-        <div class="wheel-wrap" id="thumbWheel"><div class="wheel-overlay" style="position:absolute; width:100%; height:30px; top:27px; border-top:1px solid var(--amber); border-bottom:1px solid var(--amber); background:rgba(255,191,0,0.05); z-index:5; pointer-events:none;"></div><div class="wheel-strip" id="wheelStrip"></div></div>
+        <div class="wheel-wrap" id="thumbWheel"><div class="wheel-strip" id="wheelStrip"></div></div>
         <div id="liveClock" style="font-weight:bold; color:var(--amber);">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn" onclick="triggerImport()">IMPORT JSON</button>
-            <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
-            <button class="btn" onclick="closeMenus()">X</button>
+        <div class="menu-content">
+            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
+                <button class="btn" onclick="closeMenus()">SLUIT X</button>
+            </div>
+            <div class="search-area">
+                <input type="text" id="songSearch" class="search-bar" placeholder="Zoek titel of tag..." oninput="render()">
+                <button class="btn" onclick="toggleCloud()">TAGS</button>
+            </div>
+            <div id="tagCloud"></div>
+            <div class="menu-scroll" id="dbList"></div>
+            <div class="menu-footer">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">IMPORT JSON</button>
+                <button class="btn" onclick="exportFullDB()">EXPORT DB</button>
+            </div>
         </div>
-        <div class="search-area"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()"><button class="btn" onclick="toggleCloud()">TAGS</button></div>
-        <div id="tagCloud"></div>
-        <div class="menu-scroll" id="dbList"></div>
-        <input type="file" id="fileInput" style="display:none;" onchange="handleFile(this)">
+        <input type="file" id="fileInput" style="display:none;" onchange="handleImport(this)">
     </div>
 
     <div id="setMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn" onclick="toggleSetEdit()">EDIT</button>
-            <button class="btn" onclick="closeMenus()">X</button>
+        <div class="menu-content">
+            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn" onclick="toggleSetEdit()">EDIT</button>
+                <button class="btn" onclick="closeMenus()">X</button>
+            </div>
+            <div class="menu-scroll" id="setList"></div>
         </div>
-        <div class="menu-scroll" id="setList"></div>
     </div>
 
     <script>
@@ -104,24 +128,27 @@
 
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         
-        // --- ROBUUSTE IMPORT (v9.31 stijl) ---
-        function triggerImport() { document.getElementById('fileInput').click(); }
-        function handleFile(input) {
-            const file = input.files[0];
-            if(!file) return;
+        // --- IMPORT / EXPORT (v9.31 Stijl) ---
+        function handleImport(input) {
+            const file = input.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if(Array.isArray(parsed)) {
-                        db = parsed;
-                        save(); render();
-                        alert(db.length + " songs geladen!");
-                    }
-                } catch(err) { alert("JSON fout!"); }
+                    if(Array.isArray(parsed)) { db = parsed; save(); render(); alert(db.length + " liedjes geladen!"); }
+                } catch(err) { alert("Geen geldig TDF bestand."); }
                 input.value = "";
             };
             reader.readAsText(file);
+        }
+
+        function exportFullDB() {
+            const data = JSON.stringify(db);
+            const blob = new Blob([data], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `tdf_backup_${new Date().toLocaleDateString()}.json`;
+            a.click();
         }
 
         function render() {
@@ -139,7 +166,8 @@
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
                 const isSelected = selectedSongs.includes(s.title);
-                d.innerHTML = `<input type="checkbox" style="display:${selectMode?'block':'none'}; transform:scale(1.8); margin-right:20px;" ${isSelected?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g,"\\")}')">
+                d.innerHTML = `
+                    <input type="checkbox" class="select-check" ${isSelected?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g,"\\")}')">
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g,"\\")+"');render();" : "loadSongByName('"+s.title.replace(/'/g,"\\")+"')" }">
                         <span style="font-size:1.4rem; font-weight:bold; display:block;">${s.title}</span><span style="font-size:0.8rem; color:#666;">${s.tags||''}</span>
                     </div>
@@ -160,13 +188,14 @@
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="edit-only" style="flex-direction:column; margin-right:15px;"><button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button><button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button></div>
+                d.innerHTML = `<div class="edit-only"><button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button><button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button></div>
                     <div style="flex:1" onclick="loadSongByIndex(${i})"><span style="font-size:1.4rem; font-weight:bold;">${i+1}. ${s.title}</span></div>
                     <button class="btn edit-only" style="color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
             });
         }
 
+        // --- CORE LOGICA ---
         function createWheelNodes() { const s = document.getElementById('wheelStrip'); s.innerHTML=""; for(let i=0;i<=150;i++){ const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(1); s.appendChild(d); } }
         function initTouchWheel() {
             const w = document.getElementById('thumbWheel'); let sy = 0, ss = 0;
@@ -179,7 +208,7 @@
         function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; }
         function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; drawLyrics('lyricsArea'); }
         function drawLyrics(id) { const c=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l=>{ let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length,v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(ch=>{ r+=`<span style="position:absolute; left:${ch.p}ch; color:var(--amber); font-weight:bold;">${ch.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); c.innerHTML=h; c.scrollTop=0; scrollAcc=0; }
-        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; document.getElementById('playBtn').innerText="▶"; }
+        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; }
         function exitLiveView() { if(cur){cur.scrollSpeed=currentSpeed;save();} document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; }
         function toggleScroll() { isScrolling=!isScrolling; document.getElementById('playBtn').innerText=isScrolling?"⏸":"▶"; }
         function updateClock() { document.getElementById('liveClock').innerText=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
@@ -189,6 +218,7 @@
         function toggleSelectMode() { selectMode=!selectMode; selectedSongs=[]; render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs=selectedSongs.filter(s=>s!==t); else selectedSongs.push(t); }
         function moveSetItem(i,d) { let t=i+d; if(t>=0&&t<setlist.length){ [setlist[i],setlist[t]]=[setlist[t],setlist[i]]; save(); render(); } }
+        function toggleCloud() { const c = document.getElementById('tagCloud'); c.style.display = (c.style.display === 'flex') ? 'none' : 'flex'; }
         function loadSongByIndex(i) { cur=setlist[i]; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function loadSongByName(t) { cur=db.find(x=>x.title===t); document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
     </script>
