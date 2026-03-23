@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.65</title>
+    <title>TDF Digital v8.70</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
         
-        /* HEADER */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; z-index: 3000; }
         .logo-box { width: 55px; height: 55px; min-width: 55px; margin-right: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #000; border-radius: 8px; overflow: hidden; }
         .logo-box img { width: 100%; height: 100%; object-fit: contain; }
@@ -20,13 +19,11 @@
         .btn-green { background: #25D366; color: white; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 8px; }
 
-        /* MAIN CONTAINER */
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
         #editorArea { display: none; height: 60%; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
         #tagEditor { display: none; background: #222; padding: 15px 25px; border-top: 3px solid var(--amber); height: 40%; flex-direction: column; gap: 10px; z-index: 4000; }
 
-        /* LIVE OVERLAY */
         #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 120px 35px 400px 35px; }
         #liveView .lyric-line { font-size: 2.2rem; line-height: 1.2; margin-bottom: 35px; color: #eee; font-weight: bold; white-space: pre-wrap; word-wrap: break-word; }
         #liveView .chord-row { font-size: 2.8rem; height: 3.2rem; margin-bottom: 5px; color: var(--amber); white-space: pre; }
@@ -37,7 +34,6 @@
         .speed-label { color: var(--amber); font-weight: bold; font-size: 1.4rem; min-width: 45px; text-align: center; font-variant-numeric: tabular-nums; }
         .time-display { font-size: 1.2rem; font-weight: bold; min-width: 85px; text-align: right; cursor: pointer; color: #fff; }
 
-        /* MENUS */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-header { padding: 20px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
@@ -62,7 +58,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1; overflow:hidden; white-space:nowrap; margin:0 5px;">TDF v8.65</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1; overflow:hidden; white-space:nowrap; margin:0 5px;">TDF v8.70</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" style="border-color:#34c759; color:#34c759;" onclick="enterLiveView()">LIVE</button>
             <button class="btn" onclick="startEdit()">✎</button>
@@ -73,7 +69,7 @@
     <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Scroll-motor geforceerd. Druk op LIVE om te starten.</div>
+        <div id="lyricsArea">Snelheid onder 2.0 nu ook actief. Druk op LIVE.</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
             <div id="tagSuggestions" style="display:flex; gap:10px; overflow-x:auto;"></div>
@@ -186,19 +182,20 @@
         }
 
         function startMotor() {
-            stopMotor(); // Reset
+            stopMotor();
             const lv = document.getElementById('liveView');
             const sp = document.getElementById('scrollSpeed');
             scrollMotor = setInterval(() => {
-                if(parseFloat(sp.value) > 0) {
-                    lv.scrollTop += Math.pow(parseFloat(sp.value), 1.5) / 15;
+                const val = parseFloat(sp.value);
+                if(val > 0) {
+                    // Linear boost voor lage waarden om dode zone te voorkomen
+                    const speed = val < 3 ? (val * 0.15) : (Math.pow(val, 1.5) / 15);
+                    lv.scrollTop += speed;
                 }
-            }, 16); // ~60fps stabiel
+            }, 16);
         }
 
-        function stopMotor() {
-            if(scrollMotor) clearInterval(scrollMotor);
-        }
+        function stopMotor() { if(scrollMotor) clearInterval(scrollMotor); }
 
         function updatePlayBtn() { 
             const btn = document.getElementById('playBtn');
