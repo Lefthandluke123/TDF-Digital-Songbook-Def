@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.10</title>
+    <title>TDF Digital v8.11</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -59,20 +59,20 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:8px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.10</div>
+        <div id="title" style="font-weight:bold; font-size: 1.1rem; text-align:center; flex:1;">TDF v8.11</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#34c759; border-color:#34c759;" onclick="finishEdit()">OK</button>
         </div>
     </div>
 
-    <div id="toast">Toegevoegd aan SET</div>
+    <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Importeer meerdere bestanden of bewerk direct in SONGS.</div>
+        <div id="lyricsArea">Importeer JSON, TXT of PRO bestanden (multi-select mogelijk).</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
-            Tags (komma): <input type="text" id="tagInput" style="width:70%; padding:8px;">
+            Tags (komma): <input type="text" id="tagInput" style="width:70%; padding:8px; border:1px solid #ccc; border-radius:4px;">
         </div>
     </div>
 
@@ -81,7 +81,7 @@
         <div class="search-wrap"><input type="text" id="songSearch" class="search-input" placeholder="Zoek op titel of tag..." oninput="render()"></div>
         <div class="menu-scroll" id="dbList"></div>
         <div style="padding:15px; background:#111; display:flex; gap:5px; flex-wrap:wrap;">
-            <button class="btn" style="flex:1;" onclick="document.getElementById('impAny').click()">IMPORT (MULTI)</button>
+            <button class="btn" style="flex:1;" onclick="document.getElementById('impAny').click()">IMPORT</button>
             <button class="btn" style="flex:1;" onclick="exportDB()">EXPORT</button>
             <button class="btn-red" style="flex:1;" onclick="cleanDatabase()">CLEAN</button>
         </div>
@@ -167,33 +167,50 @@
             if(cur) { closeMenus(); startEdit(); }
         }
 
-        function showToast(msg = "Toegevoegd aan SET") {
+        function showToast(msg) {
             const t = document.getElementById('toast');
             t.innerText = msg; t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 1000);
+            setTimeout(() => { t.style.display = 'none'; }, 1500);
         }
 
         function addToSet(t) { 
             const s = db.find(x=>x.title===t); 
-            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast(); } 
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("Toegevoegd aan SET"); } 
         }
 
+        // VERBETERDE ASYNC IMPORT VOOR FIREFOX IPAD
         async function importAnyFile(e) {
-            const files = e.target.files; if(!files.length) return;
+            const files = e.target.files; if(!files || !files.length) return;
             let count = 0;
-            for(let file of files) {
-                const reader = new FileReader(); const ext = file.name.split('.').pop().toLowerCase();
-                const content = await file.text();
-                if (ext === 'json') {
-                    try { const data = JSON.parse(content); if(Array.isArray(data)) db = [...db, ...data]; else db.push(data); } catch(f) {}
-                } else {
-                    let title = file.name.replace(/\.[^/.]+$/, "");
-                    const tMatch = content.match(/\{(?:title|t):\s*(.*)\}/i); if(tMatch) title = tMatch[1];
-                    db.push({ title: title, content: content, tags: "" });
+            
+            for(let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                try {
+                    const content = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (p) => resolve(p.target.result);
+                        reader.onerror = (err) => reject(err);
+                        reader.readAsText(file);
+                    });
+
+                    if (ext === 'json') {
+                        const data = JSON.parse(content);
+                        if(Array.isArray(data)) db = [...db, ...data]; else db.push(data);
+                    } else {
+                        let title = file.name.replace(/\.[^/.]+$/, "");
+                        const tMatch = content.match(/\{(?:title|t):\s*(.*)\}/i);
+                        if(tMatch) title = tMatch[1];
+                        db.push({ title: title, content: content, tags: "" });
+                    }
+                    count++;
+                } catch (err) {
+                    console.error("Fout bij importeren van:", file.name);
                 }
-                count++;
             }
-            save(); render(); showToast(count + " bestanden geladen!");
+            save(); render(); showToast(count + " liedjes geïmporteerd!");
+            e.target.value = ""; // Reset input voor volgende keer
         }
 
         function deleteFromDb(idx) { if(confirm("Verwijderen?")) { db.splice(idx, 1); save(); render(); } }
