@@ -5,25 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.50</title>
+    <title>TDF Digital v9.53</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
-        .top-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-        .top-center { flex: 2; text-align: center; font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 10px; }
-        .top-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+        .top-left { display: flex; align-items: center; gap: 10px; flex: 1.5; }
+        .top-center { flex: 2; text-align: center; font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .top-right { display: flex; align-items: center; gap: 8px; flex: 1.5; justify-content: flex-end; }
+
+        .logo-img { height: 45px; width: auto; cursor: pointer; display: block; }
 
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn-sm { padding: 5px 8px; font-size: 1.1rem; min-width: 44px; }
         .btn-danger { border-color: var(--red); color: var(--red); }
 
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
-        #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; }
+        
+        /* Watermerk Stijl */
+        .watermark { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 70%; 
+            opacity: 0.1; 
+            pointer-events: none; 
+            z-index: 0; 
+        }
 
-        #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; }
+        #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
+
+        #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 10; }
         .chord-bar { height: 60px; background: #222; padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #444; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 50px; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; outline: none; font-family: monospace; }
@@ -35,7 +50,6 @@
         .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; flex-direction: column; gap: 12px; }
         .search-bar { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         
-        /* Tag Sectie */
         .tag-action-row { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }
         #tagList { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; padding-bottom: 10px; flex: 1; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent; }
@@ -59,7 +73,7 @@
         .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; }
         .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); z-index: 5; pointer-events: none; }
 
-        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; }
+        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; z-index: 20; }
     </style>
 </head>
 <body>
@@ -68,11 +82,11 @@
 
     <div class="top-bar">
         <div class="top-left">
-            <button class="btn" style="border:none; padding-left:0; color:#555;" onclick="location.reload()">TDF</button>
+            <img src="logo.png" class="logo-img" onclick="location.reload()" alt="TDF">
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" class="top-center">TDF v9.50</div>
+        <div id="title" class="top-center">KIES LIEDJE</div>
         <div class="top-right">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:var(--green); border-color:var(--green);" onclick="finishEdit()">OK</button>
@@ -81,7 +95,8 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Maak een keuze uit het menu.</div>
+        <img src="logo.png" class="watermark" alt="">
+        <div id="lyricsArea">Gebruik SONGS of SET om te beginnen.</div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
             <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
@@ -110,7 +125,7 @@
             <div class="tag-action-row">
                 <div id="tagList"></div>
                 <input type="text" id="newTagInput" class="new-tag-input" placeholder="+ Tag">
-                <button class="btn-sm" style="border-radius:50%; color:var(--green); border-color:var(--green);" onclick="createNewTag()">+</button>
+                <button class="btn-sm" style="border-radius:50%; color:var(--green); border-color:var(--green); font-size:1rem;" onclick="createNewTag()">+</button>
             </div>
         </div>
         <div id="dbList" class="menu-scroll"></div>
@@ -147,10 +162,8 @@
         function createNewTag() {
             const input = document.getElementById('newTagInput');
             const val = input.value.trim();
-            if(!val || selectedSongs.length === 0) { 
-                if(!val) return;
-                showToast("SELECTEER EERST LIEDJES"); return; 
-            }
+            if(!val) return;
+            if(selectedSongs.length === 0) { showToast("SELECTEER EERST LIEDJES"); return; }
             db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(val)) ts.push(val); s.tags = ts.join(', '); } });
             input.value = ""; save(); showToast("NIEUWE TAG TOEGEVOEGD"); render();
         }
