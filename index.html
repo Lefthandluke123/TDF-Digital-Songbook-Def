@@ -1,11 +1,11 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.18</title>
+    <title>TDF Digital v9.19</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --red: #ff3b30; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -14,9 +14,14 @@
         /* HEADER */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn-sm { padding: 5px 10px; font-size: 1.2rem; min-width: 44px; }
         .btn-green { background: #25D366; color: #fff; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; }
+
+        /* CONTENT AREAS */
+        .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; display: block; }
+        #editorContainer { display: none; flex: 1; flex-direction: column; background:#1a1a1a; }
+        #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.4rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
 
         /* LISTS */
         .menu-scroll { flex: 1; overflow-y: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; }
@@ -24,14 +29,9 @@
         .row-name { flex: 1; overflow: hidden; cursor: pointer; }
         .song-title { font-size: 1.3rem; font-weight: bold; white-space: nowrap; text-overflow: ellipsis; display: block; }
         
-        .search-wrap { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; }
-        .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; font-size: 1.1rem; }
-
-        /* EDIT MODE UI */
         .edit-controls { display: none; align-items: center; }
         .is-editing .edit-controls { display: flex; }
         .order-btns { display: flex; flex-direction: column; gap: 4px; margin-right: 15px; }
-        .custom-input { background: #000; border: 1px solid #444; color: var(--amber); font-size: 1.2rem; font-weight: bold; width: 100%; padding: 8px; border-radius: 4px; }
         .wipe-container { display: none; padding: 20px; background: #111; }
         .is-editing .wipe-container { display: block; }
 
@@ -45,7 +45,7 @@
         /* LIVE VIEW */
         #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; }
         .live-controls { position: fixed; top: 0; left: 0; width: 100%; height: 120px; background: rgba(15,15,15,0.98); padding: 10px 25px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; }
-        .exit-btn-refined { width: 50px; height: 50px; background: var(--amber); color: #000; border: none; border-radius: 25px; font-weight: 900; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255,191,0,0.4); }
+        .exit-btn-refined { width: 50px; height: 50px; background: var(--amber); color: #000; border: none; border-radius: 25px; font-weight: 900; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
@@ -59,11 +59,22 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size:0.9rem; color:#444;">TDF v9.18</div>
-        <button class="btn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button>
+        <div id="title" style="font-weight:bold; font-size:0.9rem; color:#444;">TDF v9.19</div>
+        <div style="display:flex; gap:8px;">
+            <button class="btn" id="editSongBtn" onclick="startEdit()">✎</button>
+            <button class="btn" id="saveSongBtn" style="display:none; color:#25D366;" onclick="finishEdit()">OK</button>
+            <button class="btn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button>
+        </div>
     </div>
 
     <div id="toast">Bericht</div>
+
+    <div class="main-container">
+        <div id="lyricsArea">V9.19: Tekstweergave hersteld. Selecteer een liedje uit SET of SONGS.</div>
+        <div id="editorContainer">
+            <textarea id="editorArea" spellcheck="false"></textarea>
+        </div>
+    </div>
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
@@ -75,7 +86,7 @@
         </div>
         <div class="menu-scroll" id="setList"></div>
         <div class="wipe-container">
-            <button class="btn-red" style="width:100%; padding:15px; font-weight:bold;" onclick="wipeSetlist()">WIS VOLLEDIGE SETLIST</button>
+            <button class="btn-red" style="width:100%; padding:15px;" onclick="wipeSetlist()">WIS VOLLEDIGE SETLIST</button>
         </div>
     </div>
 
@@ -118,80 +129,37 @@
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
-        function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); }
+        function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
 
         function toggleSetEdit() {
             setEditMode = !setEditMode;
             document.getElementById('setMenu').classList.toggle('is-editing', setEditMode);
             document.getElementById('addRuleBtn').style.display = setEditMode ? 'block' : 'none';
-            const btn = document.getElementById('setEditBtn');
-            btn.style.background = setEditMode ? "var(--amber)" : "none";
-            btn.style.color = setEditMode ? "#000" : "var(--amber)";
             render();
         }
 
-        function wipeSetlist() { if(confirm("Setlist volledig wissen?")) { setlist = []; save(); render(); } }
-        function addCustomRow() { setlist.push({ title: "PAUZE / INFO", content: "", isCustom: true, scrollSpeed: 0 }); save(); render(); }
-        function moveItem(index, direction) {
-            let target = index + direction;
-            if (target >= 0 && target < setlist.length) {
-                let temp = setlist[index]; setlist[index] = setlist[target]; setlist[target] = temp;
-                save(); render();
-            }
-        }
-
-        // --- DE SUPER SANITIZER ---
         function cleanDatabase() {
-            if(!confirm("Dit schoont alle dubbele witregels en spaties in je HELE database op. Doorgaan?")) return;
+            if(!confirm("Database opschonen?")) return;
             const u = new Set();
             db = db.filter(s => {
-                // 1. Unieke titels check
                 const t = s.title.toLowerCase().trim();
-                if(u.has(t)) return false;
-                u.add(t);
-
-                // 2. Tekst opschonen
-                if(s.content) {
-                    let c = s.content;
-                    c = c.split('\n').map(line => line.trimEnd()).join('\n'); // Spaties aan eind weg
-                    c = c.replace(/\n{3,}/g, '\n\n'); // Maximaal 1 witregel tussen tekst
-                    s.content = c.trim(); // Begin en eind witruimte weg
-                }
+                if(u.has(t)) return false; u.add(t);
+                if(s.content) s.content = s.content.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
                 return true;
             });
-            save(); render(); showToast("Database volledig gesaneerd!");
-        }
-
-        function exportDatabase() {
-            const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `tdf_master_backup.json`; a.click();
-            showToast("Backup gedownload!");
-        }
-
-        function importAnyFile(e) {
-            Array.from(e.target.files).forEach(f => {
-                const reader = new FileReader(); reader.onload = (ev) => {
-                    const content = ev.target.result;
-                    if(f.name.endsWith('.json')) {
-                        const p = JSON.parse(content); if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p);
-                    } else { db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0}); }
-                    save(); render();
-                }; reader.readAsText(f);
-            });
-            showToast("Import klaar!");
+            save(); render(); showToast("Gereinigd!");
         }
 
         function render() {
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item";
-                let contentHtml = s.isCustom && setEditMode
-                    ? `<input type="text" class="custom-input" value="${s.title}" oninput="setlist[${i}].title=this.value; save();">`
+                let titleHtml = s.isCustom && setEditMode
+                    ? `<input type="text" class="custom-input" style="background:#000;color:var(--amber);border:1px solid #444;width:100%;" value="${s.title}" oninput="setlist[${i}].title=this.value; save();">`
                     : `<span class="song-title" onclick="loadSongByIndex(${i})">${i+1}. ${s.title}</span>`;
                 d.innerHTML = `<div class="edit-controls"><div class="order-btns"><button class="btn btn-sm" onclick="moveItem(${i}, -1)">↑</button><button class="btn btn-sm" onclick="moveItem(${i}, 1)">↓</button></div></div>
-                    <div class="row-name">${contentHtml}</div>
-                    <div class="edit-controls"><button class="btn btn-red" style="margin-left:10px;" onclick="setlist.splice(${i},1); save(); render();">X</button></div>`;
+                    <div class="row-name">${titleHtml}</div>
+                    <div class="edit-controls"><button class="btn btn-red" onclick="setlist.splice(${i},1); save(); render();">X</button></div>`;
                 setl.appendChild(d);
             });
             const sQ = (document.getElementById('songSearch')?.value || "").toLowerCase();
@@ -204,44 +172,10 @@
             });
         }
 
-        function createWheelNodes() {
-            const strip = document.getElementById('wheelStrip'); strip.innerHTML = "";
-            for(let i=0; i<=150; i++) {
-                const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d);
-            }
-            updateWheelPosition();
-        }
-
-        function initTouchWheel() {
-            const wheel = document.getElementById('thumbWheel');
-            let startY = 0, startSpeed = 0;
-            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startSpeed = currentSpeed; e.preventDefault(); }, {passive: false});
-            wheel.addEventListener('touchmove', (e) => {
-                const delta = startY - e.touches[0].clientY;
-                currentSpeed = Math.max(0, Math.min(15, startSpeed + (delta / 15)));
-                updateWheelPosition(); e.preventDefault();
-            }, {passive: false});
-        }
-
-        function updateWheelPosition() {
-            const strip = document.getElementById('wheelStrip');
-            const yPos = 31 - (currentSpeed * 300); 
-            strip.style.transform = `translateY(${yPos}px)`;
-            const activeIdx = Math.round(currentSpeed * 10);
-            strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx));
-        }
-
-        function scrollEngine() {
-            const lv = document.getElementById('liveView');
-            if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
-                scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc);
-            }
-            requestAnimationFrame(scrollEngine);
-        }
-
-        function drawLyrics() {
-            const container = document.getElementById('liveContent');
-            if(!cur || cur.isCustom) { container.innerHTML = `<div style="font-size:4rem; text-align:center; padding-top:100px; color:var(--amber); font-weight:900;">${cur ? cur.title : ''}</div>`; return; }
+        function drawLyrics(targetId = 'lyricsArea') {
+            const container = document.getElementById(targetId);
+            if(!cur) return;
+            if(cur.isCustom) { container.innerHTML = `<div style="font-size:3rem; padding:40px; color:var(--amber); text-align:center;">${cur.title}</div>`; return; }
             const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
@@ -249,18 +183,37 @@
                     if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; });
-                h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="font-size:2.2rem; margin-bottom:25px; font-weight:bold; color:#eee;">${txt || ' '}</div>`;
+                h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold; color:inherit;">${txt || ' '}</div>`;
             });
-            container.innerHTML = h; scrollAcc = 0;
+            container.innerHTML = h; container.scrollTop = 0; scrollAcc = 0;
         }
 
-        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics(); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
+        function loadSongByIndex(index) { cur = setlist[index]; document.getElementById('title').innerText = cur.title; showNormalMode(); closeMenus(); }
+        function loadSongByName(t) { cur = db.find(x=>x.title===t); document.getElementById('title').innerText = cur.title; showNormalMode(); closeMenus(); }
+        function showNormalMode() { document.getElementById('lyricsArea').style.display='block'; document.getElementById('editorContainer').style.display='none'; document.getElementById('editSongBtn').style.display='block'; document.getElementById('saveSongBtn').style.display='none'; drawLyrics('lyricsArea'); }
+        
+        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('editSongBtn').style.display='none'; document.getElementById('saveSongBtn').style.display='block'; }
+        function finishEdit() { cur.content=document.getElementById('editorArea').value; save(); showNormalMode(); render(); }
+
+        function initTouchWheel() {
+            const wheel = document.getElementById('thumbWheel');
+            let startY = 0, startSpeed = 0;
+            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startSpeed = currentSpeed; e.preventDefault(); }, {passive: false});
+            wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(0, Math.min(15, startSpeed + ((startY - e.touches[0].clientY) / 15))); updateWheelPosition(); e.preventDefault(); }, {passive: false});
+        }
+        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${31 - (currentSpeed * 300)}px)`; const activeIdx = Math.round(currentSpeed * 10); strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
+        function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); } updateWheelPosition(); }
+        function scrollEngine() { const lv = document.getElementById('liveView'); if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) { scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
+        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
         function exitLiveView() { if(cur && !cur.isCustom){cur.scrollSpeed = currentSpeed; save();} document.getElementById('liveView').style.display='none'; isScrolling=false; }
         function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
-        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; document.getElementById('playBtn').style.background = isScrolling ? "var(--amber)" : "none"; document.getElementById('playBtn').style.color = isScrolling ? "#000" : "var(--amber)"; }
+        function updatePlayBtn() { const b = document.getElementById('playBtn'); b.innerText = isScrolling ? "⏸" : "▶"; b.style.background = isScrolling ? "var(--amber)" : "none"; b.style.color = isScrolling ? "#000" : "var(--amber)"; }
         function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
-        function loadSongByIndex(index) { cur = setlist[index]; document.getElementById('title').innerText = cur.title; closeMenus(); }
-        function loadSongByName(t) { cur = db.find(x=>x.title===t); document.getElementById('title').innerText = cur.title; closeMenus(); }
+        function wipeSetlist() { if(confirm("Setlist wissen?")) { setlist = []; save(); render(); } }
+        function addCustomRow() { setlist.push({ title: "PAUZE / INFO", content: "", isCustom: true, scrollSpeed: 0 }); save(); render(); }
+        function moveItem(index, direction) { let target = index + direction; if (target >= 0 && target < setlist.length) { let temp = setlist[index]; setlist[index] = setlist[target]; setlist[target] = temp; save(); render(); } }
+        function exportDatabase() { const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_backup.json`; a.click(); showToast("Backup klaar!"); }
+        function importAnyFile(e) { Array.from(e.target.files).forEach(f => { const reader = new FileReader(); reader.onload = (ev) => { const content = ev.target.result; if(f.name.endsWith('.json')) { try { const p = JSON.parse(content); if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p); } catch(err) {} } else { db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0}); } save(); render(); }; reader.readAsText(f); }); showToast("Import klaar!"); }
     </script>
 </body>
 </html>
