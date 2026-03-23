@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.53</title>
+    <title>TDF Digital v9.55</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -24,14 +24,14 @@
 
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         
-        /* Watermerk Stijl */
+        /* Watermerk Stijl - Opgelicht in v9.55 */
         .watermark { 
             position: absolute; 
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%); 
             width: 70%; 
-            opacity: 0.1; 
+            opacity: 0.2; /* Verhoogd van 0.1 naar 0.2 */
             pointer-events: none; 
             z-index: 0; 
         }
@@ -58,6 +58,10 @@
 
         .swipe-container { position: relative; overflow: hidden; background: var(--red); margin-bottom: 2px; }
         .row-item { background: var(--row-bg); display: flex; align-items: center; padding: 15px 20px; min-height: 75px; position: relative; z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; }
+        
+        /* XL Setlist Title */
+        .setlist-title { font-size: 1.8rem; font-weight: bold; display: block; }
+        
         .delete-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         .select-check { display: none; transform: scale(1.8); margin-right: 25px; accent-color: var(--amber); }
@@ -144,6 +148,10 @@
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
+        <div class="menu-footer">
+            <button class="btn" style="flex:1" onclick="exportSetlist()">EXPORT SET</button>
+            <button class="btn btn-danger" onclick="clearSetlist()">WISSEN</button>
+        </div>
     </div>
 
     <script>
@@ -203,65 +211,4 @@
 
             db.filter(s => {
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags && s.tags.toLowerCase().includes(sQ));
-                const sTags = s.tags ? s.tags.split(',').map(t => t.trim().toLowerCase()) : [];
-                const mTags = activeTags.every(at => sTags.includes(at.toLowerCase()));
-                return mSearch && (selectMode || mTags);
-            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const safeTitle = s.title.replace(/'/g, "\\'");
-                const container = document.createElement('div');
-                container.className = 'swipe-container';
-                container.innerHTML = `
-                    <div class="delete-btn" onclick="deleteSong('${safeTitle}')">DELETE</div>
-                    <div class="row-item" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
-                        <input type="checkbox" class="select-check" ${selectedSongs.includes(s.title) ? 'checked' : ''} onchange="toggleSongSelection('${safeTitle}')">
-                        <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+safeTitle+"'); render();" : "loadSongByName('"+safeTitle+"')" }">
-                            <span style="font-size:1.4rem; font-weight:bold; display:block;">${s.title}</span><span style="font-size:0.8rem; color:#666;">${s.tags||''}</span>
-                        </div>
-                        <button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${safeTitle}')">+</button>
-                    </div>`;
-                dbl.appendChild(container);
-            });
-
-            const setl = document.getElementById('setList'); setl.innerHTML = "";
-            setlist.forEach((s, i) => { 
-                const d = document.createElement('div'); d.className = "row-item"; 
-                d.innerHTML = `
-                    <div style="display:${setEditMode?'flex':'none'}; flex-direction:column; margin-right:15px;">
-                        <button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button>
-                        <button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button>
-                    </div>
-                    <div style="flex:1" onclick="loadSongByIndex(${i})"><span class="song-title">${i+1}. ${s.title}</span></div>
-                    <button class="btn" style="display:${setEditMode?'block':'none'}; color:var(--red); border-color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`; 
-                setl.appendChild(d); 
-            });
-        }
-
-        function handleTouchStart(e) { if(selectMode) return; startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
-        function handleTouchMove(e) { if(selectMode || !currentSwipeItem) return; let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
-        function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
-        function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); }
-        function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
-        function cleanDuplicates() { if(!confirm("Dubbele liedjes verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); }
-        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_backup.json`; a.click(); }
-        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
-        function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
-        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
-        function moveSetItem(index, dir) { let target = index + dir; if (target >= 0 && target < setlist.length) { [setlist[index], setlist[target]] = [setlist[target], setlist[index]]; save(); render(); } }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; }
-        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); }
-        function drawLyrics(id) { const container=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l => { let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); container.innerHTML=h; if(id === 'lyricsArea') container.scrollTop=0; }
-        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false; requestAnimationFrame(() => { document.getElementById('liveView').scrollTop = 0; updateWheelPosition(); updatePlayBtn(); }); }
-        function exitLiveView() { if(cur) save(); document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; }
-        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
-        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
-        function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 0) { scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
-        function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
-        function loadSongByIndex(i) { cur=setlist[i]; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
-        function loadSongByName(t) { cur=db.find(x=>x.title===t); document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
-        function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
-        function initTouchWheel() { const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive: false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(0, Math.min(15, startS + ((startY - e.touches[0].clientY) / 15))); if(cur) cur.scrollSpeed = currentSpeed; updateWheelPosition(); e.preventDefault(); }, {passive: false}); }
-        function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); } }
-        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${28.5 - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10); strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
-    </script>
-</body>
-</html>
+                const sTags =
