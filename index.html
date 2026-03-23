@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.16</title>
+    <title>TDF Digital v9.18</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --red: #ff3b30; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -18,28 +18,31 @@
         .btn-green { background: #25D366; color: #fff; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; }
 
-        /* LISTS & UI */
+        /* LISTS */
         .menu-scroll { flex: 1; overflow-y: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; }
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 5px 15px; min-height: 60px; }
         .row-name { flex: 1; overflow: hidden; cursor: pointer; }
         .song-title { font-size: 1.3rem; font-weight: bold; white-space: nowrap; text-overflow: ellipsis; display: block; }
+        
         .search-wrap { padding: 10px 20px; background: #111; border-bottom: 1px solid #333; }
         .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; font-size: 1.1rem; }
 
-        /* EDIT MODE */
-        .edit-only { display: none; }
-        .is-editing .edit-only { display: flex; }
+        /* EDIT MODE UI */
+        .edit-controls { display: none; align-items: center; }
+        .is-editing .edit-controls { display: flex; }
         .order-btns { display: flex; flex-direction: column; gap: 4px; margin-right: 15px; }
         .custom-input { background: #000; border: 1px solid #444; color: var(--amber); font-size: 1.2rem; font-weight: bold; width: 100%; padding: 8px; border-radius: 4px; }
+        .wipe-container { display: none; padding: 20px; background: #111; }
+        .is-editing .wipe-container { display: block; }
 
-        /* WHEEL */
+        /* JOYSTICK */
         .wheel-wrap { position: relative; width: 100px; height: 95px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; will-change: transform; pointer-events: none; }
         .wheel-num { height: 30px; line-height: 30px; font-size: 1.1rem; color: #444; }
         .wheel-num.active { color: var(--amber); text-shadow: 0 0 10px var(--amber); font-size: 1.8rem; font-weight: 900; }
         .wheel-overlay { position: absolute; width: 100%; height: 32px; top: 31px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); z-index: 5; pointer-events: none; }
 
-        /* LIVE */
+        /* LIVE VIEW */
         #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; }
         .live-controls { position: fixed; top: 0; left: 0; width: 100%; height: 120px; background: rgba(15,15,15,0.98); padding: 10px 25px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; }
         .exit-btn-refined { width: 50px; height: 50px; background: var(--amber); color: #000; border: none; border-radius: 25px; font-weight: 900; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255,191,0,0.4); }
@@ -56,7 +59,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size:0.9rem; color:#666;">TDF v9.16</div>
+        <div id="title" style="font-weight:bold; font-size:0.9rem; color:#444;">TDF v9.18</div>
         <button class="btn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button>
     </div>
 
@@ -66,13 +69,13 @@
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; gap:10px;">
                 <button id="setEditBtn" class="btn" onclick="toggleSetEdit()">EDIT</button>
-                <button class="btn-green edit-only" onclick="addCustomRow()">+ REGEL</button>
+                <button id="addRuleBtn" class="btn-green" style="display:none;" onclick="addCustomRow()">+ REGEL</button>
             </div>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
-        <div class="edit-only" style="padding:20px; background:#111;">
-            <button class="btn-red" style="width:100%; padding:15px;" onclick="wipeSetlist()">WIS VOLLEDIGE SETLIST</button>
+        <div class="wipe-container">
+            <button class="btn-red" style="width:100%; padding:15px; font-weight:bold;" onclick="wipeSetlist()">WIS VOLLEDIGE SETLIST</button>
         </div>
     </div>
 
@@ -81,14 +84,12 @@
             <h2>DATABASE</h2>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div class="search-wrap">
-            <input type="text" id="songSearch" class="search-input" placeholder="Zoek titel..." oninput="render()">
-        </div>
+        <div style="padding:10px 20px; background:#111;"><input type="text" id="songSearch" class="btn" style="width:100%; text-align:left; color:#fff;" placeholder="Zoek titel..." oninput="render()"></div>
         <div class="menu-scroll" id="dbList"></div>
         <div style="padding:20px; background:#111; display:flex; gap:8px;">
             <button class="btn" style="flex:1" onclick="document.getElementById('impAny').click()">IMPORT</button>
             <button class="btn" style="flex:1" onclick="exportDatabase()">EXPORT</button>
-            <button class="btn-red" onclick="cleanDatabase()">CLEAN</button>
+            <button class="btn-red" style="flex:1" onclick="cleanDatabase()">CLEAN</button>
         </div>
     </div>
 
@@ -117,19 +118,20 @@
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
-        function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
+        function showToast(m) { const t = document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); }
 
         function toggleSetEdit() {
             setEditMode = !setEditMode;
             document.getElementById('setMenu').classList.toggle('is-editing', setEditMode);
-            document.getElementById('setEditBtn').style.background = setEditMode ? "var(--amber)" : "none";
-            document.getElementById('setEditBtn').style.color = setEditMode ? "#000" : "var(--amber)";
+            document.getElementById('addRuleBtn').style.display = setEditMode ? 'block' : 'none';
+            const btn = document.getElementById('setEditBtn');
+            btn.style.background = setEditMode ? "var(--amber)" : "none";
+            btn.style.color = setEditMode ? "#000" : "var(--amber)";
             render();
         }
 
-        function wipeSetlist() { if(confirm("Setlist wissen?")) { setlist = []; save(); render(); } }
+        function wipeSetlist() { if(confirm("Setlist volledig wissen?")) { setlist = []; save(); render(); } }
         function addCustomRow() { setlist.push({ title: "PAUZE / INFO", content: "", isCustom: true, scrollSpeed: 0 }); save(); render(); }
-        
         function moveItem(index, direction) {
             let target = index + direction;
             if (target >= 0 && target < setlist.length) {
@@ -138,44 +140,46 @@
             }
         }
 
+        // --- DE SUPER SANITIZER ---
+        function cleanDatabase() {
+            if(!confirm("Dit schoont alle dubbele witregels en spaties in je HELE database op. Doorgaan?")) return;
+            const u = new Set();
+            db = db.filter(s => {
+                // 1. Unieke titels check
+                const t = s.title.toLowerCase().trim();
+                if(u.has(t)) return false;
+                u.add(t);
+
+                // 2. Tekst opschonen
+                if(s.content) {
+                    let c = s.content;
+                    c = c.split('\n').map(line => line.trimEnd()).join('\n'); // Spaties aan eind weg
+                    c = c.replace(/\n{3,}/g, '\n\n'); // Maximaal 1 witregel tussen tekst
+                    s.content = c.trim(); // Begin en eind witruimte weg
+                }
+                return true;
+            });
+            save(); render(); showToast("Database volledig gesaneerd!");
+        }
+
         function exportDatabase() {
-            if(db.length === 0) { showToast("Database is leeg!"); return; }
             const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `tdf_songs_backup.json`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `tdf_master_backup.json`; a.click();
             showToast("Backup gedownload!");
         }
 
         function importAnyFile(e) {
-            const files = Array.from(e.target.files);
-            files.forEach(f => {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
+            Array.from(e.target.files).forEach(f => {
+                const reader = new FileReader(); reader.onload = (ev) => {
                     const content = ev.target.result;
                     if(f.name.endsWith('.json')) {
-                        try {
-                            const p = JSON.parse(content);
-                            if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p);
-                        } catch(err) { console.error("Fout bij laden"); }
-                    } else {
-                        db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0});
-                    }
+                        const p = JSON.parse(content); if(Array.isArray(p)) p.forEach(s => db.push(s)); else db.push(p);
+                    } else { db.push({title: f.name.replace(/\.[^/.]+$/, ""), content: content, tags: "", scrollSpeed: 0}); }
                     save(); render();
-                };
-                reader.readAsText(f);
+                }; reader.readAsText(f);
             });
             showToast("Import klaar!");
-        }
-
-        function cleanDatabase() {
-            const u = new Set();
-            db = db.filter(s => {
-                const t = s.title.toLowerCase().trim();
-                if(u.has(t)) return false; u.add(t); return true;
-            });
-            save(); render(); showToast("DB Opgeschoond!");
         }
 
         function render() {
@@ -185,12 +189,12 @@
                 let contentHtml = s.isCustom && setEditMode
                     ? `<input type="text" class="custom-input" value="${s.title}" oninput="setlist[${i}].title=this.value; save();">`
                     : `<span class="song-title" onclick="loadSongByIndex(${i})">${i+1}. ${s.title}</span>`;
-                d.innerHTML = `<div class="order-btns edit-only"><button class="btn btn-sm" onclick="moveItem(${i}, -1)">↑</button><button class="btn btn-sm" onclick="moveItem(${i}, 1)">↓</button></div>
+                d.innerHTML = `<div class="edit-controls"><div class="order-btns"><button class="btn btn-sm" onclick="moveItem(${i}, -1)">↑</button><button class="btn btn-sm" onclick="moveItem(${i}, 1)">↓</button></div></div>
                     <div class="row-name">${contentHtml}</div>
-                    <button class="btn btn-red edit-only" style="margin-left:10px;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                    <div class="edit-controls"><button class="btn btn-red" style="margin-left:10px;" onclick="setlist.splice(${i},1); save(); render();">X</button></div>`;
                 setl.appendChild(d);
             });
-            const sQ = document.getElementById('songSearch').value.toLowerCase();
+            const sQ = (document.getElementById('songSearch')?.value || "").toLowerCase();
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             db.filter(s => s.title.toLowerCase().includes(sQ)).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
