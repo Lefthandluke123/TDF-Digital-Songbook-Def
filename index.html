@@ -5,34 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.10</title>
+    <title>TDF Digital v9.13</title>
     <style>
-        :root { --bg-black: #000; --amber: #ffbf00; --red: #ff3b30; --grey: #121212; --row-bg: #1c1c1e; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+        :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #ff3b30; --grey: #121212; --row-bg: #1c1c1e; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
         
+        /* TOP BAR */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; }
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .btn-sm { padding: 5px 10px; font-size: 1.2rem; min-width: 44px; }
+        .btn-green { background: #25D366; color: #fff; border: none; }
 
-        /* SETLIST TOUCH ENGINE */
+        /* LISTS */
         .menu-scroll { flex: 1; overflow-y: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; }
-        .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; user-select: none; -webkit-user-select: none; position: relative; }
-        .row-item.dragging { z-index: 10000; background: #333; opacity: 0.8; box-shadow: 0 10px 30px #000; }
-        .drag-handle { padding: 15px 25px; color: var(--amber); font-size: 2.2rem; cursor: move; touch-action: none; }
-        .row-name { flex: 1; padding: 12px 18px; pointer-events: none; }
-        .song-title { font-size: 1.4rem; font-weight: bold; }
-
-        /* JOYSTICK / SCROLLWHEEL ENGINE */
-        .wheel-wrap { position: relative; width: 110px; height: 95px; background: #000; border: 2px solid #555; border-radius: 12px; overflow: hidden; touch-action: none; }
+        .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 5px 10px; }
+        .row-name { flex: 1; padding: 10px 15px; overflow: hidden; }
+        .song-title { font-size: 1.3rem; font-weight: bold; white-space: nowrap; text-overflow: ellipsis; display: block; }
+        .custom-input { background: #000; border: 1px solid #444; color: var(--amber); font-size: 1.3rem; font-weight: bold; width: 100%; padding: 5px; border-radius: 4px; }
+        .order-btns { display: flex; flex-direction: column; gap: 4px; margin-right: 10px; }
+        
+        /* REFINED SCROLLWHEEL */
+        .wheel-wrap { position: relative; width: 100px; height: 95px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; will-change: transform; pointer-events: none; }
-        .wheel-num { height: 30px; line-height: 30px; font-size: 1.3rem; font-weight: 800; color: #444; }
-        .wheel-num.active { color: #fff; text-shadow: 0 0 10px #fff; font-size: 1.9rem; }
-        .wheel-overlay { position: absolute; width: 100%; height: 32px; top: 31px; border-top: 2px solid var(--amber); border-bottom: 2px solid var(--amber); background: rgba(255,191,0,0.1); z-index: 5; pointer-events: none; }
+        .wheel-num { height: 30px; line-height: 30px; font-size: 1.1rem; font-weight: 500; color: #444; }
+        .wheel-num.active { color: var(--amber); text-shadow: 0 0 10px var(--amber); font-size: 1.8rem; font-weight: 900; }
+        .wheel-overlay { position: absolute; width: 100%; height: 32px; top: 31px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); z-index: 5; pointer-events: none; }
 
-        /* LIVE VIEW */
+        /* LIVE VIEW & REFINED EXIT */
         #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 35px 450px 35px; }
         .live-controls { position: fixed; top: 0; left: 0; width: 100%; height: 120px; background: rgba(15,15,15,0.98); padding: 10px 25px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; }
-        .exit-btn { background: var(--red); color: #fff; border: 2px solid #fff; padding: 12px 18px; border-radius: 12px; font-weight: 900; font-size: 1.4rem; box-shadow: 0 0 15px #c12718; }
+        
+        .exit-btn-refined { width: 50px; height: 50px; background: var(--amber); color: #000; border: none; border-radius: 25px; font-weight: 900; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255,191,0,0.4); }
+        .exit-btn-refined:active { transform: scale(0.9); background: #fff; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
@@ -41,24 +46,25 @@
 <body>
 
     <div class="top-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold;">TDF v9.10</div>
+        <div id="title" style="font-weight:bold; font-size:0.9rem; color:#666;">TDF v9.13</div>
         <button class="btn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button>
     </div>
 
     <div id="setMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-            <h2>SETLIST (TOUCH ≡)</h2>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <h2>SETLIST</h2>
+            <button class="btn-green" onclick="addCustomRow()">+ REGEL</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div class="menu-scroll" id="setList"></div>
     </div>
 
     <div id="songsMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
             <h2>BIBLIOTHEEK</h2>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
@@ -67,21 +73,21 @@
 
     <div id="liveView">
         <div class="live-controls">
-            <button class="exit-btn" onclick="exitLiveView()">X</button>
+            <button class="exit-btn-refined" onclick="exitLiveView()">X</button>
             <button id="playBtn" class="btn" style="width:70px; font-size:1.5rem;" onclick="toggleScroll()">▶</button>
             <div class="wheel-wrap" id="thumbWheel">
                 <div class="wheel-overlay"></div>
                 <div class="wheel-strip" id="wheelStrip"></div>
             </div>
-            <div id="liveClock" style="font-weight:bold;">00:00</div>
+            <div id="liveClock" style="font-weight:bold; font-size:1.2rem; color:var(--amber);">00:00</div>
         </div>
         <div id="liveContent"></div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [{title:"Demo", content:"[C] Tekst", scrollSpeed: 0}];
+        let db = JSON.parse(localStorage.getItem('tdfSongs')) || [{title:"Demo Song", content:"[C] Akkoord\nTekst regel 1", scrollSpeed: 0}];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
-        let cur = db[0], isScrolling = false, scrollAcc = 0, currentSpeed = 0;
+        let cur = null, isScrolling = false, scrollAcc = 0, currentSpeed = 0;
 
         window.onload = () => { createWheelNodes(); initTouchWheel(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
 
@@ -89,89 +95,59 @@
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
 
-        // --- NATIVE TOUCH DRAG (SETLIST) ---
+        function addCustomRow() { setlist.push({ title: "PAUZE / INFO", content: "", isCustom: true, scrollSpeed: 0 }); save(); render(); }
+        function updateCustomTitle(index, val) { setlist[index].title = val; save(); }
+        function moveItem(index, direction) {
+            let target = index + direction;
+            if (target >= 0 && target < setlist.length) {
+                let temp = setlist[index]; setlist[index] = setlist[target]; setlist[target] = temp;
+                save(); render();
+            }
+        }
+
         function render() {
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="drag-handle" ontouchstart="startDrag(event, ${i})">≡</div>
-                               <div class="row-name"><span class="song-title">${i+1}. ${s.title}</span></div>
-                               <button class="btn" style="margin-right:10px; border-color:red; color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                let titleHtml = s.isCustom 
+                    ? `<input type="text" class="custom-input" value="${s.title}" oninput="updateCustomTitle(${i}, this.value)">`
+                    : `<span class="song-title" onclick="loadSongByIndex(${i})">${i+1}. ${s.title}</span>`;
+                d.innerHTML = `<div class="order-btns"><button class="btn btn-sm" onclick="moveItem(${i}, -1)">↑</button><button class="btn btn-sm" onclick="moveItem(${i}, 1)">↓</button></div>
+                    <div class="row-name">${titleHtml}</div>
+                    <button class="btn" style="border-color:red; color:red;" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
             });
-
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             db.sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `<div class="row-name" onclick="loadSong('${s.title}')" style="pointer-events:auto;"><span class="song-title">${s.title}</span></div>
-                               <button class="btn" onclick="setlist.push(JSON.parse(JSON.stringify(db.find(x=>x.title==='${s.title}')))); save(); render();">+</button>`;
+                d.innerHTML = `<div class="row-name" onclick="loadSongByName('${s.title.replace(/'/g,"\\")}')"><span class="song-title">${s.title}</span></div>
+                    <button class="btn" onclick="setlist.push(JSON.parse(JSON.stringify(db.find(x=>x.title==='${s.title.replace(/'/g,"\\")}')))); save(); render();">+</button>`;
                 dbl.appendChild(d);
             });
         }
 
-        let dragEl = null, startIdx = null, startY = 0;
-        function startDrag(e, index) {
-            dragEl = e.target.closest('.row-item');
-            startIdx = index;
-            startY = e.touches[0].clientY;
-            dragEl.classList.add('dragging');
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.addEventListener('touchend', onTouchEnd);
-        }
-
-        function onTouchMove(e) {
-            e.preventDefault();
-            const y = e.touches[0].clientY;
-            dragEl.style.transform = `translateY(${y - startY}px)`;
-        }
-
-        function onTouchEnd(e) {
-            const y = e.changedTouches[0].clientY;
-            const dropItem = document.elementFromPoint(e.changedTouches[0].clientX, y)?.closest('.row-item');
-            if (dropItem && dragEl !== dropItem) {
-                const items = Array.from(document.getElementById('setList').children);
-                const endIdx = items.indexOf(dropItem);
-                const [moved] = setlist.splice(startIdx, 1);
-                setlist.splice(endIdx, 0, moved);
-            }
-            dragEl.classList.remove('dragging');
-            dragEl.style.transform = '';
-            document.removeEventListener('touchmove', onTouchMove);
-            document.removeEventListener('touchend', onTouchEnd);
-            save(); render();
-        }
-
-        // --- JOYSTICK ENGINE (0.0 START) ---
         function createWheelNodes() {
             const strip = document.getElementById('wheelStrip'); strip.innerHTML = "";
             for(let i=0; i<=150; i++) {
-                const d = document.createElement('div'); d.className = 'wheel-num';
-                d.innerText = (i/10).toFixed(1); strip.appendChild(d);
+                const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d);
             }
             updateWheelPosition();
         }
 
         function initTouchWheel() {
             const wheel = document.getElementById('thumbWheel');
-            let wStartY = 0, wStartSpeed = 0;
-            wheel.addEventListener('touchstart', (e) => {
-                wStartY = e.touches[0].clientY;
-                wStartSpeed = currentSpeed;
-                e.preventDefault();
-            }, {passive: false});
-
+            let startY = 0, startSpeed = 0;
+            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startSpeed = currentSpeed; e.preventDefault(); }, {passive: false});
             wheel.addEventListener('touchmove', (e) => {
-                const delta = wStartY - e.touches[0].clientY;
-                currentSpeed = Math.max(0, Math.min(15, wStartSpeed + (delta / 12)));
-                updateWheelPosition();
-                e.preventDefault();
+                const delta = startY - e.touches[0].clientY;
+                currentSpeed = Math.max(0, Math.min(15, startSpeed + (delta / 15)));
+                updateWheelPosition(); e.preventDefault();
             }, {passive: false});
         }
 
         function updateWheelPosition() {
             const strip = document.getElementById('wheelStrip');
-            // Harde fix: 32.5px is het centrum van de joystick container.
-            const yPos = 32.5 - (currentSpeed * 300); 
+            const yPos = 31 - (currentSpeed * 300); 
             strip.style.transform = `translateY(${yPos}px)`;
             const activeIdx = Math.round(currentSpeed * 10);
             strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx));
@@ -180,34 +156,33 @@
         function scrollEngine() {
             const lv = document.getElementById('liveView');
             if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
-                scrollAcc += (currentSpeed * 0.4); 
-                lv.scrollTop = Math.floor(scrollAcc);
+                scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc);
             }
             requestAnimationFrame(scrollEngine);
         }
 
-        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics(); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
-        function exitLiveView() { if(cur){cur.scrollSpeed = currentSpeed; save();} document.getElementById('liveView').style.display='none'; isScrolling=false; }
-        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
-        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
-        function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
-        function loadSong(t) { cur = db.find(x=>x.title===t); document.getElementById('title').innerText = cur.title; closeMenus(); }
-
         function drawLyrics() {
             const container = document.getElementById('liveContent');
+            if(!cur || cur.isCustom) { container.innerHTML = `<div style="font-size:4rem; text-align:center; padding-top:100px; color:var(--amber); font-weight:900;">${cur ? cur.title : ''}</div>`; return; }
             const lines = cur.content.split('\n'); let h = "";
             lines.forEach(l => {
                 let chords = [], txt = "", i = 0;
                 while(i < l.length) {
-                    if(l[i] === '[') {
-                        let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1;
-                    } else { txt += l[i]; i++; }
+                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; }
                 }
                 let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; });
-                h += `<div style="height:2rem; position:relative;">${r}</div><div style="font-size:2.2rem; margin-bottom:20px; font-weight:bold; color:#eee;">${txt || ' '}</div>`;
+                h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="font-size:2.2rem; margin-bottom:25px; font-weight:bold; color:#eee;">${txt || ' '}</div>`;
             });
             container.innerHTML = h; scrollAcc = 0;
         }
+
+        function enterLiveView() { if(!cur) return; document.getElementById('liveView').style.display='block'; drawLyrics(); currentSpeed=cur.scrollSpeed||0; updateWheelPosition(); isScrolling=false; updatePlayBtn(); }
+        function exitLiveView() { if(cur && !cur.isCustom){cur.scrollSpeed = currentSpeed; save();} document.getElementById('liveView').style.display='none'; isScrolling=false; }
+        function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
+        function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; document.getElementById('playBtn').style.background = isScrolling ? "var(--amber)" : "none"; document.getElementById('playBtn').style.color = isScrolling ? "#000" : "var(--amber)"; }
+        function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
+        function loadSongByIndex(index) { cur = setlist[index]; document.getElementById('title').innerText = cur.title; closeMenus(); }
+        function loadSongByName(t) { cur = db.find(x=>x.title===t); document.getElementById('title').innerText = cur.title; closeMenus(); }
     </script>
 </body>
 </html>
