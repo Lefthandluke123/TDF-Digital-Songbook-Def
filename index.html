@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.43</title>
+    <title>TDF Digital v9.44</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -48,7 +48,7 @@
         .edit-only { display: none !important; }
         .is-editing .edit-only { display: flex !important; flex-direction: column; margin-right: 15px; }
 
-        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 200px 35px; }
+        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; }
     </style>
 </head>
 <body>
@@ -58,7 +58,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; color:#555;">TDF v9.43</div>
+        <div id="title" style="font-weight:bold; color:#555;">TDF v9.44</div>
         <div style="display:flex; gap:8px;">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:#25D366; border-color:#25D366;" onclick="finishEdit()">OK</button>
@@ -178,8 +178,9 @@
 
         function scrollEngine() {
             const lv = document.getElementById('liveView');
-            if(lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
-                scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc);
+            if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 0) {
+                scrollAcc += (currentSpeed * 0.4); 
+                lv.scrollTop = Math.floor(scrollAcc);
             }
             requestAnimationFrame(scrollEngine);
         }
@@ -236,11 +237,7 @@
 
         function addToSetlist(title) {
             const s = db.find(x => x.title === title);
-            if(s) { 
-                setlist.push(JSON.parse(JSON.stringify(s))); 
-                save(); 
-                render(); 
-            }
+            if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); }
         }
 
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
@@ -302,10 +299,12 @@
             drawLyrics('liveContent'); 
             currentSpeed=cur.scrollSpeed||0; 
             scrollAcc=0;
-            document.getElementById('liveView').scrollTop=0;
-            updateWheelPosition(); 
             isScrolling=false; 
-            updatePlayBtn(); 
+            requestAnimationFrame(() => {
+                document.getElementById('liveView').scrollTop = 0;
+                updateWheelPosition(); 
+                updatePlayBtn(); 
+            });
         }
 
         function exitLiveView() { 
