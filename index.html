@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v8.40</title>
+    <title>TDF Digital v8.43</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --amber-dim: #cc9900; --red: #c12718; --grey: #121212; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -19,46 +19,43 @@
         .btn-green { background: #25D366; color: white; border: none; }
         .btn-red { border: 1px solid var(--red); color: var(--red); background: none; border-radius: 8px; }
 
-        .search-wrap { padding: 10px 15px; background: #000; border-bottom: 1px solid #222; }
-        .search-input { width: 100%; background: #1c1c1e; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 10px; font-size: 1.2rem; outline: none; }
-
         .main-container { flex: 1; height: calc(100vh - 85px); background: #fff; position: relative; overflow: hidden; }
         #lyricsArea { height: 100%; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; -webkit-overflow-scrolling: touch; }
         #editorArea { display: none; width: 100%; height: 65%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; resize: none; font-family: monospace; }
         
         #tagEditor { display: none; background: #222; padding: 15px 25px; border-top: 3px solid var(--amber); height: 35%; flex-direction: column; gap: 10px; z-index: 4000; }
-        #tagSuggestions { display: flex; gap: 10px; overflow-x: auto; min-height: 40px; padding-bottom: 8px; }
+        #tagSuggestions { display: flex; gap: 10px; overflow-x: auto; min-height: 40px; }
         .tag-sug { background: #444; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; border: 1px solid #666; white-space: nowrap; }
 
-        /* LIVE VIEW XL */
-        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 140px 50px 400px 50px; }
-        #liveView .lyric-line { font-size: 3.5rem; line-height: 1.2; margin-bottom: 40px; color: #eee; font-weight: bold; }
-        #liveView .chord-row { font-size: 4rem; height: 5rem; margin-bottom: 10px; color: var(--amber); }
+        /* LIVE VIEW MET SPEED INDICATOR */
+        #liveView { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 15000; overflow-y: auto; padding: 120px 35px 400px 35px; }
+        #liveView .lyric-line { font-size: 2.2rem; line-height: 1.2; margin-bottom: 35px; color: #eee; font-weight: bold; white-space: pre-wrap; word-wrap: break-word; }
+        #liveView .chord-row { font-size: 2.8rem; height: 3.2rem; margin-bottom: 5px; color: var(--amber); white-space: pre; }
         
         #liveView.only-chords .lyric-line { display: none; }
-        #liveView.only-chords .chord-row { font-size: 6rem; height: 7.5rem; margin-bottom: 60px; }
+        #liveView.only-chords .chord-row { font-size: 5rem; height: 6.5rem; margin-bottom: 50px; }
         
-        .live-controls { position: fixed; top: 0; left: 0; width: 100%; background: rgba(15,15,15,0.9); padding: 20px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); }
-        .scroll-slider { -webkit-appearance: none; flex: 1; margin: 0 30px; height: 15px; background: #333; border-radius: 10px; outline: none; border: 1px solid #444; }
-        .scroll-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 35px; height: 35px; background: var(--amber); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--amber); }
+        .live-controls { position: fixed; top: 0; left: 0; width: 100%; background: rgba(15,15,15,0.95); padding: 15px; display: flex; align-items: center; justify-content: space-between; z-index: 16000; border-bottom: 2px solid #333; backdrop-filter: blur(10px); }
+        .scroll-slider { -webkit-appearance: none; flex: 1; margin: 0 20px; height: 12px; background: #333; border-radius: 10px; outline: none; border: 1px solid #444; }
+        .scroll-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 35px; height: 35px; background: var(--amber); border-radius: 50%; cursor: pointer; }
+        .speed-label { color: var(--amber); font-weight: bold; font-size: 1.4rem; min-width: 50px; text-align: center; font-variant-numeric: tabular-nums; }
 
-        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.4s cubic-bezier(0.2, 1, 0.3, 1); display: flex; flex-direction: column; }
+        .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.4s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-header { padding: 20px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .menu-scroll { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
         
         .row-item { background: #1c1c1e; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; display: flex; align-items: center; }
         .row-name { flex: 1; padding: 22px; font-size: 1.8rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .drag-handle { padding: 22px; color: var(--amber); font-size: 2.2rem; cursor: move; user-select: none; }
-        .alpha-divider { padding: 20px 10px 8px 10px; color: var(--amber); font-size: 1rem; font-weight: bold; border-bottom: 2px solid #333; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .drag-handle { padding: 22px; color: var(--amber); font-size: 2.2rem; cursor: move; }
 
         .chord-row { color: var(--red); font-weight: bold; height: 1.8rem; position: relative; }
         .chord-item { position: absolute; }
         .lyric-line { margin-bottom: 22px; display: block; white-space: pre; }
 
-        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 15px; padding: 12px; display: none; z-index: 50000; border: 2px solid #444; box-shadow: 0 15px 40px rgba(0,0,0,0.9); }
+        .draggable-box { position: fixed; background: #1a1a1a; border-radius: 15px; padding: 12px; display: none; z-index: 50000; border: 2px solid #444; }
         .joy-btn { background: #222; color: var(--amber); border: 1px solid var(--amber-dim); width: 70px; height: 70px; border-radius: 50%; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; }
-        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 15px 30px; border-radius: 30px; font-weight: bold; display: none; z-index: 60000; font-size: 1.1rem; }
+        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 15px 30px; border-radius: 30px; font-weight: bold; display: none; z-index: 60000; }
     </style>
 </head>
 <body>
@@ -69,7 +66,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" style="margin-left:10px;" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" style="font-weight:bold; font-size: 1.2rem; text-align:center; flex:1;">TDF v8.40</div>
+        <div id="title" style="font-weight:bold; font-size: 1.2rem; text-align:center; flex:1;">TDF v8.43</div>
         <div style="display:flex; gap:10px;">
             <button class="btn" style="border-color:#34c759; color:#34c759;" onclick="enterLiveView()">LIVE</button>
             <button class="btn" onclick="startEdit()">✎</button>
@@ -80,7 +77,7 @@
     <div id="toast">Bericht</div>
 
     <div class="main-container">
-        <div id="lyricsArea">Kies een song. Snelheid wordt opgeslagen bij exit LIVE mode.</div>
+        <div id="lyricsArea">Laden...</div>
         <textarea id="editorArea" spellcheck="false"></textarea>
         <div id="tagEditor">
             <div id="tagSuggestions"></div>
@@ -91,7 +88,8 @@
     <div id="liveView">
         <div class="live-controls">
             <button class="btn-red" style="padding:10px 25px;" onclick="exitLiveView()">STOP</button>
-            <input type="range" id="scrollSpeed" class="scroll-slider" min="0" max="15" step="0.1" value="0">
+            <input type="range" id="scrollSpeed" class="scroll-slider" min="0" max="15" step="0.1" value="0" oninput="updateSpeedLabel()">
+            <div class="speed-label" id="speedValue">0.0</div>
             <button class="btn" id="chordToggleBtn" onclick="toggleOnlyChords()">CHORDS</button>
         </div>
         <div id="liveContent"></div>
@@ -171,11 +169,7 @@
 
         function loadSong(t) { 
             cur = db.find(x=>x.title===t) || setlist.find(x=>x.title===t); 
-            if(cur) { 
-                document.getElementById('title').innerText = cur.title; 
-                drawLyrics(document.getElementById('lyricsArea')); 
-                closeMenus(); 
-            } 
+            if(cur) { document.getElementById('title').innerText = cur.title; drawLyrics(document.getElementById('lyricsArea')); closeMenus(); } 
         }
         
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("Toegevoegd!"); } }
@@ -204,23 +198,24 @@
             if(!cur) return; 
             document.getElementById('liveView').style.display = 'block'; 
             drawLyrics(document.getElementById('liveContent'));
-            // Zet slider op opgeslagen snelheid
-            document.getElementById('scrollSpeed').value = cur.scrollSpeed || 0;
+            const speed = cur.scrollSpeed || 0;
+            document.getElementById('scrollSpeed').value = speed;
+            updateSpeedLabel();
+        }
+
+        function updateSpeedLabel() {
+            document.getElementById('speedValue').innerText = parseFloat(document.getElementById('scrollSpeed').value).toFixed(1);
         }
 
         function exitLiveView() { 
             if(cur) {
-                // Sla huidige snelheid op bij het liedje
-                const speed = document.getElementById('scrollSpeed').value;
-                cur.scrollSpeed = parseFloat(speed);
-                // Update ook in de hoofd-database als het daaruit komt
+                const speed = parseFloat(document.getElementById('scrollSpeed').value);
+                cur.scrollSpeed = speed;
                 let dbIdx = db.findIndex(s => s.title === cur.title);
-                if(dbIdx !== -1) db[dbIdx].scrollSpeed = cur.scrollSpeed;
+                if(dbIdx !== -1) db[dbIdx].scrollSpeed = speed;
                 save();
-                showToast("Snelheid bewaard: " + speed);
             }
             document.getElementById('liveView').style.display = 'none'; 
-            document.getElementById('scrollSpeed').value = 0; 
         }
 
         function toggleOnlyChords() { 
@@ -234,7 +229,7 @@
             const sp = document.getElementById('scrollSpeed'); 
             function step() { 
                 if(lv.style.display==='block' && sp.value > 0) {
-                    const actualSpeed = Math.pow(parseFloat(sp.value), 1.5) / 10;
+                    const actualSpeed = Math.pow(parseFloat(sp.value), 1.5) / 12;
                     lv.scrollTop += actualSpeed; 
                 }
                 requestAnimationFrame(step); 
@@ -276,6 +271,7 @@
         function exportSet() { const name = prompt("Naam:"); if (name) download(setlist, name); }
         function download(d, n) { const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = n + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500); }
         function importFiles(e, type) { const r = new FileReader(); r.onload = (p) => { try { const data = JSON.parse(p.target.result); if(type==='db') db = [...db, ...data]; else setlist = data; save(); render(); } catch(err) {} }; r.readAsText(e.target.files[0]); }
+        function pasteFromWA() { navigator.clipboard.readText().then(text => { if(!text) return; const lines = text.split('\n'); setlist = lines.map(l => { const t = l.replace(/^\d+[\s.)]*/, '').trim(); const s = db.find(x => x.title.toLowerCase() === t.toLowerCase()); return s ? JSON.parse(JSON.stringify(s)) : {title: t, content: "", tags: "", scrollSpeed: 0}; }).filter(x => x.title); save(); render(); }); }
         function cleanDatabase() { const unique = new Set(); const cleaned = []; db.forEach(s => { if(s.title && !unique.has(s.title.toLowerCase())) { unique.add(s.title.toLowerCase()); cleaned.push(s); }}); db = cleaned; save(); render(); showToast("Clean klaar!"); }
     </script>
 </body>
