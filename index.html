@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.75</title>
+    <title>TDF Digital v10.77</title>
     <style>
-        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
+        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #34c759; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
@@ -27,7 +27,6 @@
 
         .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px; color: #fff; border-bottom: 1px solid #222; overflow: hidden; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
-        .btn.active { background: var(--amber); color: #000; }
         .btn-move { border: 1px solid #444; color: #888; padding: 5px 10px; margin: 0 2px; font-size: 1.1rem; border-radius: 4px; background: #222; }
         
         .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
@@ -40,6 +39,7 @@
         
         #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
+        #archiveView { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; flex-direction: column; z-index: 100001; }
     </style>
 </head>
 <body>
@@ -105,9 +105,21 @@
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
+        
+        <div id="archiveView">
+            <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn" onclick="document.getElementById('archiveView').style.display='none'">❮ TERUG</button>
+                <b>ARCHIEF</b>
+                <div style="width:40px;"></div>
+            </div>
+            <div id="archiveList" class="menu-scroll"></div>
+        </div>
+
         <div class="menu-footer" style="padding:20px; background:#111; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn" onclick="exportSetToWA()">EXPORT SET (WA)</button>
-            <button class="btn" onclick="importSetFromWA()">IMPORT SET (WA)</button>
+            <button class="btn" style="border-color:var(--green); color:var(--green);" onclick="saveSetToArchive()">BEWAAR SET</button>
+            <button class="btn" onclick="openArchive()">ARCHIEF</button>
+            <button class="btn" onclick="exportSetToWA()">EXPORT (WA)</button>
+            <button class="btn" onclick="importSetFromWA()">IMPORT (WA)</button>
             <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="clearSetlist()">WIS ALLES</button>
         </div>
     </div>
@@ -115,6 +127,7 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        let archives = JSON.parse(localStorage.getItem('tdfArchives')) || {};
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
         let activeTags = [], bulkMode = false, selectedSongs = [];
         const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
@@ -180,21 +193,71 @@
             });
         }
 
+        function saveSetToArchive() {
+            if(setlist.length === 0) return showToast("LEGE SET");
+            const name = prompt("Naam voor deze setlist:");
+            if(name) {
+                archives[name] = JSON.parse(JSON.stringify(setlist));
+                localStorage.setItem('tdfArchives', JSON.stringify(archives));
+                showToast("OPGESLAGEN");
+            }
+        }
+
+        function openArchive() {
+            const view = document.getElementById('archiveView');
+            const list = document.getElementById('archiveList');
+            list.innerHTML = "";
+            Object.keys(archives).forEach(name => {
+                const d = document.createElement('div'); d.className = "setlist-row";
+                d.innerHTML = `<div style="flex:1;" onclick="loadArchive('${name.replace(/'/g, "\\'")}')"><b>${name.toUpperCase()}</b></div>
+                               <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="deleteArchive('${name.replace(/'/g, "\\'")}')">X</button>`;
+                list.appendChild(d);
+            });
+            view.style.display = 'flex';
+        }
+
+        function loadArchive(name) {
+            if(confirm(`Setlist '${name}' laden? Huidige set wordt overschreven.`)) {
+                setlist = JSON.parse(JSON.stringify(archives[name]));
+                save(); render();
+                document.getElementById('archiveView').style.display = 'none';
+                showToast("GELADEN");
+            }
+        }
+
+        function deleteArchive(name) {
+            if(confirm(`Archief '${name}' verwijderen?`)) {
+                delete archives[name];
+                localStorage.setItem('tdfArchives', JSON.stringify(archives));
+                openArchive();
+            }
+        }
+
         function exportSetToWA() {
             if(setlist.length === 0) return showToast("LEGE SET");
-            const str = btoa(unescape(encodeURIComponent(JSON.stringify(setlist))));
-            navigator.clipboard.writeText(str).then(() => showToast("GEKOPIEERD"));
+            let text = "TDF SETLIST:\n";
+            setlist.forEach((s, i) => {
+                text += `${i + 1}. ${s.title}\n`;
+            });
+            navigator.clipboard.writeText(text).then(() => showToast("TEKST GEKOPIEERD"));
         }
 
         function importSetFromWA() {
-            const str = prompt("Plak de Setlist-tekst hier:");
-            if(str) {
-                try {
-                    const data = JSON.parse(decodeURIComponent(escape(atob(str))));
-                    if(Array.isArray(data)) {
-                        setlist = data; save(); render(); showToast("SET GELADEN");
+            const text = prompt("Plak de WA lijst (bijv: 1. Titel, 2. Titel) hier:");
+            if(text) {
+                const lines = text.split('\n');
+                let newSet = [];
+                lines.forEach(line => {
+                    const title = line.replace(/^\d+\.\s*/, "").trim();
+                    if(title && title !== "TDF SETLIST:") {
+                        const song = db.find(s => s && s.title.toUpperCase() === title.toUpperCase());
+                        if(song) newSet.push(JSON.parse(JSON.stringify(song)));
+                        else newSet.push({ title: title, isNote: true }); // Als notitie toevoegen als song niet in DB zit
                     }
-                } catch(e) { showToast("FOUTIEVE CODE"); }
+                });
+                if(newSet.length > 0) {
+                    setlist = newSet; save(); render(); showToast("SET GEÏMPORTEERD");
+                }
             }
         }
 
@@ -252,4 +315,4 @@
         function importDB(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { db = JSON.parse(ev.target.result); save(); render(); showToast("OK"); } catch(err) { showToast("FOUT"); } }; r.readAsText(f); }
     </script>
 </body>
-</html
+</html>
