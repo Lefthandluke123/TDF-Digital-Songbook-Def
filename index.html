@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.83</title>
+    <title>TDF Digital v9.84</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,7 +19,6 @@
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; z-index: 20; color: #fff; }
-        #liveContent { font-size: 2.5rem !important; font-weight: bold; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
@@ -31,12 +30,13 @@
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
         
-        #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; background: #111; border-bottom: 1px solid #333; white-space: nowrap; min-height: 55px; align-items: center; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; transition: 0.2s; }
+        .tag-cloud-container { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; padding-right: 10px; }
+        #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; white-space: nowrap; flex: 1; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; }
+        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; margin-bottom: 5px; }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -100,7 +100,7 @@
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
-        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); font-weight:bold;">00:00</div>
+        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); font-weight:bold; min-width:60px;">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -108,14 +108,15 @@
             <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div style="padding:10px 15px; background:#111;">
-            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje of tag..." oninput="render()" style="margin:0; width:100%;">
+        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje of tag..." oninput="render()" style="margin:0; width:100%; background:#000; color:#fff; border:1px solid #444; padding:10px; border-radius:8px;"></div>
+        <div class="tag-cloud-container">
+            <div id="tagList"></div>
+            <button class="btn" onclick="addNewTag()" style="padding:5px 10px;">+</button>
         </div>
-        <div id="tagList"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
-            <button class="btn" style="width:100%;" id="adminBtnMain" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
+            <button class="btn" style="width:100%;" id="songAdminToggle" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="exportDB()">EXPORT DB</button>
                 <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
@@ -160,7 +161,7 @@
             if(!selectMode) selectedSongs = [];
             document.getElementById('selectBtn').classList.toggle('active', selectMode);
             document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block';
+            document.getElementById('songAdminToggle').style.display = selectMode ? 'none' : 'block';
             render(); 
         }
 
@@ -170,51 +171,45 @@
             document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`;
         }
 
+        function addNewTag() {
+            const nt = prompt("Nieuwe tag naam:");
+            if(nt) {
+                if(selectMode && selectedSongs.length > 0) {
+                    db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } });
+                    save(); showToast(`TAG '${nt}' TOEGEVOEGD`); render();
+                } else {
+                    showToast("Selecteer songs om tag toe te voegen.");
+                }
+            }
+        }
+
         function bulkAddToSet() {
             selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); });
             save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); closeMenus(); openMenu('setMenu');
         }
 
-        function toggleSetEdit() { 
-            setEditMode = !setEditMode; 
-            document.getElementById('setEditBtn').classList.toggle('active', setEditMode);
-            render(); 
-        }
+        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
             
-            let allTags = new Set(); db.forEach(s => s.tags && s.tags.split(',').forEach(t => allTags.add(t.trim())));
+            let allTags = new Set(); db.forEach(s => s.tags && s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); }));
 
             Array.from(allTags).sort().forEach(t => {
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
                 p.innerText = t;
-                
-                // Click: Toevoegen of Filteren
+                p.onmousedown = () => { pressTimer = window.setTimeout(() => handleLongPressTag(t), 800); };
+                p.onmouseup = () => clearTimeout(pressTimer);
+                p.ontouchstart = () => { pressTimer = window.setTimeout(() => handleLongPressTag(t), 800); };
+                p.ontouchend = () => clearTimeout(pressTimer);
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
                         db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); showToast(`TAG '${t}' TOEGEVOEGD`); render();
                     } else {
                         if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
-                    }
-                };
-
-                // Long press / Context menu: Verwijderen
-                p.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    if(selectMode && selectedSongs.length > 0) {
-                        if(confirm(`Tag '${t}' verwijderen van selectie?`)) {
-                            db.forEach(s => { if(selectedSongs.includes(s.title) && s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                            save(); showToast(`TAG '${t}' VERWIJDERD`); render();
-                        }
-                    } else {
-                        if(confirm(`Tag '${t}' overal verwijderen uit database?`)) {
-                            db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                            save(); showToast(`TAG '${t}' GEWIST`); render();
-                        }
                     }
                 };
                 tagsDiv.appendChild(p);
@@ -241,6 +236,20 @@
                 d.innerHTML = `<div style="flex:1" onclick="${setEditMode?'editSetSong('+i+')':'liveSetSong('+i+')'}"><span class="${s.isNote?'note-row':'setlist-title'}">${s.isNote ? '--- '+s.title+' ---' : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
             });
+        }
+
+        function handleLongPressTag(t) {
+            if(selectMode && selectedSongs.length > 0) {
+                if(confirm(`Verwijder tag '${t}' van de ${selectedSongs.length} geselecteerde nummers?`)) {
+                    db.forEach(s => { if(selectedSongs.includes(s.title) && s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
+                    save(); showToast(`TAG '${t}' VERWIJDERD`); render();
+                }
+            } else {
+                if(confirm(`Tag '${t}' OVERAL uit de database wissen?`)) {
+                    db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
+                    save(); showToast(`TAG '${t}' GEWIST`); render();
+                }
+            }
         }
 
         function loadSongByName(t) { cur = db.find(x => x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
@@ -276,17 +285,10 @@
         }
 
         function finishEdit() { 
-            cur.content = document.getElementById('editorArea').value; 
-            cur.tags = document.getElementById('editorTagField').value;
+            cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value;
             let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; }
-            save(); 
-            document.getElementById('editorContainer').style.display = 'none'; 
-            if(document.getElementById('liveView').style.display !== 'block') {
-                document.getElementById('lyricsArea').style.display = 'block';
-                drawLyrics('lyricsArea');
-            } else {
-                drawLyrics('liveContent');
-            }
+            save(); document.getElementById('editorContainer').style.display = 'none'; 
+            if(document.getElementById('liveView').style.display !== 'block') { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } else { drawLyrics('liveContent'); }
         }
         
         function drawLyrics(id) { 
