@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.84</title>
+    <title>TDF Digital v9.85</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -30,10 +30,13 @@
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
         
-        .tag-cloud-container { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; padding-right: 10px; }
-        #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; white-space: nowrap; flex: 1; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
+        /* Fixed Tag Cloud Area */
+        .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
+        #tagList { display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0; }
+        #tagList::-webkit-scrollbar { display: none; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; border: 1px solid transparent; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
+        .plus-tag-btn { background: var(--amber); color: #000; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; font-weight: bold; margin-left: 10px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; }
         .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; margin-bottom: 5px; }
@@ -108,10 +111,10 @@
             <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje of tag..." oninput="render()" style="margin:0; width:100%; background:#000; color:#fff; border:1px solid #444; padding:10px; border-radius:8px;"></div>
-        <div class="tag-cloud-container">
+        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="margin:0; width:100%; background:#000; color:#fff; border:1px solid #444; padding:10px; border-radius:8px;"></div>
+        <div class="tag-cloud-wrapper">
             <div id="tagList"></div>
-            <button class="btn" onclick="addNewTag()" style="padding:5px 10px;">+</button>
+            <button class="plus-tag-btn" onclick="addNewTag()">+</button>
         </div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
@@ -242,12 +245,12 @@
             if(selectMode && selectedSongs.length > 0) {
                 if(confirm(`Verwijder tag '${t}' van de ${selectedSongs.length} geselecteerde nummers?`)) {
                     db.forEach(s => { if(selectedSongs.includes(s.title) && s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                    save(); showToast(`TAG '${t}' VERWIJDERD`); render();
+                    save(); render();
                 }
             } else {
                 if(confirm(`Tag '${t}' OVERAL uit de database wissen?`)) {
                     db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                    save(); showToast(`TAG '${t}' GEWIST`); render();
+                    save(); render();
                 }
             }
         }
@@ -257,50 +260,19 @@
         function liveSetSong(i) { cur = setlist[i]; enterLiveView(); closeMenus(); }
         function editSetSong(i) { cur = setlist[i]; startEdit(); closeMenus(); }
 
-        function enterLiveView() { 
-            if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
-            drawLyrics('liveContent'); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0;
-        }
-
+        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0; }
         function exitLiveView() { document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling = false; }
         function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
-
         function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 4) { scrollAcc += (currentSpeed * 0.055); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
-        function initTouchWheel() { 
-            const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; 
-            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); 
-            wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(4, Math.min(22, startS + ((startY - e.touches[0].clientY) / 15))); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); 
-        }
-
+        function initTouchWheel() { const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(4, Math.min(22, startS + ((startY - e.touches[0].clientY) / 15))); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
         function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=40; i<=220; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i + " BPM"; strip.appendChild(d); } }
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 28) - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
 
-        function startEdit() { 
-            if(!cur) return; 
-            document.getElementById('editorTitle').innerText = cur.title;
-            document.getElementById('editorArea').value = cur.content; 
-            document.getElementById('editorTagField').value = cur.tags || "";
-            document.getElementById('editorContainer').style.display = 'flex'; 
-        }
-
-        function finishEdit() { 
-            cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value;
-            let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; }
-            save(); document.getElementById('editorContainer').style.display = 'none'; 
-            if(document.getElementById('liveView').style.display !== 'block') { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } else { drawLyrics('liveContent'); }
-        }
+        function startEdit() { if(!cur) return; document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorTagField').value = cur.tags || ""; document.getElementById('editorContainer').style.display = 'flex'; }
+        function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display !== 'block') { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } else { drawLyrics('liveContent'); } }
         
-        function drawLyrics(id) { 
-            const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; 
-            lines.forEach(l => { 
-                let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } 
-                let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); 
-                h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; 
-            }); 
-            container.innerHTML = h; document.getElementById('bgLogo').style.display = 'none'; 
-        }
-
+        function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; document.getElementById('bgLogo').style.display = 'none'; }
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("GEKOPIEERD")); }
         function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const song = db.find(s => s.title.toLowerCase() === l.trim().toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }); save(); render(); } }
