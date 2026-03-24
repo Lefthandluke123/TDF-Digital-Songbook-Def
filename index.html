@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.90</title>
+    <title>TDF Digital v9.91</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,9 +20,10 @@
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 600px 35px; z-index: 20; color: #fff; }
         
+        /* Gecorrigeerde Font Scaling */
+        .font-sm { font-size: 1.8rem !important; } /* Een stap kleiner dan standaard */
         .font-std { font-size: 2.5rem !important; }
-        .font-lg { font-size: 3.5rem !important; }
-        .font-xl { font-size: 4.5rem !important; }
+        .font-lg { font-size: 3.0rem !important; } /* Subtiel groter */
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
@@ -39,24 +40,19 @@
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
-        /* Editor PWA Fix */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar-wrapper { width: 100%; background: #222; border-bottom: 1px solid #444; overflow-x: auto; flex-shrink: 0; }
         #chordBar { display: flex; gap: 10px; padding: 15px; min-width: 100%; }
         .chord-btn { background: #333; color: var(--amber); border: 2px solid var(--amber); padding: 12px 15px; border-radius: 8px; font-weight: 900; font-size: 1.1rem; min-width: 65px; text-align: center; flex-shrink: 0; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
-        /* Menu Footer & Admin Submenu PWA Fix */
-        .menu-footer { padding: 15px 15px calc(15px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; flex-shrink: 0; width: 100%; }
-        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 12px; width: 100%; padding: 15px; gap: 12px; margin-bottom: 5px; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
-        .admin-submenu.open { display: flex; flex-direction: column; }
-
+        /* Scrollwheel Contrast Fix */
         #liveFooter { height: calc(110px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px env(safe-area-inset-bottom) 15px; z-index: 5000; }
         .wheel-wrap { position: relative; width: 100px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
-        .wheel-num { height: 28px; line-height: 28px; font-size: 0.9rem; color: #444; }
-        .wheel-num.active { color: var(--amber); font-size: 1.2rem; font-weight: bold; }
-        .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); pointer-events: none; }
+        .wheel-num { height: 28px; line-height: 28px; font-size: 0.95rem; color: #eee; } /* Lichter voor leesbaarheid */
+        .wheel-num.active { color: var(--amber); font-size: 1.4rem; font-weight: 900; }
+        .wheel-overlay { position: absolute; width: 100%; height: 32px; top: 26px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.1); pointer-events: none; }
         
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 40000; display: none; }
     </style>
@@ -156,7 +152,7 @@
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
 
-        function cycleFontSize() { if(!cur) return; const sizes = ['std', 'lg', 'xl']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); showToast("GROOTTE: " + cur.liveSize.toUpperCase()); }
+        function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); showToast("LETTER: " + (cur.liveSize==='sm'?'KLEIN':cur.liveSize==='lg'?'GROOT':'STANDAARD')); }
         function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
 
         function render() {
