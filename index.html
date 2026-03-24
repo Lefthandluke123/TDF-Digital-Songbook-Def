@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.16</title>
+    <title>TDF Digital v10.18</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,10 +29,17 @@
         
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; touch-action: manipulation; }
         .btn.active { background: var(--amber); color: #000; }
-        .btn-next { background: var(--amber); color: #000; min-width: 100px; }
 
         #liveFooter { height: calc(130px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(20px + env(safe-area-inset-bottom)) 15px; z-index: 5000; pointer-events: auto; }
-        .clock-container { text-align: right; min-width: 80px; }
+        
+        /* Verbeterd BPM Wiel */
+        .wheel-wrap { position: relative; width: 100px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; margin: 0 10px; }
+        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; transition: transform 0.1s linear; }
+        .wheel-num { height: 34px; line-height: 34px; font-size: 1rem; color: #fff; opacity: 0.3; } 
+        .wheel-num.active { color: var(--amber); font-size: 1.5rem; font-weight: 900; opacity: 1; }
+        .wheel-highlight { position: absolute; width: 100%; height: 36px; top: 32px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.15); pointer-events: none; z-index: 2; }
+
+        .clock-container { text-align: right; min-width: 70px; }
         #liveClockDisplay { font-size: 1.1rem; font-weight: bold; }
         #setTimerDisplay { font-size: 0.9rem; color: var(--amber); font-weight: bold; }
 
@@ -67,14 +74,23 @@
 
     <div id="liveFooter">
         <div style="display:flex; gap:8px;"><button class="btn" onclick="exitLiveView()">X</button></div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; align-items:center;">
             <button class="btn" onclick="resetSongScroll()">⏮</button>
-            <button id="playBtn" class="btn" style="width:70px; font-size:1.6rem;" onclick="toggleScroll()">▶</button>
-            <button id="nextSongBtn" class="btn btn-next" onclick="goToNextSong()">VOLGENDE</button>
+            <button id="playBtn" class="btn" style="width:60px; font-size:1.6rem; margin: 0 10px;" onclick="toggleScroll()">▶</button>
+            
+            <div class="wheel-wrap" id="bpmWheel">
+                <div class="wheel-highlight"></div>
+                <div class="wheel-strip" id="wheelStrip"></div>
+            </div>
+
+            <button class="btn" id="fontSizeBtn" onclick="cycleFontSize()">A+</button>
         </div>
-        <div class="clock-container">
-            <div id="liveClockDisplay">00:00</div>
-            <div id="setTimerDisplay">0m</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div class="clock-container">
+                <div id="liveClockDisplay">00:00</div>
+                <div id="setTimerDisplay">0m</div>
+            </div>
+            <button id="nextSongBtn" class="btn" style="background:var(--amber); color:#000; min-width:90px;" onclick="goToNextSong()">VOLGENDE</button>
         </div>
     </div>
 
@@ -94,7 +110,10 @@
 
     <div id="setMenu" class="full-menu">
         <div class="setlist-header">
-            <button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT</button>
+                <button class="btn" id="addNoteBtn" style="display:none; border-color:var(--green); color:var(--green);" onclick="addCustomNote()">NOTITIE +</button>
+            </div>
             <div style="text-align:right">
                 <div id="headerTime" style="font-size:1.2rem; font-weight:bold;">00:00</div>
                 <div id="headerTimer" style="font-size:1rem; color:var(--amber); font-weight:bold;">0m</div>
@@ -124,19 +143,18 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let archives = JSON.parse(localStorage.getItem('tdfArchives')) || [];
-        let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 11, setEditMode = false;
+        let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 100, setEditMode = false;
         let setStartTime = localStorage.getItem('tdfSetStartTime') || null;
 
-        window.onload = () => { render(); setInterval(updateClocks, 1000); requestAnimationFrame(scrollEngine); };
+        const MIN_BPM = 40, MAX_BPM = 220;
+
+        window.onload = () => { createBpmNodes(); initBpmWheel(); render(); setInterval(updateClocks, 1000); requestAnimationFrame(scrollEngine); };
 
         function updateClocks() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'});
             let timerStr = "0m";
-            if(setStartTime) {
-                const diff = Math.floor((now - new Date(setStartTime)) / 60000);
-                timerStr = diff + "m";
-            }
+            if(setStartTime) { timerStr = Math.floor((now - new Date(setStartTime)) / 60000) + "m"; }
             document.getElementById('liveClockDisplay').innerText = timeStr;
             document.getElementById('setTimerDisplay').innerText = timerStr;
             document.getElementById('headerTime').innerText = timeStr;
@@ -157,7 +175,7 @@
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                d.innerHTML = `<div style="flex:1" onclick="${setEditMode?'':'liveSetSong('+i+')'}"><span>${s.isNote ? '-- '+s.title+' --' : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                d.innerHTML = `<div style="flex:1" onclick="${(setEditMode || s.isNote)?'':'liveSetSong('+i+')'}"><span>${s.isNote ? '-- '+s.title+' --' : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
             });
 
@@ -169,51 +187,76 @@
             });
         }
 
-        function liveSetSong(i) { curIdx = i; cur = setlist[i]; enterLiveView(); closeMenus(); }
-
-        function goToNextSong() {
-            if (curIdx < setlist.length - 1) {
-                curIdx++;
-                cur = setlist[curIdx];
-                enterLiveView();
-            } else {
-                exitLiveView();
-                openMenu('setMenu');
-                showToast("SETLIST VOLTOOID");
+        function createBpmNodes() {
+            const strip = document.getElementById('wheelStrip'); strip.innerHTML = "";
+            for(let i = MIN_BPM; i <= MAX_BPM; i++) {
+                const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i; strip.appendChild(d);
             }
         }
 
+        function initBpmWheel() {
+            const wheel = document.getElementById('bpmWheel'); let startY = 0, startS = 0;
+            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false});
+            wheel.addEventListener('touchmove', (e) => {
+                let delta = (startY - e.touches[0].clientY) / 8;
+                currentSpeed = Math.round(Math.max(MIN_BPM, Math.min(MAX_BPM, startS + delta)));
+                if(cur) { cur.scrollSpeed = currentSpeed; save(); }
+                updateWheelPosition(); e.preventDefault();
+            }, {passive:false});
+        }
+
+        function updateWheelPosition() {
+            const strip = document.getElementById('wheelStrip');
+            strip.style.transform = `translateY(${(1 * 34) - ((currentSpeed - MIN_BPM) * 34)}px)`;
+            strip.querySelectorAll('.wheel-num').forEach((n, i) => {
+                n.classList.toggle('active', (i + MIN_BPM) === currentSpeed);
+            });
+        }
+
+        function liveSetSong(i) { curIdx = i; cur = setlist[i]; enterLiveView(); closeMenus(); }
+        function goToNextSong() {
+            if (curIdx < setlist.length - 1) {
+                curIdx++; if(setlist[curIdx].isNote) { goToNextSong(); return; }
+                cur = setlist[curIdx]; enterLiveView();
+            } else { exitLiveView(); openMenu('setMenu'); showToast("EINDE SET"); }
+        }
+
         function enterLiveView() { 
-            if(!cur) return; 
-            if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } 
-            document.getElementById('mainTopBar').style.display = 'none'; 
-            document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('liveView').style.display='block'; 
-            document.getElementById('liveFooter').style.display='flex'; 
-            
-            // Update knop tekst
-            const nextBtn = document.getElementById('nextSongBtn');
-            nextBtn.innerText = (curIdx < setlist.length - 1) ? "VOLGENDE" : "EINDE SET";
-            
-            drawLyrics('liveContent'); 
-            resetSongScroll();
+            if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } 
+            document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; 
+            document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
+            document.getElementById('nextSongBtn').innerText = (curIdx < setlist.length - 1) ? "VOLGENDE" : "EINDE";
+            drawLyrics('liveContent'); applyFontSize(); 
+            currentSpeed = cur.scrollSpeed || 100; updateWheelPosition(); resetSongScroll();
         }
 
         function exitLiveView() { document.getElementById('mainTopBar').style.display = 'flex'; document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling = false; }
-        function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling) { scrollAcc += (currentSpeed * 0.055); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
+        
+        function scrollEngine() { 
+            const lv = document.getElementById('liveView'); 
+            if(lv && lv.style.display === 'block' && isScrolling) { 
+                // BPM naar pixel-stap conversie (BPM 100 = ~0.5px per frame)
+                scrollAcc += (currentSpeed * 0.005); 
+                lv.scrollTop = Math.floor(scrollAcc); 
+            } 
+            requestAnimationFrame(scrollEngine); 
+        }
+
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollAcc = document.getElementById('liveView').scrollTop; }
         function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
-
         function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; }
         function addToSetlist(t) { const s = db.find(x => x && x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("OK"); render(); } }
-        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); render(); }
+        function addCustomNote() { const val = prompt("Notitie:"); if(val) { setlist.push({title: val.toUpperCase(), isNote: true}); save(); render(); } }
+        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); document.getElementById('addNoteBtn').style.display = setEditMode ? 'block' : 'none'; render(); }
+        function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); }
+        function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
         function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
         function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         function clearSetlist() { if(confirm("Setlist wissen?")) { setlist = []; setStartTime = null; curIdx = -1; localStorage.removeItem('tdfSetStartTime'); save(); render(); } }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("OK")); }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
+        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); const d = new Date(); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
         function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
     </script>
 </body>
