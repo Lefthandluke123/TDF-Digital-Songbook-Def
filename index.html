@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.79</title>
+    <title>TDF Digital v10.81</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #34c759; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,16 +37,17 @@
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
         
-        #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
-        .wheel-wrap { position: relative; width: 90px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
+        #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 5px 25px 5px; z-index: 10000; flex-shrink: 0; }
+        .wheel-wrap { position: relative; width: 85px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
-        /* CIJFERS VERBETERD */
-        .wheel-num { height: 34px; line-height: 34px; font-size: 1.1rem; color: #fff; opacity: 0.4; transition: 0.1s; } 
-        .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; opacity: 1; text-shadow: 0 0 10px rgba(255,191,0,0.4); }
+        .wheel-num { height: 34px; line-height: 34px; font-size: 1.1rem; color: #fff; opacity: 0.4; } 
+        .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; opacity: 1; }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
         #archiveView { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; flex-direction: column; z-index: 100001; }
         .font-sm { font-size: 1.3rem !important; } .font-std { font-size: 2.1rem !important; } .font-lg { font-size: 3.1rem !important; }
+        .help-text { padding: 20px; line-height: 1.6; color: #ccc; }
+        .help-text b { color: var(--amber); }
     </style>
 </head>
 <body>
@@ -56,6 +57,7 @@
     <div class="top-bar" id="mainTopBar">
         <div class="top-left">
             <img src="logo.png" class="logo-img" onclick="location.reload()">
+            <button class="btn" onclick="openMenu('helpMenu')" style="border-radius: 50%; padding: 8px 12px;">?</button>
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
@@ -82,14 +84,33 @@
 
     <div id="liveFooter">
         <button class="btn" onclick="exitLive()">EXIT</button>
-        <button class="btn" style="font-size:1.5rem;" onclick="navSet(-1)">❮</button>
-        <button id="playBtn" class="btn" style="width:60px; font-size:1.6rem;" onclick="toggleScroll()">▶</button>
-        <button class="btn" style="font-size:1.5rem;" onclick="navSet(1)">❯</button>
+        <button class="btn" style="font-size:1.4rem;" onclick="navSet(-1)">❮</button>
+        <button class="btn" style="font-size:1.4rem;" onclick="resetScroll()">↺</button>
+        <button id="playBtn" class="btn" style="width:55px; font-size:1.6rem;" onclick="toggleScroll()">▶</button>
+        <button class="btn" style="font-size:1.4rem;" onclick="navSet(1)">❯</button>
         <div class="wheel-wrap" id="bpmWheel">
             <div style="position:absolute; width:100%; height:34px; top:33px; border-top:2px solid var(--amber); border-bottom:2px solid var(--amber); background:rgba(255,191,0,0.15); pointer-events:none; z-index:2;"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
         <button class="btn" onclick="cycleFontSize()">A+</button>
+    </div>
+
+    <div id="helpMenu" class="full-menu">
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <b>MANUAL / HANDLEIDING</b>
+            <button class="btn" onclick="closeMenus()">X</button>
+        </div>
+        <div class="menu-scroll help-text">
+            <b>🇳🇱 Nederlands</b><br>
+            1. <b>Installatie:</b> Open dit bestand in Safari op je iPad. Tik op het deel-icoon (vierkant met pijl) en kies 'Zet op beginscherm'.<br>
+            2. <b>Beheer:</b> In 'SONGS' beheer je je database. Gebruik 'BACKUP DB' om je werk veilig op te slaan als bestand.<br>
+            3. <b>Live:</b> Tik op een song in je SET om te spelen. Het BPM-wiel onthoudt je snelheid automatisch.<br><br>
+            <hr style="border-color:#333;"><br>
+            <b>🇬🇧 English</b><br>
+            1. <b>Installation:</b> Open this file in Safari on iPad. Tap the share icon (square with arrow) and select 'Add to Home Screen'.<br>
+            2. <b>Management:</b> Use 'SONGS' to manage your library. Use 'BACKUP DB' to save your repertoire to a safe file.<br>
+            3. <b>Live:</b> Tap a song in your SET to perform. The BPM wheel saves your speed per song automatically.
+        </div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -211,9 +232,9 @@
             w.addEventListener('touchmove', e => { 
                 let delta = Math.round((sY - e.touches[0].clientY) / 5);
                 currentSpeed = Math.max(MIN_BPM, Math.min(MAX_BPM, sV + delta));
-                if(cur) { cur.scrollSpeed = currentSpeed; save(); }
                 updateWheel(); e.preventDefault(); 
             }, {passive:false});
+            w.addEventListener('touchend', () => { if(cur) { cur.scrollSpeed = currentSpeed; save(); } });
         }
         function updateWheel() {
             const s = document.getElementById('wheelStrip');
