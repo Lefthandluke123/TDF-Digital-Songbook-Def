@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.55</title>
+    <title>TDF Digital v9.56</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
-        /* Top Bar Herstel */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
         .top-left { display: flex; align-items: center; gap: 10px; flex: 1.5; }
         .top-center { flex: 2; text-align: center; font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -25,9 +24,9 @@
 
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         
-        /* Watermerk met knipper-animatie */
-        @keyframes pulseWatermark { 0% { opacity: 0.05; } 50% { opacity: 0.15; } 100% { opacity: 0.05; } }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; opacity: 0.1; pointer-events: none; z-index: 0; animation: pulseWatermark 4s infinite ease-in-out; }
+        /* Watermerk met DUIdelijke puls-animatie */
+        @keyframes pulseWatermark { 0% { opacity: 0; } 50% { opacity: 0.3; } 100% { opacity: 0; } }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulseWatermark 3s infinite ease-in-out; }
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
 
