@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.0</title>
+    <title>TDF Digital v10.03</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +37,6 @@
         .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
         #tagList { display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
-        .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar-wrapper { width: 100%; background: #222; border-bottom: 1px solid #444; overflow-x: auto; flex-shrink: 0; }
@@ -47,7 +46,7 @@
 
         #liveFooter { height: calc(130px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(20px + env(safe-area-inset-bottom)) 15px; z-index: 5000; pointer-events: auto; }
         .wheel-wrap { position: relative; width: 105px; height: 90px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
-        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
+        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; transition: transform 0.05s linear; }
         .wheel-num { height: 30px; line-height: 30px; font-size: 1rem; color: #fff; opacity: 0.5; } 
         .wheel-num.active { color: var(--amber); font-size: 1.5rem; font-weight: 900; opacity: 1; }
         .wheel-overlay { position: absolute; width: 100%; height: 34px; top: 28px; border-top: 2px solid var(--amber); border-bottom: 2px solid var(--amber); background: rgba(255,191,0,0.15); pointer-events: none; }
@@ -59,10 +58,6 @@
         .menu-footer { padding: 20px 15px calc(45px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 12px; align-items: center; flex-shrink: 0; z-index: 11000; pointer-events: auto; }
         .admin-submenu { display: none; background: #222; border: 2px solid #444; border-radius: 12px; width: 100%; padding: 15px; gap: 12px; margin-bottom: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
         .admin-submenu.open { display: flex; flex-direction: column; }
-
-        .manual-section { margin-bottom: 30px; border-left: 3px solid var(--amber); padding: 5px 15px; }
-        .manual-section h3 { color: var(--amber); margin: 0 0 5px 0; }
-        .manual-section p { color: #ccc; font-size: 0.95rem; line-height: 1.4; }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 40000; display: none; }
     </style>
@@ -94,7 +89,7 @@
                     <b style="color:var(--amber)" id="editorTitle">EDITOR</b>
                     <button class="btn" onclick="finishEdit()">OK / OPSLAAN</button>
                 </div>
-                <input type="text" id="editorTagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:8px; border-radius:6px;" placeholder="Tags...">
+                <input type="text" id="editorTagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:8px; border-radius:6px;" placeholder="Tags (komma gescheiden)...">
             </div>
             <div class="chord-bar-wrapper"><div id="chordBar"></div></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
@@ -130,8 +125,9 @@
         <div class="menu-footer">
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="openMenu('manualMenu')">MANUAL / HELP</button>
-                <button class="btn" onclick="exportDB()">EXPORT DB</button>
-                <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
+                <button class="btn" onclick="document.getElementById('importTxtFile').click()">IMPORT TXT SONG</button>
+                <button class="btn" onclick="exportDB()">EXPORT DB (JSON)</button>
+                <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT DB (JSON)</button>
             </div>
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button>
             <button class="btn" style="width:100%;" id="adminBtnMain" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
@@ -160,23 +156,19 @@
 
     <div id="manualMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>MANUAL / HELP</b><button class="btn" onclick="openMenu('songsMenu')">X</button></div>
-        <div class="menu-scroll" style="padding:20px;">
-            <div class="manual-section">
-                <h3>NL - Taggen</h3>
-                <p>Klik SELECT -> kies songs -> klik tag. Lange druk op tag = verwijderen.</p>
-                <h3>EN - Tagging</h3>
-                <p>Click SELECT -> choose songs -> click tag. Long press tag = remove.</p>
-            </div>
-            <div class="manual-section">
-                <h3>NL - Live & Timer</h3>
-                <p>In LIVE mode zie je de huidige tijd (wit) en set-tijd (amber).</p>
-                <h3>EN - Live & Timer</h3>
-                <p>In LIVE mode you see current time (white) and set-time (amber).</p>
+        <div class="menu-scroll">
+            <div class="manual-content">
+                <div class="manual-section">
+                    <h2>IMPORT</h2>
+                    <p><b>JSON:</b> Gebruik dit voor volledige backups van al je songs.</p>
+                    <p><b>TXT:</b> Gebruik dit om een losse song toe te voegen. De bestandsnaam wordt de titel.</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <input type="file" id="importFile" style="display:none" onchange="importDB(event)">
+    <input type="file" id="importJsonFile" style="display:none" accept=".json,application/json" onchange="importDB(event)">
+    <input type="file" id="importTxtFile" style="display:none" accept=".txt,text/plain" onchange="importTxt(event)">
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
@@ -202,16 +194,25 @@
             localStorage.setItem('tdfArchives', JSON.stringify(archives));
         }
 
-        function saveActiveSet() {
-            if(setlist.length === 0) return;
-            const name = prompt("Naam voor deze setlist:");
-            if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); showToast("SET OPGESLAGEN"); render(); }
+        function importTxt(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const title = file.name.replace(/\.[^/.]+$/, "");
+                const content = ev.target.result;
+                if (db.some(s => s.title === title)) {
+                    if (!confirm("Song bestaat al. Overschrijven?")) return;
+                    db = db.filter(s => s.title !== title);
+                }
+                db.push({ title: title, content: content, tags: "", scrollSpeed: 11, liveSize: 'std' });
+                save(); render(); showToast("SONG GEÏMPORTEERD");
+            };
+            reader.readAsText(file);
         }
 
-        function loadArchive(idx) {
-            if(confirm(`Setlist '${archives[idx].name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); }
-        }
-
+        function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam voor deze setlist:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); showToast("SET OPGESLAGEN"); render(); } }
+        function loadArchive(idx) { if(confirm(`Setlist '${archives[idx].name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
         function deleteArchive(idx) { if(confirm("Verwijderen?")) { archives.splice(idx, 1); save(); render(); } }
         function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
