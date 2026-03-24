@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.58</title>
+    <title>TDF Digital v9.59</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,11 +29,9 @@
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; display: flex; flex-direction: column; }
         
-        /* Start-instructie en Manual Tekst */
         .start-hint { font-size: 1.2rem; color: #666; text-align: center; margin-top: auto; margin-bottom: 20px; font-style: italic; z-index: 2; }
-        #manualContent { display: none; color: #000; font-size: 1.2rem; line-height: 1.5; padding: 20px; z-index: 5; }
-        #manualContent h2 { font-size: 1.8rem; border-bottom: 2px solid var(--grey); padding-bottom: 10px; margin-top: 0; }
-        #manualContent h3 { color: var(--grey); margin-top: 25px; }
+        #manualContent { display: none; color: #000; font-size: 1.1rem; line-height: 1.4; padding: 20px; z-index: 5; }
+        #manualContent h2 { font-size: 1.5rem; border-bottom: 2px solid var(--grey); padding-bottom: 5px; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 10; }
         .chord-bar { height: 60px; background: #222; padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #444; }
@@ -42,7 +40,6 @@
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
-        
         .menu-scroll { flex: 1; overflow-y: auto; }
 
         .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; flex-direction: column; gap: 12px; }
@@ -57,6 +54,8 @@
         .swipe-container { position: relative; overflow: hidden; background: var(--red); margin-bottom: 2px; }
         .row-item { background: var(--row-bg); display: flex; align-items: center; padding: 15px 20px; min-height: 75px; position: relative; z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; }
         .setlist-title { font-size: 1.8rem; font-weight: bold; display: block; }
+        .note-row { color: var(--amber); font-style: italic; font-size: 1.4rem; }
+        
         .delete-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         .select-check { display: none; transform: scale(1.8); margin-right: 25px; accent-color: var(--amber); }
@@ -65,12 +64,11 @@
         .edit-only-container { display: none; flex-direction: column; margin-right: 15px; }
         .is-editing .edit-only-container { display: flex; }
 
-        /* Footer en Beheer Menu */
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; position: relative; }
         .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: 90%; z-index: 100; padding: 10px; gap: 10px; }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
-        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; }
+        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
@@ -84,7 +82,7 @@
 </head>
 <body>
 
-    <div id="toast">MELDING</div>
+    <div id="toast">TOEGEVOEGD</div>
 
     <div class="top-bar">
         <div class="top-left">
@@ -92,7 +90,7 @@
             <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
             <button class="btn" onclick="openMenu('setMenu')">SET</button>
         </div>
-        <div id="title" class="top-center">Gebruik het menu.</div>
+        <div id="title" class="top-center">TDF DIGITAL</div>
         <div class="top-right">
             <button class="btn" id="editBtn" onclick="startEdit()">✎</button>
             <button class="btn" id="saveBtn" style="display:none; color:var(--green); border-color:var(--green);" onclick="finishEdit()">OK</button>
@@ -101,48 +99,24 @@
     </div>
 
     <div class="main-container">
-        <img src="logo.png" class="watermark" alt="">
+        <img src="logo.png" id="bgLogo" class="watermark" alt="">
         <div id="lyricsArea">
             <div id="manualContent">
-                <h2>Quick Manual v9.58</h2>
-                
-                <h3>1. Algemeen</h3>
-                <p>Kies 'SONGS' (database) of 'SET' (actuele setlist). Klik op de TDF logo-knop linksboven om terug te keren naar het beginscherm.</p>
-                
-                <h3>2. Liedjes Beheren (SONGS)</h3>
-                <ul>
-                    <li><b>Laden:</b> Klik op de titel.</li>
-                    <li><b>Toevoegen aan SET:</b> Klik op de goudomrande '+'-knop.</li>
-                    <li><b>Beheer Menu:</b> Klik op 'BEHEER' in de footer voor Clean, Import, Export en Manual.</li>
-                    <li><b>Select-modus:</b> Klik op 'SELECT' voor bulk-tagging of bulk-verplaatsen naar de SETLIST.</li>
-                </ul>
-                
-                <h3>3. Tags Organiseren</h3>
-                <ul>
-                    <li><b>Filteren:</b> Klik op een bestaande tag (wordt goud).</li>
-                    <li><b>Nieuwe Tag Maken:</b> Gebruik '+ Tag' invulveld. *Moet in Select-modus*</li>
-                    <li><b>Bulk-Taggen:</b> Vink liedjes aan, klik op een tag in de lijst.</li>
-                </ul>
-                
-                <h3>4. Setlist Beheren (SET)</h3>
-                <ul>
-                    <li><b>XL Titels:</b> Titels zijn groot voor podium-leesbaarheid.</li>
-                    <li><b>Edit Mode:</b> Gebruik 'EDIT MODE' om volgorde aan te passen (↑ ↓) of songs te verwijderen.</li>
-                    <li><b>Wissen/Export:</b> Gebruik de knoppen in de footer van het SET menu.</li>
-                </ul>
-                
-                <h3>5. Live View</h3>
-                <ul>
-                    <li><b>Starten:</b> Klik op 'LIVE' (top-bar) na het laden van een song.</li>
-                    <li><b>Scrollen:</b> Gebruik het duimwiel rechtsonder. Klik ▶ om scroll te activeren.</li>
-                \</ul>
+                <h2>Nederlands (NL)</h2>
+                <p>1. <b>SONGS</b>: Je database. Gebruik <b>+</b> om een song naar de set te sturen (opent direct de set).<br>
+                2. <b>SET</b>: Je huidige setlist met XL letters. Gebruik <b>EDIT MODE</b> voor volgorde.<br>
+                3. <b>BEHEER</b>: Onder 'SONGS' vind je Import/Export en deze handleiding.</p>
+                <hr>
+                <h2>English (EN)</h2>
+                <p>1. <b>SONGS</b>: Your database. Click <b>+</b> to move a song to the set (set menu opens automatically).<br>
+                2. <b>SET</b>: Current setlist with XL titles. Use <b>EDIT MODE</b> to reorder.<br>
+                3. <b>ADMIN</b>: Under 'SONGS' find Import/Export and this manual.</p>
             </div>
-            
             <div id="startHint" class="start-hint">Gebruik het SONGS of SET menu om een liedje te laden.</div>
         </div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
-            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
+            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
@@ -168,15 +142,13 @@
             <div class="tag-action-row">
                 <div id="tagList"></div>
                 <input type="text" id="newTagInput" class="new-tag-input" placeholder="+ Tag">
-                <button class="btn-sm" style="border-radius:50%; color:var(--green); border-color:var(--green); font-size:1rem;" onclick="createNewTag()">+</button>
+                <button class="btn-sm" style="border-radius:50%; color:var(--amber); border-color:var(--amber);" onclick="createNewTag()">+</button>
             </div>
         </div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
-            
-            <button class="btn" style="width:70%;" onclick="toggleAdminMenu()">BEHEER</button>
-            
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--amber); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
+            <button class="btn" style="width:70%;" onclick="toggleAdminMenu()">BEHEER / ADMIN</button>
             <div id="adminSubmenu" class="admin-submenu">
                 <button class="btn" onclick="showManual()">MANUAL</button>
                 <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
@@ -192,10 +164,14 @@
             <button class="btn" id="setEditToggle" onclick="toggleSetEdit()">EDIT MODE</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
+        <div id="setEditTools" style="display:none; padding:10px 20px; background:#111; border-bottom:1px solid #333; gap:10px;">
+            <input type="text" id="noteInput" class="search-bar" style="flex:1;" placeholder="Willekeurige tekstregel...">
+            <button class="btn" onclick="addNoteRow()">+ REGEL</button>
+        </div>
         <div class="menu-scroll" id="setList"></div>
         <div class="menu-footer">
             <button class="btn" style="flex:1" onclick="exportSetlist()">EXPORT SET</button>
-            <button class="btn btn-danger" onclick="clearSetlist()">WISSEN</button>
+            <button class="btn btn-danger" onclick="clearSetlist()">WISSEN / CLEAR</button>
         </div>
     </div>
 
@@ -203,49 +179,31 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 0, setEditMode = false;
-        let startX = 0, currentSwipeItem = null, initialLoad = true;
+        let startX = 0, currentSwipeItem = null;
 
-        window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); initialLoad = false; };
+        window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
 
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
-        
-        function openMenu(id) { 
-            document.getElementById(id).classList.add('open'); 
-            render(); 
-        }
-        
-        function closeMenus() { 
-            document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); 
-            // Sluit ook admin submenu
-            document.getElementById('adminSubmenu').classList.remove('open');
-        }
-        
+        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById('adminSubmenu').classList.remove('open'); }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 1500); }
-
-        function toggleAdminMenu() {
-            document.getElementById('adminSubmenu').classList.toggle('open');
-        }
-
+        function toggleAdminMenu() { document.getElementById('adminSubmenu').classList.toggle('open'); }
+        
         function showManual() {
             closeMenus();
-            // Verberg watermerk en instructs, toon manual
-            document.querySelector('.watermark').style.display = 'none';
+            document.getElementById('bgLogo').style.display = 'none';
             document.getElementById('manualContent').style.display = 'block';
             document.getElementById('startHint').style.display = 'none';
-            document.getElementById('title').innerText = "TDF MANUAL";
-            // Maak cur null zodat topbar knoppen verdwijnen
+            document.getElementById('title').innerText = "MANUAL";
             cur = null;
-            document.getElementById('editBtn').style.display = 'none';
-            document.getElementById('liveBtn').style.display = 'none';
         }
 
-        function createNewTag() {
-            const input = document.getElementById('newTagInput');
-            const val = input.value.trim();
+        function addNoteRow() {
+            const val = document.getElementById('noteInput').value.trim();
             if(!val) return;
-            if(selectedSongs.length === 0) { showToast("SELECTEER EERST LIEDJES"); return; }
-            db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(val)) ts.push(val); s.tags = ts.join(', '); } });
-            input.value = ""; save(); showToast("NIEUWE TAG TOEGEVOEGD"); render();
+            setlist.push({ title: val, isNote: true });
+            document.getElementById('noteInput').value = "";
+            save(); render();
         }
 
         function toggleSelectMode() { 
@@ -255,7 +213,12 @@
             render(); 
         }
 
-        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); render(); }
+        function toggleSetEdit() { 
+            setEditMode = !setEditMode; 
+            document.getElementById('setMenu').classList.toggle('is-editing', setEditMode); 
+            document.getElementById('setEditTools').style.display = setEditMode ? 'flex' : 'none';
+            render(); 
+        }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
@@ -266,30 +229,22 @@
 
             Array.from(allTags).sort().forEach(t => {
                 if(!t) return;
-                const p = document.createElement('div'); 
-                p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
-                p.innerText = t; 
-                p.onclick = () => {
+                const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
+                p.innerText = t; p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
                         db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); showToast("TAGS BIJGEWERKT"); toggleSelectMode();
-                    } else { 
-                        if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); 
-                        render(); 
-                    }
-                };
-                tagsDiv.appendChild(p);
+                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
+                }; tagsDiv.appendChild(p);
             });
 
             db.filter(s => {
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags && s.tags.toLowerCase().includes(sQ));
-                const sTags = s.tags ? s.tags.split(',').map(t => t.trim().toLowerCase()) : [];
-                const mTags = activeTags.every(at => sTags.includes(at.toLowerCase()));
+                const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase()));
                 return mSearch && (selectMode || mTags);
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const safeTitle = s.title.replace(/'/g, "\\'");
-                const container = document.createElement('div');
-                container.className = 'swipe-container';
+                const container = document.createElement('div'); container.className = 'swipe-container';
                 container.innerHTML = `
                     <div class="delete-btn" onclick="deleteSong('${safeTitle}')">DELETE</div>
                     <div class="row-item" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
@@ -305,85 +260,49 @@
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => { 
                 const d = document.createElement('div'); d.className = "row-item"; 
+                const content = s.isNote ? `<span class="setlist-title note-row">--- ${s.title} ---</span>` : `<span class="setlist-title">${i+1}. ${s.title}</span>`;
                 d.innerHTML = `
                     <div class="edit-only-container">
                         <button class="btn btn-sm" onclick="moveSetItem(${i},-1)">↑</button>
                         <button class="btn btn-sm" onclick="moveSetItem(${i},1)">↓</button>
                     </div>
-                    <div style="flex:1" onclick="loadSongByIndex(${i})"><span class="setlist-title">${i+1}. ${s.title}</span></div>
+                    <div style="flex:1" onclick="${s.isNote ? '' : 'loadSongByIndex('+i+')'}">${content}</div>
                     <button class="btn" style="display:${setEditMode?'block':'none'}; color:var(--red); border-color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`; 
                 setl.appendChild(d); 
             });
         }
 
-        function handleTouchStart(e) { if(selectMode) return; startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
-        function handleTouchMove(e) { if(selectMode || !currentSwipeItem) return; let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
-        function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
-        function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); }
-        function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
-        function cleanDuplicates() { if(!confirm("Dubbele liedjes verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); toggleAdminMenu(); }
-        
-        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db_backup.json`; a.click(); toggleAdminMenu(); }
-        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); toggleAdminMenu(); }; reader.readAsText(e.target.files[0]); }
-        
-        function exportSetlist() {
-            if(setlist.length === 0) { showToast("SETLIST IS LEEG"); return; }
-            const data = JSON.stringify(setlist, null, 2);
-            const blob = new Blob([data], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `tdf_setlist_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            showToast("SET GEËXPORTEERD");
-        }
-        
-        function clearSetlist() {
-            if(setlist.length === 0) return;
-            if(!confirm("Weet je zeker dat je de GEHELE setlist wilt wissen?")) return;
-            setlist = []; save(); showToast("SETLIST GEWIST"); render();
-        }
+        function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); closeMenus(); openMenu('setMenu'); } }
+        function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); showToast("TOEGEVOEGD"); toggleSelectMode(); closeMenus(); openMenu('setMenu'); }
 
+        function loadSongByName(t) { cur=db.find(x=>x.title===t); if(!cur) return; document.getElementById('title').innerText=cur.title; document.getElementById('bgLogo').style.display='none'; drawLyrics('lyricsArea'); closeMenus(); }
+        function loadSongByIndex(i) { cur=setlist[i]; if(!cur) return; document.getElementById('title').innerText=cur.title; document.getElementById('bgLogo').style.display='none'; drawLyrics('lyricsArea'); closeMenus(); }
+
+        function createNewTag() { const input = document.getElementById('newTagInput'); const val = input.value.trim(); if(!val) return; if(selectedSongs.length === 0) { showToast("SELECTEER EERST LIEDJES"); return; } db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(val)) ts.push(val); s.tags = ts.join(', '); } }); input.value = ""; save(); render(); }
+        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
+        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
+        function exportSetlist() { if(setlist.length === 0) return; const data = JSON.stringify(setlist, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `setlist.json`; a.click(); }
+        function clearSetlist() { if(!confirm("Wissen?")) return; setlist = []; save(); render(); }
         function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
         function moveSetItem(index, dir) { let target = index + dir; if (target >= 0 && target < setlist.length) { [setlist[index], setlist[target]] = [setlist[target], setlist[index]]; save(); render(); } }
-        
-        function startEdit() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; document.getElementById('title').innerText = "BEWERKEN: " + cur.title; }
-        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); document.getElementById('title').innerText = cur.title; }
-        
-        function drawLyrics(id) { 
-            const container=document.getElementById(id); 
-            if(!cur) return; 
-            const lines=cur.content.split('\n'); 
-            let h=""; 
-            lines.forEach(l => { 
-                let chords=[], txt="", i=0; 
-                while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } }
-                let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; });
-                h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; 
-            }); 
-            container.innerHTML=h; 
-            if(id === 'lyricsArea') {
-                container.scrollTop=0;
-                document.getElementById('startHint').style.display = 'none';
-                document.getElementById('manualContent').style.display = 'none';
-                // Herstel topbar knoppen
-                document.getElementById('editBtn').style.display = 'block';
-                document.getElementById('liveBtn').style.display = 'block';
-            }
-        }
-        
-        function enterLiveView() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false; requestAnimationFrame(() => { document.getElementById('liveView').scrollTop = 0; updateWheelPosition(); updatePlayBtn(); }); document.getElementById('title').innerText = "LIVE: " + cur.title; }
-        function exitLiveView() { if(cur) save(); document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; document.getElementById('title').innerText = cur.title; }
+        function handleTouchStart(e) { if(selectMode) return; startX = e.touches[0].clientX; currentSwipeItem = e.currentTarget; }
+        function handleTouchMove(e) { if(selectMode || !currentSwipeItem) return; let diff = e.touches[0].clientX - startX; if (diff < 0 && diff > -100) currentSwipeItem.style.transform = `translateX(${diff}px)`; }
+        function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
+        function startEdit() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; }
+        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); }
+        function drawLyrics(id) { const container=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l => { let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); container.innerHTML=h; if(id === 'lyricsArea') { container.scrollTop=0; document.getElementById('startHint').style.display = 'none'; document.getElementById('manualContent').style.display = 'none'; document.getElementById('editBtn').style.display = 'block'; document.getElementById('liveBtn').style.display = 'block'; } }
+        function enterLiveView() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false; requestAnimationFrame(() => { document.getElementById('liveView').scrollTop = 0; updateWheelPosition(); updatePlayBtn(); }); }
+        function exitLiveView() { if(cur) save(); document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; }
         function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
         function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
         function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 0) { scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
         function updateClock() { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
-        function loadSongByIndex(i) { cur=setlist[i]; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
-        function loadSongByName(t) { cur=db.find(x=>x.title===t); document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
         function initTouchWheel() { const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive: false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(0, Math.min(15, startS + ((startY - e.touches[0].clientY) / 15))); if(cur) cur.scrollSpeed = currentSpeed; updateWheelPosition(); e.preventDefault(); }, {passive: false}); }
         function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=0; i<=150; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = (i/10).toFixed(1); strip.appendChild(d); } }
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${28.5 - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10); strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
+        function cleanDuplicates() { if(!confirm("Dubbelen verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); }
     </script>
 </body>
 </html>
