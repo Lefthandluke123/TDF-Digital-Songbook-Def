@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.21</title>
+    <title>TDF Digital v10.23</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -17,11 +17,16 @@
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
 
         @keyframes pulse { 0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); } 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } }
-        .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; }
+        .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; }
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 40px 35px 600px 35px; z-index: 20; color: #fff; }
         
+        /* Font Sizes */
+        .font-sm { font-size: 1.6rem !important; }
+        .font-std { font-size: 2.5rem !important; }
+        .font-lg { font-size: 3.8rem !important; }
+
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
@@ -31,14 +36,7 @@
         
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; touch-action: manipulation; }
         .btn.active { background: var(--amber); color: #000; }
-        .btn-danger { border-color: var(--red); color: var(--red); }
 
-        .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
-        #tagList { display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
-        .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
-
-        /* Editor met Chords */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 45px; text-align: center; }
@@ -51,8 +49,6 @@
         .wheel-num.active { color: var(--amber); font-size: 1.5rem; font-weight: 900; opacity: 1; }
         
         .menu-footer { padding: 20px 15px calc(45px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 12px; align-items: center; flex-shrink: 0; }
-        .admin-submenu { display: none; background: #222; border: 2px solid #444; border-radius: 12px; width: 100%; padding: 15px; gap: 12px; margin-bottom: 10px; }
-        .admin-submenu.open { display: flex; flex-direction: column; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 40000; display: none; }
     </style>
 </head>
@@ -113,14 +109,14 @@
         <div class="tag-cloud-wrapper"><div id="tagList"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <div id="songsAdmin" class="admin-submenu">
+            <div id="songsAdmin" class="admin-submenu" style="display:none; background:#222; border:1px solid #444; border-radius:12px; width:100%; padding:15px; gap:10px; margin-bottom:10px;">
                 <button class="btn" style="color:var(--amber)" onclick="cleanDuplicates()">CLEAN DB (DEEP)</button>
-                <button class="btn" onclick="document.getElementById('importTxtFile').click()">IMPORT TXT SONGS</button>
-                <button class="btn" onclick="exportDB()">EXPORT JSON DB</button>
-                <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT JSON DB</button>
+                <button class="btn" onclick="document.getElementById('importTxtFile').click()">IMPORT TXT</button>
+                <button class="btn" onclick="exportDB()">EXPORT JSON</button>
+                <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT JSON</button>
             </div>
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
-            <button class="btn" id="adminBtnMain" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
+            <button class="btn" style="width:100%;" onclick="toggleSub('songsAdmin')">BEHEER DATABASE</button>
         </div>
     </div>
 
@@ -138,13 +134,13 @@
         </div>
         <div id="setList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <div id="setAdmin" class="admin-submenu">
+            <div id="setAdmin" class="admin-submenu" style="display:none; background:#222; border:1px solid #444; border-radius:12px; width:100%; padding:15px; gap:10px; margin-bottom:10px;">
                 <button class="btn" onclick="saveActiveSet()">SAVE SET</button>
                 <button class="btn" onclick="openMenu('archiveMenu')">ARCHIEF</button>
                 <button class="btn" onclick="whatsappExport()">WA-EXPORT</button>
                 <button class="btn btn-danger" onclick="clearSetlist()">CLEAR ALL</button>
             </div>
-            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('setAdmin')">BEHEER SETLIST</button>
+            <button class="btn" style="width:100%;" onclick="toggleSub('setAdmin')">BEHEER SETLIST</button>
         </div>
     </div>
 
@@ -153,8 +149,8 @@
         <div id="archiveList" class="menu-scroll"></div>
     </div>
 
-    <input type="file" id="importJsonFile" style="display:none" accept=".json,application/json" onchange="importDB(event)">
-    <input type="file" id="importTxtFile" style="display:none" accept=".txt,text/plain" onchange="importTxt(event)">
+    <input type="file" id="importJsonFile" style="display:none" onchange="importDB(event)">
+    <input type="file" id="importTxtFile" style="display:none" onchange="importTxt(event)">
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
@@ -219,69 +215,38 @@
             });
         }
 
-        function createChordButtons() {
-            const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
-            ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
-                const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c;
-                b.onclick = () => {
-                    const area = document.getElementById('editorArea');
-                    const start = area.selectionStart;
-                    const val = area.value;
-                    area.value = val.substring(0, start) + `[${c}]` + val.substring(area.selectionEnd);
-                    area.focus();
-                    area.selectionStart = area.selectionEnd = start + c.length + 2;
-                };
-                bar.appendChild(b);
-            });
+        // FIX: Foolproof Cycle Function
+        function cycleFontSize() { 
+            if(!cur) return; 
+            const sizes = ['sm', 'std', 'lg']; 
+            // Als liveSize niet bestaat, dwing hem naar 'std'
+            if(!cur.liveSize || !sizes.includes(cur.liveSize)) {
+                cur.liveSize = 'std';
+            }
+            let idx = sizes.indexOf(cur.liveSize); 
+            cur.liveSize = sizes[(idx + 1) % sizes.length]; 
+            applyFontSize(); 
+            save(); 
         }
 
-        function cleanDuplicates() {
-            const initialCount = db.length; const uniqueTitles = new Set();
-            db = db.filter(song => { if (!song || typeof song !== 'object' || !song.title) return false; const cleanTitle = song.title.toLowerCase().trim(); const isDuplicate = uniqueTitles.has(cleanTitle); uniqueTitles.add(cleanTitle); return !isDuplicate; });
-            save(); render(); showToast(`${initialCount - db.length} OPGESCHOOND`);
-        }
-
-        function importTxt(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader(); reader.onload = (ev) => {
-                const title = file.name.replace(/\.[^/.]+$/, "");
-                db.push({ title: title, content: ev.target.result, scrollSpeed: 100, tags: "" });
-                save(); render(); showToast("TXT OK");
-            }; reader.readAsText(file);
-        }
-
+        function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
+        function createChordButtons() { const bar = document.getElementById('editorChordBar'); bar.innerHTML = ""; ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const area = document.getElementById('editorArea'); const start = area.selectionStart; const val = area.value; area.value = val.substring(0, start) + `[${c}]` + val.substring(area.selectionEnd); area.focus(); area.selectionStart = area.selectionEnd = start + c.length + 2; }; bar.appendChild(b); }); }
+        function cleanDuplicates() { const initialCount = db.length; const uniqueTitles = new Set(); db = db.filter(song => { if (!song || typeof song !== 'object' || !song.title) return false; const cleanTitle = song.title.toLowerCase().trim(); const isDuplicate = uniqueTitles.has(cleanTitle); uniqueTitles.add(cleanTitle); return !isDuplicate; }); save(); render(); showToast(`${initialCount - db.length} OPGESCHOOND`); }
+        function importTxt(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { const title = file.name.replace(/\.[^/.]+$/, ""); db.push({ title: title, content: ev.target.result, scrollSpeed: 100, tags: "", liveSize: 'std' }); save(); render(); showToast("TXT OK"); }; reader.readAsText(file); }
         function startEdit(t) { cur = db.find(x => x && x.title === t); document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics('lyricsArea'); }
         function loadSongByName(t) { cur = db.find(x => x && x.title === t); drawLyrics('lyricsArea'); closeMenus(); }
         function liveSetSong(i) { curIdx = i; cur = setlist[i]; enterLiveView(); closeMenus(); }
         function goToNextSong() { if (curIdx < setlist.length - 1) { curIdx++; if(setlist[curIdx].isNote) { goToNextSong(); return; } cur = setlist[curIdx]; enterLiveView(); } else { exitLiveView(); openMenu('setMenu'); showToast("EINDE"); } }
-
-        function enterLiveView() { 
-            if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } 
-            document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
-            document.getElementById('bgLogo').style.display = 'none';
-            drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 100; updateWheelPosition(); resetSongScroll();
-        }
-
+        function enterLiveView() { if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; document.getElementById('bgLogo').style.display = 'none'; drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 100; updateWheelPosition(); resetSongScroll(); }
         function exitLiveView() { document.getElementById('mainTopBar').style.display = 'flex'; document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('bgLogo').style.display = 'block'; isScrolling = false; }
         function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling) { scrollAcc += (currentSpeed * 0.005); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollAcc = document.getElementById('liveView').scrollTop; }
         function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
-
         function createBpmNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i = MIN_BPM; i <= MAX_BPM; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i; strip.appendChild(d); } }
-        function initBpmWheel() {
-            const wheel = document.getElementById('bpmWheel'); let startY = 0, startS = 0;
-            wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false});
-            wheel.addEventListener('touchmove', (e) => {
-                currentSpeed = Math.round(Math.max(MIN_BPM, Math.min(MAX_BPM, startS + (startY - e.touches[0].clientY) / 8)));
-                if(cur) { cur.scrollSpeed = currentSpeed; save(); }
-                updateWheelPosition(); e.preventDefault();
-            }, {passive:false});
-        }
+        function initBpmWheel() { const wheel = document.getElementById('bpmWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.round(Math.max(MIN_BPM, Math.min(MAX_BPM, startS + (startY - e.touches[0].clientY) / 8))); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(1 * 34) - ((currentSpeed - MIN_BPM) * 34)}px)`; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', (i + MIN_BPM) === currentSpeed)); }
-
-        function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; }
+        function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; document.getElementById('bgLogo').style.display = 'none'; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; }
         function addToSetlist(t) { const s = db.find(x => x && x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("OK"); render(); } }
         function addCustomNote() { const val = prompt("Notitie:"); if(val) { setlist.push({title: val.toUpperCase(), isNote: true}); save(); render(); } }
         function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); document.getElementById('addNoteBtn').style.display = setEditMode ? 'block' : 'none'; render(); }
@@ -289,15 +254,13 @@
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); }
         function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x && x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
         function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
-        function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); }
-        function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
         function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
-        function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.style.display = 'none'); }
+        function toggleSub(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'none' ? 'flex' : 'none'; }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         function clearSetlist() { if(confirm("Wissen?")) { setlist = []; setStartTime = null; curIdx = -1; localStorage.removeItem('tdfSetStartTime'); save(); render(); } }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("OK")); }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
+        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); const d = new Date(); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
         function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
         function deleteArchive(idx) { if(confirm("Wissen?")) { archives.splice(idx, 1); save(); render(); } }
         function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); render(); } }
