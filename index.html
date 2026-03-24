@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.33</title>
+    <title>TDF Digital v10.34</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -79,7 +79,8 @@
         
         <div id="editorContainer">
             <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
-                <b style="color:var(--amber)" id="editorTitle">EDITOR</b>
+                <button class="btn" onclick="renameSong()">NAAM</button>
+                <b style="color:var(--amber); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:50%;" id="editorTitle">EDITOR</b>
                 <button class="btn" onclick="finishEdit()">OPSLAAN</button>
             </div>
             <div class="chord-bar" id="editorChordBar"></div>
@@ -234,9 +235,19 @@
             });
         }
 
-        function deleteFromDB(title) { if(confirm(`Database wissen: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); showToast("WISSEN VOLTOOID"); } }
-        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes definitief wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; save(); toggleSelectMode(); render(); showToast("SELECTIE GEWIST"); } }
+        function renameSong() {
+            if(!cur) return;
+            const newName = prompt("Nieuwe naam:", cur.title);
+            if(newName && newName !== cur.title) {
+                cur.title = newName.toUpperCase().trim();
+                document.getElementById('editorTitle').innerText = cur.title;
+                save();
+                showToast("NAAM GEWIJZIGD");
+            }
+        }
 
+        function deleteFromDB(title) { if(confirm(`Definitief wissen uit database: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); } }
+        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes definitief wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; save(); toggleSelectMode(); render(); } }
         function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkControls').style.display = selectMode ? 'flex' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
         function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x && x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
