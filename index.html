@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.86</title>
+    <title>TDF Digital v9.87</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,7 +41,7 @@
         .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; margin-bottom: 5px; }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
-        /* Editor Overhaul */
+        /* Editor Styles - Cleaned Up */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar-wrapper { width: 100%; background: #222; border-bottom: 1px solid #444; overflow-x: auto; flex-shrink: 0; }
         #chordBar { display: flex; gap: 10px; padding: 15px; min-width: 100%; }
@@ -216,7 +216,7 @@
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
                         db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
-                        save(); showToast(`TAG '${t}' TOEGEVOEGD`); render();
+                        save(); render();
                     } else {
                         if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
                     }
@@ -275,8 +275,8 @@
         function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=40; i<=220; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i + " BPM"; strip.appendChild(d); } }
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 28) - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
 
-        function startEdit() { if(!cur) return; document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorTagField').value = cur.tags || ""; document.getElementById('editorContainer').style.display = 'flex'; }
-        function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display !== 'block') { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } else { drawLyrics('liveContent'); } }
+        function startEdit() { if(!cur) return; document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorTagField').value = cur.tags || ""; document.getElementById('editorContainer').style.display = 'flex'; document.getElementById('liveFooter').style.display = 'none'; }
+        function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display === 'block') { document.getElementById('liveFooter').style.display = 'flex'; drawLyrics('liveContent'); } else { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } }
         
         function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; document.getElementById('bgLogo').style.display = 'none'; }
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
