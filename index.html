@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.66</title>
+    <title>TDF Digital v9.67</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -63,6 +63,8 @@
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 11000; display: none; }
         
         #manualContent { display: none; color: #000; font-size: 0.95rem; line-height: 1.4; padding: 25px; z-index: 5; background: #fff; overflow-y: auto; }
+        .m-section h2 { font-size: 1.3rem; border-bottom: 2px solid #000; margin: 20px 0 10px 0; padding-bottom: 5px; }
+        .m-section h3 { font-size: 1rem; font-weight: bold; margin: 15px 0 5px 0; color: var(--grey); }
         .set-timer-box { padding: 10px 20px; background: #222; width: 100%; display: flex; justify-content: space-between; color: var(--amber); font-weight: bold; border-bottom: 1px solid #333; }
     </style>
 </head>
@@ -88,15 +90,45 @@
         <img src="logo.png" id="bgLogo" class="watermark">
         <div id="lyricsArea">
             <div id="manualContent">
-                <h2>Quick Manual v9.66</h2>
-                <p><b>Klok & Timer:</b> De app start een set-timer zodra je de eerste song in LIVE MODE laadt. De verstreken tijd zie je in SET en LIVE.<br>
-                <b>BPM Scroll:</b> Gebruik het wiel voor BPM snelheid per song.<br>
-                <b>WA-Import:</b> Plak tekst uit WhatsApp in de SET-beheer sectie.</p>
+                <div class="m-section">
+                    <h2>UITGEBREIDE HANDLEIDING (NL)</h2>
+                    <h3>1. Database & Beheer (SONGS)</h3>
+                    <p>Beheer hier je volledige song-archief. <br>
+                    - Klik op <b>+</b> om een liedje direct aan de set toe te voegen. <br>
+                    - Gebruik <b>SELECT</b> voor bulk-acties (meerdere songs taggen of toevoegen aan set). <br>
+                    - <b>BEHEER:</b> Hier kun je de database exporteren (backup) of een JSON-bestand importeren.</p>
+
+                    <h3>2. Tags & Slim Taggen</h3>
+                    <p>- Voeg tags toe in de editor of via de SELECT modus. <br>
+                    - Klik op een tag in de cloud om te filteren. <br>
+                    - <b>Verwijderen:</b> Houd een tag in de cloud lang ingedrukt om deze uit de hele database te wissen.</p>
+
+                    <h3>3. Setlist & Optreden (SET)</h3>
+                    <p>- <b>Direct naar Live:</b> Klik in de setlist op een titel om Live Mode te starten. <br>
+                    - <b>Edit Mode:</b> Gebruik dit om volgorde te wijzigen (pijlen) of liedjes te bewerken (klik op titel). <br>
+                    - <b>Notities:</b> Voeg extra tekstregels toe voor pauzes of aankondigingen.</p>
+
+                    <h3>4. WhatsApp Koppeling</h3>
+                    <p>- <b>WA-Export:</b> Kopieer je setlist als tekst naar klembord om te delen in de groepsapp. <br>
+                    - <b>WA-Import:</b> Plak een tekstlijst uit WhatsApp. De app zoekt automatisch naar titels in je database. Onbekende regels worden notities.</p>
+
+                    <h3>5. BPM & Scrollen (Live)</h3>
+                    <p>Het duimwiel rechtsonder werkt op basis van <b>beats per minuut</b>. <br>
+                    - 120 BPM scrolt twee keer zo snel als 60 BPM. <br>
+                    - De waarde wordt per liedje opgeslagen zodra je deze instelt.</p>
+
+                    <hr>
+                    <h2>EXTENDED MANUAL (EN)</h2>
+                    <h3>1. Live Performance</h3>
+                    <p>Tap a song title in SET to enter <b>Live Mode</b>. The scroll wheel uses <b>BPM-sync</b> to ensure the text moves with the beat.</p>
+                    <h3>2. Setlist Sharing</h3>
+                    <p>Use <b>WA-Export</b> to copy the set to clipboard for WhatsApp. Use <b>WA-Import</b> to paste a list from your chat; matches are found in your database automatically.</p>
+                </div>
             </div>
         </div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
-            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
+            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
@@ -126,7 +158,7 @@
         </div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--amber); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--amber); color:#000; width:100%;" onclick="addSelectedToSet()">ZET IN SET</button>
             <button class="btn" style="width:70%;" id="songsAdminBtn" onclick="toggleAdminMenu('songsAdmin')">BEHEER</button>
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="showManual()">MANUAL</button>
@@ -182,7 +214,6 @@
             const timeStr = now.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
             if(document.getElementById('liveTime')) document.getElementById('liveTime').innerText = timeStr;
             if(document.getElementById('setMenuTime')) document.getElementById('setMenuTime').innerText = timeStr;
-            
             if(setStartTime) {
                 const diff = Math.floor((now.getTime() - setStartTime) / 1000);
                 const m = Math.floor(diff / 60).toString().padStart(2,'0');
@@ -193,12 +224,7 @@
             }
         }
 
-        function toggleSelectMode() {
-            selectMode = !selectMode; selectedSongs = [];
-            document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            document.getElementById('songsAdminBtn').style.display = selectMode ? 'none' : 'block';
-            render();
-        }
+        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; document.getElementById('songsAdminBtn').style.display = selectMode ? 'none' : 'block'; render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
@@ -259,12 +285,7 @@
         function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditTools').style.display = setEditMode ? 'flex' : 'none'; render(); }
         function addNoteRow() { const v = document.getElementById('noteInput').value; if(v) { setlist.push({title:v, isNote:true}); save(); render(); document.getElementById('noteInput').value=""; } }
         
-        function liveSetSong(i) { 
-            cur=setlist[i]; 
-            if(!setStartTime) { setStartTime = new Date().getTime(); save(); }
-            enterLiveView(); closeMenus(); 
-        }
-        
+        function liveSetSong(i) { cur=setlist[i]; if(!setStartTime) { setStartTime = new Date().getTime(); save(); } enterLiveView(); closeMenus(); }
         function editSetSong(i) { cur=setlist[i]; startEdit(); closeMenus(); }
         function loadSongByName(t) { cur=db.find(x=>x.title===t); if(!cur) return; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
 
@@ -274,7 +295,7 @@
             document.getElementById('liveView').style.display='block'; 
             document.getElementById('liveFooter').style.display='flex'; 
             document.getElementById('editBtn').style.display='none';
-            document.getElementById('manualContent').style.display='none';
+            document.getElementById('liveBtn').style.display='none'; // Live knop weg in live mode
             drawLyrics('liveContent'); 
             currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false;
             document.getElementById('title').innerText = "LIVE: " + cur.title;
@@ -286,6 +307,7 @@
             document.getElementById('liveFooter').style.display='none'; 
             document.getElementById('lyricsArea').style.display='block'; 
             document.getElementById('editBtn').style.display='block';
+            document.getElementById('liveBtn').style.display='block';
             document.getElementById('title').innerText = cur ? cur.title : "TDF DIGITAL";
             isScrolling=false;
         }
@@ -315,41 +337,50 @@
         }
 
         function finishEdit() { 
-            cur.content=document.getElementById('editorArea').value; 
-            cur.tags=document.getElementById('tagField').value; 
-            save(); 
-            document.getElementById('editorContainer').style.display='none'; 
-            document.getElementById('lyricsArea').style.display='block'; 
-            document.getElementById('editBtn').style.display='block'; 
-            document.getElementById('saveBtn').style.display='none'; 
-            document.getElementById('liveBtn').style.display='block'; 
-            drawLyrics('lyricsArea'); 
+            cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; save(); 
+            document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; 
+            document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); 
         }
 
         function createChordBar() { 
             const bar = document.getElementById('chordBar'); 
             ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { 
                 const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; 
-                b.onclick = () => { 
-                    const a = document.getElementById('editorArea'); const s = a.selectionStart; 
-                    a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); 
-                    a.selectionStart = a.selectionEnd = s + c.length + 2; 
-                }; bar.appendChild(b); 
+                b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; 
+                bar.appendChild(b); 
             }); 
         }
 
-        function scrollEngine() { const lv=document.getElementById('liveView'); if(lv && lv.style.display==='block' && isScrolling && currentSpeed>0) { scrollAcc+=(currentSpeed*0.4); lv.scrollTop=Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
-        function initTouchWheel() { const wheel=document.getElementById('thumbWheel'); let startY=0, startS=0; wheel.addEventListener('touchstart', (e) => { startY=e.touches[0].clientY; startS=currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed=Math.max(0, Math.min(15, startS + ((startY-e.touches[0].clientY)/15))); if(cur) cur.scrollSpeed=currentSpeed; updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
-        function createWheelNodes() { const strip=document.getElementById('wheelStrip'); strip.innerHTML=""; for(let i=0; i<=150; i++) { const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(0) + " BPM"; strip.appendChild(d); } }
+        function scrollEngine() { 
+            const lv=document.getElementById('liveView'); 
+            if(lv && lv.style.display==='block' && isScrolling && currentSpeed>0) { 
+                // BPM Logica: we gaan uit van een regelhoogte van ongeveer 4.7rem (~75px) 
+                // Een tempo van 60 BPM (1 beat per seconde) scrolt dan rustig door.
+                scrollAcc += (currentSpeed * 0.08); 
+                lv.scrollTop = Math.floor(scrollAcc); 
+            } requestAnimationFrame(scrollEngine); 
+        }
+
+        function initTouchWheel() { 
+            const wheel=document.getElementById('thumbWheel'); let startY=0, startS=0; 
+            wheel.addEventListener('touchstart', (e) => { startY=e.touches[0].clientY; startS=currentSpeed; e.preventDefault(); }, {passive:false}); 
+            wheel.addEventListener('touchmove', (e) => { 
+                // Gevoeligheid aanpassen naar BPM schaal (max 200 BPM)
+                currentSpeed = Math.max(0, Math.min(20, startS + ((startY-e.touches[0].clientY)/15))); 
+                if(cur) cur.scrollSpeed=currentSpeed; updateWheelPosition(); e.preventDefault(); 
+            }, {passive:false}); 
+        }
+
+        function createWheelNodes() { const strip=document.getElementById('wheelStrip'); strip.innerHTML=""; for(let i=0; i<=200; i++) { const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i*10).toFixed(0) + " BPM"; strip.appendChild(d); } }
         function updateWheelPosition() { const strip=document.getElementById('wheelStrip'); strip.style.transform=`translateY(${28.5-(currentSpeed*280)}px)`; const activeIdx=Math.round(currentSpeed*10); strip.querySelectorAll('.wheel-num').forEach((n,i)=>n.classList.toggle('active',i===activeIdx)); }
         function toggleScroll() { isScrolling=!isScrolling; document.getElementById('playBtn').innerText=isScrolling?"⏸":"▶"; }
         function showManual() { closeMenus(); document.getElementById('bgLogo').style.display='none'; document.getElementById('manualContent').style.display='block'; document.getElementById('title').innerText="MANUAL"; cur=null; }
         function exportDB() { const data=JSON.stringify(db); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tdf_db.json'; a.click(); }
         function importDB(e) { const reader = new FileReader(); reader.onload=(ev)=>{db=JSON.parse(ev.target.result); save(); render();}; reader.readAsText(e.target.files[0]); }
         function exportSetlist() { if(setlist.length === 0) return; const data=JSON.stringify(setlist); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='setlist.json'; a.click(); }
-        function clearSetlist() { if(confirm("Setlist wissen? Timer wordt ook gereset.")) { setlist=[]; setStartTime=null; save(); render(); } }
+        function clearSetlist() { if(confirm("Setlist wissen? Timer reset.")) { setlist=[]; setStartTime=null; save(); render(); } }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("SET GEKOPIEERD")); }
-        function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim().toLowerCase(); if(!t) return null; const song = db.find(s => s.title.toLowerCase() === t); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }).filter(x=>x); save(); render(); } }
+        function whatsappImport() { const input = prompt("Plak WhatsApp tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim().toLowerCase(); if(!t) return null; const song = db.find(s => s.title.toLowerCase() === t); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }).filter(x=>x); save(); render(); } }
     </script>
 </body>
 </html>
