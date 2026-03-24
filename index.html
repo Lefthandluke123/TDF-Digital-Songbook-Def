@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.74</title>
+    <title>TDF Digital v10.75</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -33,7 +33,6 @@
         .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
         .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
 
-        /* Editor & Chord Bar */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
@@ -94,8 +93,8 @@
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
             <button class="btn" id="bulkTagBtn" style="display:none; background:var(--amber); color:#000;" onclick="bulkTag()">TAG SELECTIE</button>
-            <button class="btn" onclick="exportDB()">BACKUP</button>
-            <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button>
+            <button class="btn" onclick="exportDB()">BACKUP DB</button>
+            <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE DB</button>
         </div>
     </div>
 
@@ -106,7 +105,11 @@
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
-        <div class="menu-footer" style="padding:20px; background:#111; text-align:center;"><button class="btn" onclick="clearSetlist()">WIS ALLES</button></div>
+        <div class="menu-footer" style="padding:20px; background:#111; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn" onclick="exportSetToWA()">EXPORT SET (WA)</button>
+            <button class="btn" onclick="importSetFromWA()">IMPORT SET (WA)</button>
+            <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="clearSetlist()">WIS ALLES</button>
+        </div>
     </div>
 
     <script>
@@ -177,6 +180,24 @@
             });
         }
 
+        function exportSetToWA() {
+            if(setlist.length === 0) return showToast("LEGE SET");
+            const str = btoa(unescape(encodeURIComponent(JSON.stringify(setlist))));
+            navigator.clipboard.writeText(str).then(() => showToast("GEKOPIEERD"));
+        }
+
+        function importSetFromWA() {
+            const str = prompt("Plak de Setlist-tekst hier:");
+            if(str) {
+                try {
+                    const data = JSON.parse(decodeURIComponent(escape(atob(str))));
+                    if(Array.isArray(data)) {
+                        setlist = data; save(); render(); showToast("SET GELADEN");
+                    }
+                } catch(e) { showToast("FOUTIEVE CODE"); }
+            }
+        }
+
         function createChordButtons() {
             const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
             ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
@@ -231,4 +252,4 @@
         function importDB(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { db = JSON.parse(ev.target.result); save(); render(); showToast("OK"); } catch(err) { showToast("FOUT"); } }; r.readAsText(f); }
     </script>
 </body>
-</html>
+</html
