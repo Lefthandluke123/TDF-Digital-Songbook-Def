@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.66</title>
+    <title>TDF Digital v10.68</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,17 +25,12 @@
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-        .setlist-row { height: 85px; background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 15px; color: #fff; border-bottom: 1px solid #222; }
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn.active { background: var(--amber); color: #000; }
+        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px; color: #fff; border-bottom: 1px solid #222; }
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .btn-move { border: 1px solid #444; color: #888; padding: 5px 10px; margin: 0 2px; font-size: 1.1rem; border-radius: 4px; background: #222; }
         
-        .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
-        .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
-
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
-        .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
-
         #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
     </style>
@@ -55,7 +50,7 @@
         <div id="editorContainer">
             <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn" onclick="document.getElementById('editorContainer').style.display='none'">X</button>
-                <div style="display:flex; gap:5px;"><button class="btn" onclick="renameSong()">NAAM</button><button class="btn" onclick="editTags()">TAGS</button></div>
+                <div style="flex:1; text-align:center;"><b id="edTitle">EDITOR</b></div>
                 <button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button>
             </div>
             <textarea id="editorArea" spellcheck="false"></textarea>
@@ -73,15 +68,12 @@
     <div id="songsMenu" class="full-menu">
         <input type="file" id="importJsonFile" style="display:none" accept="application/json">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <button class="btn" id="bulkBtn" onclick="toggleBulk()">BULK MODE</button>
-            <b>DATABASE</b>
+            <b>SONGS</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
-        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
-            <button class="btn" id="bulkTagBtn" style="display:none; background:var(--amber); color:#000;" onclick="bulkTag()">TAG SELECTIE</button>
             <button class="btn" onclick="exportDB()">BACKUP</button>
             <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button>
         </div>
@@ -89,19 +81,18 @@
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>SETLIST</b>
+            <button class="btn" onclick="addCustomNote()">NOTITIE +</button>
+            <b>ACTIEVE SET</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
-        <div class="menu-footer" style="padding:20px; background:#111; text-align:center;"><button class="btn" onclick="clearSetlist()">WIS SETLIST</button></div>
+        <div class="menu-footer" style="padding:20px; background:#111; text-align:center;"><button class="btn" onclick="clearSetlist()">WIS ALLES</button></div>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
-        let activeTags = [], bulkMode = false, selectedSongs = [];
-        const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
 
         window.onload = () => { 
             render(); 
@@ -113,73 +104,51 @@
             requestAnimationFrame(scrollLoop);
         };
 
-        function toggleBulk() {
-            bulkMode = !bulkMode;
-            selectedSongs = [];
-            document.getElementById('bulkBtn').classList.toggle('active', bulkMode);
-            document.getElementById('bulkTagBtn').style.display = bulkMode ? 'block' : 'none';
-            render();
-        }
-
         function render() {
-            const tagBar = document.getElementById('tagFilterBar'); tagBar.innerHTML = "";
-            fixedTags.forEach(tag => {
-                const p = document.createElement('div'); p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : ""); p.innerText = tag.toUpperCase();
-                p.onclick = () => { if(activeTags.includes(tag)) activeTags = activeTags.filter(t => t !== tag); else activeTags.push(tag); render(); };
-                tagBar.appendChild(p);
-            });
-
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             const q = document.getElementById('songSearch').value.toLowerCase();
-            db.filter(s => {
-                if(!s) return false;
-                const mS = s.title.toLowerCase().includes(q) || (s.tags || "").toLowerCase().includes(q);
-                const sT = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
-                const mT = activeTags.length === 0 || activeTags.every(at => sT.includes(at.toLowerCase()));
-                return mS && mT;
-            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+            db.filter(s => s && s.title.toLowerCase().includes(q)).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                const isSel = selectedSongs.includes(s.title);
-                d.innerHTML = `
-                    ${bulkMode ? `<input type="checkbox" style="width:30px;height:30px;margin-right:15px;" ${isSel?'checked':''} onchange="toggleSel('${s.title.replace(/'/g, "\\'")}')">` : ''}
-                    <div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')">
-                        <b>${s.title}</b><br><small style="opacity:0.4;text-transform:uppercase;">${s.tags || ''}</small>
-                    </div>
-                    <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
-                    <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
+                d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
+                               <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
+                               <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
 
             const sl = document.getElementById('setList'); sl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                d.innerHTML = `<div style="flex:1;" onclick="enterLive(${i})">${i+1}. ${s.title}</div><button class="btn" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                const moveBtns = `<div style="display:flex; flex-direction:column; margin-right:15px;">
+                                    <button class="btn-move" onclick="moveItem(${i}, -1)">▲</button>
+                                    <button class="btn-move" onclick="moveItem(${i}, 1)">▼</button>
+                                  </div>`;
+                if(s.isNote) {
+                    d.style.background = "#2c2c2e";
+                    d.innerHTML = `${moveBtns}<div style="flex:1; color:var(--amber); font-weight:bold;">-- ${s.title} --</div><button class="btn" style="border-color:var(--red); color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                } else {
+                    d.innerHTML = `${moveBtns}<div style="flex:1;" onclick="enterLive(${i})">${i+1}. ${s.title}</div><button class="btn" style="border-color:var(--red); color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
+                }
                 sl.appendChild(d);
             });
         }
 
-        function toggleSel(t) {
-            if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t);
-            else selectedSongs.push(t);
+        function moveItem(idx, dir) {
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= setlist.length) return;
+            const item = setlist.splice(idx, 1)[0];
+            setlist.splice(newIdx, 0, item);
+            save(); render();
         }
 
-        function bulkTag() {
-            if(selectedSongs.length === 0) return;
-            const t = prompt("Tag toevoegen aan selectie (bijv: irish, scots):");
-            if(t) {
-                db.forEach(s => {
-                    if(selectedSongs.includes(s.title)) {
-                        let curTags = s.tags ? s.tags.split(',').map(x=>x.trim()) : [];
-                        t.split(',').map(x=>x.trim()).forEach(nt => { if(!curTags.includes(nt)) curTags.push(nt); });
-                        s.tags = curTags.join(', ');
-                    }
-                });
-                save(); toggleBulk(); render(); showToast("BULK OK");
-            }
+        function addCustomNote() {
+            const val = prompt("Notitie/Pauze:");
+            if (val) { setlist.push({ title: val.toUpperCase(), isNote: true }); save(); render(); }
         }
 
         function loadPreview(t) { cur = db.find(x=>x.title===t); drawLyrics(false); closeMenus(); document.getElementById('bgLogo').style.display = 'none'; }
+        
         function enterLive(index) {
+            if (setlist[index].isNote) return;
             curIdx = index; cur = setlist[curIdx];
             if(!startTime) { startTime = new Date().toISOString(); localStorage.setItem('tdfStartTime', startTime); }
             document.getElementById('lyricsArea').classList.add('live-mode');
@@ -205,13 +174,10 @@
 
         function scrollLoop() { if(isScrolling) { scrollPos += (currentSpeed * 0.006); document.getElementById('lyricsArea').scrollTop = scrollPos; } requestAnimationFrame(scrollLoop); }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollPos = document.getElementById('lyricsArea').scrollTop; }
-        function resetScroll() { scrollPos = 0; document.getElementById('lyricsArea').scrollTop = 0; isScrolling = false; }
-        function navSet(dir) { let n = curIdx + dir; if(n >= 0 && n < setlist.length) enterLive(n); }
+        function navSet(dir) { let n = curIdx + dir; while (n >= 0 && n < setlist.length && setlist[n].isNote) { n += dir; } if(n >= 0 && n < setlist.length) enterLive(n); }
         function exitLive() { document.getElementById('lyricsArea').classList.remove('live-mode'); document.getElementById('liveFooter').style.display = 'none'; document.getElementById('mainTopBar').style.display = 'flex'; isScrolling = false; }
         function cycleFontSize() { if(!cur) return; const sz = ['sm', 'std', 'lg']; cur.liveSize = sz[(sz.indexOf(cur.liveSize || 'std') + 1) % 3]; save(); drawLyrics(true); }
-        function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
-        function renameSong() { if(!cur) return; const n = prompt("Naam:", cur.title); if(n) { cur.title = n.toUpperCase(); save(); render(); } }
-        function editTags() { if(!cur) return; const t = prompt("Tags:", cur.tags); if(t !== null) { cur.tags = t.toLowerCase(); save(); render(); } }
+        function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('edTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics(false); render(); }
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("SET +1"); } }
