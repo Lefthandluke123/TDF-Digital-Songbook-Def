@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.07</title>
+    <title>TDF Digital v10.08</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,6 +37,7 @@
         .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
         #tagList { display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
+        .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         #liveFooter { height: calc(130px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(20px + env(safe-area-inset-bottom)) 15px; z-index: 5000; pointer-events: auto; }
         .wheel-wrap { position: relative; width: 105px; height: 90px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
@@ -53,13 +54,13 @@
         .admin-submenu { display: none; background: #222; border: 2px solid #444; border-radius: 12px; width: 100%; padding: 15px; gap: 12px; margin-bottom: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
-        .manual-container { padding: 30px 20px 150px 20px; color: #eee; }
-        .man-sec { margin-bottom: 40px; border-left: 4px solid var(--amber); padding-left: 15px; }
-        .man-sec h2 { color: var(--amber); font-size: 1.3rem; margin: 0 0 10px 0; text-transform: uppercase; }
-        .man-sec h3 { color: #fff; font-size: 1.1rem; margin: 20px 0 10px 0; }
-        .man-sec p { font-size: 0.95rem; line-height: 1.6; color: #ccc; margin-bottom: 10px; }
-        .man-sec b { color: var(--amber); }
-        .quick-start { background: #1c1c1e; padding: 15px; border-radius: 12px; border: 1px solid var(--amber); margin-bottom: 30px; }
+        /* Full Manual Styling */
+        .manual-box { padding: 30px 20px 150px 20px; color: #eee; }
+        .man-section { margin-bottom: 40px; border-left: 4px solid var(--amber); padding-left: 20px; }
+        .man-section h2 { color: var(--amber); font-size: 1.4rem; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .man-section h3 { color: #fff; font-size: 1.1rem; margin: 25px 0 10px 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .man-section p { line-height: 1.7; font-size: 1rem; color: #ccc; margin: 0 0 15px 0; }
+        .man-section b { color: var(--amber); }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 40000; display: none; }
     </style>
@@ -140,34 +141,31 @@
     </div>
 
     <div id="manMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>MANUAL & HELP</b><button class="btn" onclick="openMenu('songsMenu')">X</button></div>
-        <div class="menu-scroll manual-container">
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>FULL MANUAL / HELP</b><button class="btn" onclick="openMenu('songsMenu')">X</button></div>
+        <div class="menu-scroll manual-box">
             
-            <div class="quick-start">
-                <h2 style="margin-top:0; font-size:1.1rem;">⚡ QUICK START (NL/EN)</h2>
-                <p>1. <b>SONGS:</b> Klik op (+) naast liedje om set te bouwen.</p>
-                <p>2. <b>LIVE:</b> Klik op LIVE om optreden te starten.</p>
-                <p>3. <b>SCROLL:</b> Gebruik wiel voor snelheid. (A+) voor tekstgrootte.</p>
-                <p>4. <b>TIMER:</b> Amber klok = verstreken tijd van je set.</p>
+            <div class="man-section">
+                <h2>Nederlands - Handleiding</h2>
+                <h3>1. Liedjes & Tags</h3>
+                <p>Klik op <b>SELECT</b> om meerdere liedjes te kiezen. Vink ze aan en tik op een tag in de cloud om deze aan alle geselecteerde liedjes toe te voegen. Gebruik de <b>(+)</b> knop om nieuwe tags aan te maken.</p>
+                <h3>2. Importeren & Backups</h3>
+                <p><b>JSON Import:</b> Gebruik dit voor volledige backups van je hele database. Op Android/iPad: kies 'Bestanden' als de foto-app opent.<br><b>TXT Import:</b> Voor het toevoegen van losse liedjes. De bestandsnaam wordt de titel.</p>
+                <h3>3. Setlists & Archief</h3>
+                <p>Voeg liedjes toe aan je set met het plusje <b>(+)</b>. Gebruik <b>SAVE SET</b> om je lijst op te slaan in het archief. Met <b>WA-IMPORT</b> kun je een lijst namen uit WhatsApp plakken om direct een set te bouwen.</p>
+                <h3>4. Live Mode</h3>
+                <p>In Live Mode verdwijnt de bovenbalk. De witte klok is de huidige tijd, de <b>amberkleurige klok</b> is de verstreken tijd van je optreden. Lettergrootte (A+) en BPM-snelheid worden per liedje onthouden.</p>
             </div>
 
-            <div class="man-sec">
-                <h2>1. DATABASE & IMPORT</h2>
-                <p><b>JSON:</b> Full backup. Gebruik EXPORT DB om alles op te slaan en IMPORT DB om op een ander device te herstellen.</p>
-                <p><b>TXT:</b> Importeer losse liedjes. Bestandsnaam = Titel.</p>
-                <p><b>Bulk Taggen:</b> SELECT -> Songs aanvinken -> Klik op tag in de cloud.</p>
-            </div>
-
-            <div class="man-sec">
-                <h2>2. SETLIST & ARCHIEF</h2>
-                <p><b>SAVE SET:</b> Sla je huidige lijst op in het archief.</p>
-                <p><b>ARCHIEF:</b> Herlaad opgeslagen lijsten met één klik.</p>
-                <p><b>WA-IMPORT:</b> Plak een lijst namen uit WhatsApp en bouw direct een setlist.</p>
-            </div>
-
-            <div class="man-sec">
-                <h2>3. LIVE MODE</h2>
-                <p>In LIVE mode wordt de bovenbalk verborgen. Instellingen (A+ en Snelheid) worden <b>per song</b> automatisch onthouden. Gebruik de (X) om LIVE te verlaten.</p>
+            <div class="man-section">
+                <h2>English - Manual</h2>
+                <h3>1. Songs & Tagging</h3>
+                <p>Click <b>SELECT</b> to pick multiple songs. Check them and tap a tag in the cloud to apply it to all selected items. Use the <b>(+)</b> button to create new tags.</p>
+                <h3>2. Files & Backups</h3>
+                <p><b>JSON Import:</b> Best for full database backups. If Android/iPad opens the Photos app, select 'Files' instead.<br><b>TXT Import:</b> Add single song files. Filename becomes the title.</p>
+                <h3>3. Setlists & Archive</h3>
+                <p>Add songs to your set with the <b>(+)</b> button. Use <b>SAVE SET</b> to store lists in your archive. <b>WA-IMPORT</b> allows you to paste names from WhatsApp to build a set instantly.</p>
+                <h3>4. Live Mode</h3>
+                <p>Top bar is hidden in Live Mode. White clock is current time, <b>Amber clock</b> is elapsed performance time. Font size (A+) and BPM speed are saved per song.</p>
             </div>
 
         </div>
@@ -212,8 +210,8 @@
             }; reader.readAsText(file);
         }
 
-        function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); showToast("SET OPGESLAGEN"); render(); } }
-        function loadArchive(idx) { if(confirm(`Setlist laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
+        function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam voor deze setlist:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); showToast("SET OPGESLAGEN"); render(); } }
+        function loadArchive(idx) { if(confirm(`Setlist '${archives[idx].name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
         function deleteArchive(idx) { if(confirm("Verwijderen?")) { archives.splice(idx, 1); save(); render(); } }
         function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
@@ -224,14 +222,10 @@
         function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
 
         function enterLiveView() { 
-            if(!cur) return; 
-            if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); }
-            document.getElementById('mainTopBar').style.display = 'none';
-            document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('liveView').style.display='block'; 
-            document.getElementById('liveFooter').style.display='flex'; 
-            drawLyrics('liveContent'); applyFontSize(); 
-            currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); 
+            if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); }
+            document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; 
+            document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
+            drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); 
             document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0; 
         }
 
@@ -299,7 +293,11 @@
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("GEKOPIEERD")); }
         function whatsappImport() { const input = prompt("Plak lijst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const song = db.find(s => s.title.toLowerCase() === l.trim().toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }); save(); render(); } }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_db_backup.json'; a.click(); }
+        function exportDB() { 
+            const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); 
+            const d = new Date(); const dateStr = `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
+            a.href = URL.createObjectURL(blob); a.download = `tdf_db_${dateStr}.json`; a.click(); 
+        }
         function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
         function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectMode && selectedSongs.length > 0) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
     </script>
