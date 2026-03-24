@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.78</title>
+    <title>TDF Digital v9.79</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,17 +32,16 @@
 
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
-        .btn-danger { border-color: var(--red); color: var(--red); }
         
         #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; background: #111; border-bottom: 1px solid #333; white-space: nowrap; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; margin-bottom: 5px; }
+        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
-        #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30; }
+        #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 5000; }
@@ -52,7 +51,7 @@
         .wheel-num.active { color: var(--amber); font-size: 1.2rem; font-weight: bold; }
         .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); pointer-events: none; }
         
-        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 20000; display: none; }
+        #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 40000; display: none; }
     </style>
 </head>
 <body>
@@ -76,10 +75,16 @@
     <div class="main-container">
         <img src="logo.png" id="bgLogo" class="watermark">
         <div id="lyricsArea"></div>
+        
         <div id="editorContainer">
+            <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333;">
+                <b style="color:var(--amber)" id="editorTitle">EDITOR</b>
+                <button class="btn" onclick="finishEdit()">OK / OPSLAAN</button>
+            </div>
             <div id="chordBar" style="height:60px; background:#222; padding:10px; display:flex; gap:8px; overflow-x:auto;"></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
+        
         <div id="liveView"><div id="liveContent"></div></div>
     </div>
 
@@ -111,11 +116,11 @@
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
+            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="exportDB()">EXPORT DB</button>
                 <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
             </div>
-            <button class="btn" id="songAdminToggle" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
         </div>
     </div>
 
@@ -126,12 +131,12 @@
         </div>
         <div id="setList" class="menu-scroll"></div>
         <div class="menu-footer">
+            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('setAdmin')">BEHEER SETLIST</button>
             <div id="setAdmin" class="admin-submenu">
                 <button class="btn" onclick="whatsappExport()">WA-EXPORT</button>
                 <button class="btn" onclick="whatsappImport()">WA-IMPORT</button>
                 <button class="btn btn-danger" onclick="clearSetlist()">CLEAR SETLIST</button>
             </div>
-            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('setAdmin')">BEHEER SETLIST</button>
         </div>
     </div>
 
@@ -155,7 +160,6 @@
             selectedSongs = [];
             document.getElementById('selectBtn').classList.toggle('active', selectMode);
             document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            document.getElementById('songAdminToggle').style.display = selectMode ? 'none' : 'block';
             render(); 
         }
 
@@ -166,16 +170,8 @@
         }
 
         function bulkAddToSet() {
-            if(selectedSongs.length === 0) return;
-            selectedSongs.forEach(title => {
-                const s = db.find(x => x.title === title);
-                if(s) setlist.push(JSON.parse(JSON.stringify(s)));
-            });
-            save();
-            showToast(`${selectedSongs.length} TOEGEVOEGD`);
-            toggleSelectMode();
-            closeMenus();
-            openMenu('setMenu');
+            selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); });
+            save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); closeMenus(); openMenu('setMenu');
         }
 
         function toggleSetEdit() { 
@@ -196,7 +192,7 @@
                 p.innerText = t;
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
+                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); showToast("TAG TOEGEVOEGD"); render();
                     } else {
                         if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
@@ -211,8 +207,9 @@
                 return mSearch && mTags;
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
+                const isSelected = selectedSongs.includes(s.title);
                 d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" class="select-check" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                    ${selectMode ? `<input type="checkbox" class="select-check" ${isSelected?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }">
                         <b>${s.title}</b><br><small>${s.tags||''}</small>
                     </div>
@@ -231,7 +228,13 @@
         function loadSongByName(t) { cur = db.find(x => x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function addToSetlist(t) { const s = db.find(x => x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
         function liveSetSong(i) { cur = setlist[i]; enterLiveView(); closeMenus(); }
-        function editSetSong(i) { cur = setlist[i]; startEdit(); closeMenus(); }
+        
+        function editSetSong(i) { 
+            cur = setlist[i]; 
+            document.getElementById('editorTitle').innerText = cur.title;
+            document.getElementById('editorArea').value = cur.content;
+            document.getElementById('editorContainer').style.display = 'flex';
+        }
 
         function enterLiveView() { 
             if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
@@ -252,8 +255,27 @@
         function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=40; i<=220; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i + " BPM"; strip.appendChild(d); } }
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 28) - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
 
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; }
-        function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; drawLyrics('lyricsArea'); }
+        function startEdit() { 
+            if(!cur) return; 
+            document.getElementById('editorTitle').innerText = cur.title;
+            document.getElementById('editorArea').value = cur.content; 
+            document.getElementById('editorContainer').style.display = 'flex'; 
+        }
+
+        function finishEdit() { 
+            cur.content = document.getElementById('editorArea').value; 
+            // Update in DB als het een db song is
+            let dbSong = db.find(x => x.title === cur.title);
+            if(dbSong) dbSong.content = cur.content;
+            save(); 
+            document.getElementById('editorContainer').style.display = 'none'; 
+            if(document.getElementById('liveView').style.display !== 'block') {
+                document.getElementById('lyricsArea').style.display = 'block';
+                drawLyrics('lyricsArea');
+            } else {
+                drawLyrics('liveContent');
+            }
+        }
         
         function drawLyrics(id) { 
             const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; 
