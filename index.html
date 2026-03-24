@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.64</title>
+    <title>TDF Digital v10.65</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -34,13 +34,15 @@
         .wheel-num { height: 34px; line-height: 34px; font-size: 1rem; color: #fff; opacity: 0.2; } 
         .wheel-num.active { color: var(--amber); font-size: 1.6rem; font-weight: 900; opacity: 1; }
 
+        .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
+        .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
+
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
-        .font-sm { font-size: 1.3rem !important; } .font-std { font-size: 2.1rem !important; } .font-lg { font-size: 3.1rem !important; }
     </style>
 </head>
 <body>
@@ -85,7 +87,8 @@
             <b>DATABASE</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div style="padding:15px 15px 0 15px;"><input type="text" id="songSearch" placeholder="Zoek op titel of tag..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
             <button class="btn" onclick="exportDB()">BACKUP</button>
@@ -108,8 +111,11 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        let activeTags = [];
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
-        const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+        
+        const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
+        const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { 
             render(); createChordButtons(); createBpmNodes(); initBpmWheel();
@@ -122,15 +128,43 @@
         };
 
         function render() {
+            // Tag Bar
+            const tagBar = document.getElementById('tagFilterBar');
+            tagBar.innerHTML = "";
+            fixedTags.forEach(tag => {
+                const p = document.createElement('div');
+                p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : "");
+                p.innerText = tag.toUpperCase();
+                p.onclick = () => {
+                    if(activeTags.includes(tag)) activeTags = activeTags.filter(t => t !== tag);
+                    else activeTags.push(tag);
+                    render();
+                };
+                tagBar.appendChild(p);
+            });
+
+            // Song List
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            const q = document.getElementById('songSearch') ? document.getElementById('songSearch').value : "";
-            db.filter(s => s && s.title.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+            const q = document.getElementById('songSearch') ? document.getElementById('songSearch').value.toLowerCase() : "";
+            
+            db.filter(s => {
+                if(!s) return false;
+                const mSearch = s.title.toLowerCase().includes(q) || (s.tags || "").toLowerCase().includes(q);
+                const sTags = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
+                const mTags = activeTags.length === 0 || activeTags.every(at => sTags.includes(at.toLowerCase()));
+                return mSearch && mTags;
+            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
+                d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')">
+                                <b>${s.title}</b><br>
+                                <small style="opacity:0.4; font-size:0.8rem; text-transform:uppercase;">${s.tags || ''}</small>
+                               </div>
                                <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
                                <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
+
+            // Setlist
             const sl = document.getElementById('setList'); sl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "setlist-row";
@@ -239,7 +273,7 @@
                         db = data;
                         save();
                         render();
-                        showToast("OK");
+                        showToast("IMPORT OK");
                     }
                 } catch(err) { showToast("FOUT"); }
                 e.target.value = '';
