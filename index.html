@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.67</title>
+    <title>TDF Digital v9.68</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -63,8 +63,6 @@
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 11000; display: none; }
         
         #manualContent { display: none; color: #000; font-size: 0.95rem; line-height: 1.4; padding: 25px; z-index: 5; background: #fff; overflow-y: auto; }
-        .m-section h2 { font-size: 1.3rem; border-bottom: 2px solid #000; margin: 20px 0 10px 0; padding-bottom: 5px; }
-        .m-section h3 { font-size: 1rem; font-weight: bold; margin: 15px 0 5px 0; color: var(--grey); }
         .set-timer-box { padding: 10px 20px; background: #222; width: 100%; display: flex; justify-content: space-between; color: var(--amber); font-weight: bold; border-bottom: 1px solid #333; }
     </style>
 </head>
@@ -91,44 +89,14 @@
         <div id="lyricsArea">
             <div id="manualContent">
                 <div class="m-section">
-                    <h2>UITGEBREIDE HANDLEIDING (NL)</h2>
-                    <h3>1. Database & Beheer (SONGS)</h3>
-                    <p>Beheer hier je volledige song-archief. <br>
-                    - Klik op <b>+</b> om een liedje direct aan de set toe te voegen. <br>
-                    - Gebruik <b>SELECT</b> voor bulk-acties (meerdere songs taggen of toevoegen aan set). <br>
-                    - <b>BEHEER:</b> Hier kun je de database exporteren (backup) of een JSON-bestand importeren.</p>
-
-                    <h3>2. Tags & Slim Taggen</h3>
-                    <p>- Voeg tags toe in de editor of via de SELECT modus. <br>
-                    - Klik op een tag in de cloud om te filteren. <br>
-                    - <b>Verwijderen:</b> Houd een tag in de cloud lang ingedrukt om deze uit de hele database te wissen.</p>
-
-                    <h3>3. Setlist & Optreden (SET)</h3>
-                    <p>- <b>Direct naar Live:</b> Klik in de setlist op een titel om Live Mode te starten. <br>
-                    - <b>Edit Mode:</b> Gebruik dit om volgorde te wijzigen (pijlen) of liedjes te bewerken (klik op titel). <br>
-                    - <b>Notities:</b> Voeg extra tekstregels toe voor pauzes of aankondigingen.</p>
-
-                    <h3>4. WhatsApp Koppeling</h3>
-                    <p>- <b>WA-Export:</b> Kopieer je setlist als tekst naar klembord om te delen in de groepsapp. <br>
-                    - <b>WA-Import:</b> Plak een tekstlijst uit WhatsApp. De app zoekt automatisch naar titels in je database. Onbekende regels worden notities.</p>
-
-                    <h3>5. BPM & Scrollen (Live)</h3>
-                    <p>Het duimwiel rechtsonder werkt op basis van <b>beats per minuut</b>. <br>
-                    - 120 BPM scrolt twee keer zo snel als 60 BPM. <br>
-                    - De waarde wordt per liedje opgeslagen zodra je deze instelt.</p>
-
-                    <hr>
-                    <h2>EXTENDED MANUAL (EN)</h2>
-                    <h3>1. Live Performance</h3>
-                    <p>Tap a song title in SET to enter <b>Live Mode</b>. The scroll wheel uses <b>BPM-sync</b> to ensure the text moves with the beat.</p>
-                    <h3>2. Setlist Sharing</h3>
-                    <p>Use <b>WA-Export</b> to copy the set to clipboard for WhatsApp. Use <b>WA-Import</b> to paste a list from your chat; matches are found in your database automatically.</p>
+                    <h2>Manual v9.68</h2>
+                    <p><b>Setlist Edit:</b> In de SETLIST opent een klik op een liedje direct de <b>platte tekst editor</b> wanneer EDIT MODE aan staat.</p>
                 </div>
             </div>
         </div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
-            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
+            <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags..."></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
@@ -224,7 +192,7 @@
             }
         }
 
-        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; document.getElementById('songsAdminBtn').style.display = selectMode ? 'none' : 'block'; render(); }
+        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
@@ -238,8 +206,6 @@
                 p.innerText = t;
                 p.onmousedown = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
                 p.onmouseup = () => clearTimeout(pressTimer);
-                p.ontouchstart = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
-                p.ontouchend = () => clearTimeout(pressTimer);
                 p.onclick = () => {
                     if(selectMode) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); }
                     else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
@@ -295,7 +261,8 @@
             document.getElementById('liveView').style.display='block'; 
             document.getElementById('liveFooter').style.display='flex'; 
             document.getElementById('editBtn').style.display='none';
-            document.getElementById('liveBtn').style.display='none'; // Live knop weg in live mode
+            document.getElementById('saveBtn').style.display='none';
+            document.getElementById('liveBtn').style.display='none';
             drawLyrics('liveContent'); 
             currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false;
             document.getElementById('title').innerText = "LIVE: " + cur.title;
@@ -354,8 +321,6 @@
         function scrollEngine() { 
             const lv=document.getElementById('liveView'); 
             if(lv && lv.style.display==='block' && isScrolling && currentSpeed>0) { 
-                // BPM Logica: we gaan uit van een regelhoogte van ongeveer 4.7rem (~75px) 
-                // Een tempo van 60 BPM (1 beat per seconde) scrolt dan rustig door.
                 scrollAcc += (currentSpeed * 0.08); 
                 lv.scrollTop = Math.floor(scrollAcc); 
             } requestAnimationFrame(scrollEngine); 
@@ -365,7 +330,6 @@
             const wheel=document.getElementById('thumbWheel'); let startY=0, startS=0; 
             wheel.addEventListener('touchstart', (e) => { startY=e.touches[0].clientY; startS=currentSpeed; e.preventDefault(); }, {passive:false}); 
             wheel.addEventListener('touchmove', (e) => { 
-                // Gevoeligheid aanpassen naar BPM schaal (max 200 BPM)
                 currentSpeed = Math.max(0, Math.min(20, startS + ((startY-e.touches[0].clientY)/15))); 
                 if(cur) cur.scrollSpeed=currentSpeed; updateWheelPosition(); e.preventDefault(); 
             }, {passive:false}); 
