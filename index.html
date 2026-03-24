@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.41</title>
+    <title>TDF Digital v10.44</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -26,12 +26,12 @@
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
         .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; }
+        .setlist-row.edit-active { background: #2c2c2e; border-left: 4px solid var(--amber); }
         .setlist-row span { font-size: 1.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 50; position: relative; pointer-events: auto; }
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 50; position: relative; }
         .btn.active { background: var(--amber); color: #000; }
         .btn-danger { border-color: var(--red); color: var(--red); }
-        .btn-edit-xl { min-width: 70px; height: 50px; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; z-index: 100 !important; }
         .btn-move { border: none; font-size: 1.4rem; padding: 5px 8px; color: #666; background: none; cursor: pointer; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -77,7 +77,13 @@
     </div>
 
     <div id="songsMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button><button class="btn" onclick="closeMenus()">X</button></div>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; gap:8px;">
+                <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
+                <button class="btn" id="songEditGlobalBtn" onclick="toggleSongEditMode()">EDIT</button>
+            </div>
+            <button class="btn" onclick="closeMenus()">X</button>
+        </div>
         <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:12px; border-radius:8px;"></div>
         <div class="tag-cloud-wrapper"><div id="tagList" style="display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0;"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
         <div id="dbList" class="menu-scroll"></div>
@@ -107,12 +113,13 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let archives = JSON.parse(localStorage.getItem('tdfArchives')) || [];
-        let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 100, setEditMode = false, selectMode = false, selectedSongs = [], activeTags = [];
+        let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 100, setEditMode = false, songEditMode = false, selectMode = false, selectedSongs = [], activeTags = [];
         let setStartTime = localStorage.getItem('tdfSetStartTime') || null;
         const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { createBpmNodes(); initBpmWheel(); render(); createChordButtons(); setInterval(updateClocks, 1000); requestAnimationFrame(scrollEngine); document.getElementById('importJsonFile').addEventListener('change', importDB); document.getElementById('importTxtFile').addEventListener('change', importTxt); };
 
+        function toggleSongEditMode() { songEditMode = !songEditMode; document.getElementById('songEditGlobalBtn').classList.toggle('active', songEditMode); render(); }
         function transpose(dir) {
             const area = document.getElementById('editorArea');
             area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => {
@@ -140,13 +147,11 @@
                 p.onclick = (e) => { e.stopPropagation(); if(selectMode && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); } }; tagsDiv.appendChild(p);
             });
             db.filter(s => { if(!s) return false; const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ); const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase())); return mSearch && mTags; }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const d = document.createElement('div'); d.className = "setlist-row";
+                const d = document.createElement('div'); d.className = "setlist-row" + (songEditMode ? " edit-active" : "");
                 d.innerHTML = `
                     ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
-                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
-                    <button class="btn btn-danger" style="margin-right:10px;" onclick="event.stopPropagation(); deleteFromDB('${s.title.replace(/'/g, "\\")}')">X</button>
-                    <button class="btn btn-edit-xl" style="margin-right:10px;" onclick="event.stopPropagation(); startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
-                    <button class="btn" onclick="event.stopPropagation(); addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
+                    <div style="flex:1" onclick="handleSongInteraction('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
+                    <button class="btn" style="min-width:50px;" onclick="event.stopPropagation(); addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
             const setl = document.getElementById('setList'); setl.innerHTML = "";
@@ -154,14 +159,13 @@
             const archl = document.getElementById('archiveList'); archl.innerHTML = ""; archives.forEach((a, i) => { const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `<div style="flex:1" onclick="loadArchive(${i})"><b>${a.name}</b></div><button class="btn" style="margin-right:8px;" onclick="event.stopPropagation(); archiveWAExport(${i})">WA</button><button class="btn btn-danger" onclick="event.stopPropagation(); deleteArchive(${i})">X</button>`; archl.appendChild(d); });
         }
 
-        function startEdit(t) { 
-            cur = db.find(x => x && x.title === t); 
-            if(cur) {
-                document.getElementById('editorTitle').innerText = cur.title; 
-                document.getElementById('editorArea').value = cur.content; 
-                document.getElementById('editorContainer').style.display = 'flex'; 
-            }
+        function handleSongInteraction(title) {
+            if (selectMode) { toggleSongSelection(title); render(); return; }
+            if (songEditMode) { startEdit(title); } 
+            else { loadSongByName(title); }
         }
+
+        function startEdit(t) { cur = db.find(x => x && x.title === t); if(cur) { document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics('lyricsArea'); render(); }
         function renameSong() { if(!cur) return; const newName = prompt("Nieuwe naam:", cur.title); if(newName && newName !== cur.title) { cur.title = newName.toUpperCase().trim(); document.getElementById('editorTitle').innerText = cur.title; save(); render(); } }
         function deleteFromDB(title) { if(confirm(`Wissen: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); } }
