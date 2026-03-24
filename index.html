@@ -5,36 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.38</title>
+    <title>TDF Digital v10.40</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
+        
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 5000; }
         .logo-img { height: 45px; width: auto; cursor: pointer; }
+        
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; z-index: 1000; }
         @keyframes pulse { 0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); } 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } }
         .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; }
+
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 10; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 40px 35px 600px 35px; z-index: 2000; color: #fff; }
+        
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 100000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
-        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 20px; color: #fff; border-bottom: 1px solid #222; }
+
+        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; }
         .setlist-row span { font-size: 1.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 5; }
+        
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 50; position: relative; }
         .btn.active { background: var(--amber); color: #000; }
         .btn-danger { border-color: var(--red); color: var(--red); }
+        .btn-edit-xl { min-width: 60px; height: 45px; font-size: 1.4rem; padding: 5px; }
         .btn-move { border: none; font-size: 1.4rem; padding: 5px 8px; color: #666; background: none; cursor: pointer; }
+
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 45px; text-align: center; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
+
         #liveFooter { height: calc(130px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(20px + env(safe-area-inset-bottom)) 15px; z-index: 10000; pointer-events: auto; }
-        .wheel-wrap { position: relative; width: 100px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; margin: 0 10px; }
-        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; transition: transform 0.1s linear; }
-        .wheel-num { height: 34px; line-height: 34px; font-size: 1rem; color: #fff; opacity: 0.3; } 
-        .wheel-num.active { color: var(--amber); font-size: 1.5rem; font-weight: 900; opacity: 1; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
         .font-sm { font-size: 1.6rem !important; } .font-std { font-size: 2.5rem !important; } .font-lg { font-size: 3.8rem !important; }
     </style>
@@ -43,14 +48,16 @@
     <div id="toast">MELDING</div>
     <input type="file" id="importJsonFile" style="display:none" accept="application/json">
     <input type="file" id="importTxtFile" style="display:none" accept="text/plain">
+
     <div class="top-bar" id="mainTopBar">
         <div class="top-left"><img src="logo.png" class="logo-img" onclick="location.reload()"><button class="btn" onclick="openMenu('songsMenu')">SONGS</button><button class="btn" onclick="openMenu('setMenu')">SET</button></div>
         <div id="title" class="top-center">TDF DIGITAL</div>
         <div class="top-right"><button class="btn" id="liveBtn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button></div>
     </div>
+
     <div class="main-container"><img src="logo.png" id="bgLogo" class="watermark"><div id="lyricsArea"></div><div id="liveView"><div id="liveContent"></div></div>
         <div id="editorContainer">
-            <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333;">
                 <button class="btn" onclick="renameSong()">NAAM</button>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="transpose(-1)">[-1]</button><button class="btn" onclick="transpose(1)">[+1]</button></div>
                 <button class="btn" onclick="finishEdit()">OPSLAAN</button>
@@ -59,14 +66,16 @@
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
     </div>
+
     <div id="liveFooter">
         <div style="display:flex; gap:8px;"><button class="btn" onclick="exitLiveView()">X</button></div>
         <div style="display:flex; align-items:center;"><button class="btn" onclick="resetSongScroll()">⏮</button><button id="playBtn" class="btn" style="width:60px; font-size:1.6rem; margin: 0 10px;" onclick="toggleScroll()">▶</button>
-            <div class="wheel-wrap" id="bpmWheel"><div style="position:absolute; width:100%; height:36px; top:32px; border-top:1px solid var(--amber); border-bottom:1px solid var(--amber); background:rgba(255,191,0,0.15); pointer-events:none; z-index:2;"></div><div class="wheel-strip" id="wheelStrip"></div></div>
+            <div class="wheel-wrap" id="bpmWheel" style="position:relative; width:100px; height:100px; background:#000; border:2px solid #444; border-radius:12px; overflow:hidden; touch-action:none; margin:0 10px;"><div style="position:absolute; width:100%; height:36px; top:32px; border-top:1px solid var(--amber); border-bottom:1px solid var(--amber); background:rgba(255,191,0,0.15); pointer-events:none; z-index:2;"></div><div class="wheel-strip" id="wheelStrip" style="position:absolute; width:100%; text-align:center; top:0; left:0; pointer-events:none; transition:transform 0.1s linear;"></div></div>
             <button class="btn" id="fontSizeBtn" onclick="cycleFontSize()">A+</button>
         </div>
         <div style="display:flex; align-items:center; gap:10px;"><div style="text-align:right"><div id="liveClockDisplay" style="font-size:1.1rem; font-weight:bold;">00:00</div><div id="setTimerDisplay" style="font-size:0.9rem; color:var(--amber); font-weight:bold;">0m</div></div><button id="nextSongBtn" class="btn" style="background:var(--amber); color:#000; min-width:90px;" onclick="goToNextSong()">VOLGENDE</button></div>
     </div>
+
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button><button class="btn" onclick="closeMenus()">X</button></div>
         <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:12px; border-radius:8px;"></div>
@@ -78,6 +87,7 @@
             <button class="btn" id="adminBtnMain" style="width:100%;" onclick="toggleSub('songsAdmin')">BEHEER DATABASE</button>
         </div>
     </div>
+
     <div id="setMenu" class="full-menu">
         <div class="setlist-header" style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
             <div style="display:flex; gap:10px;"><button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT</button><button class="btn" id="addNoteBtn" style="display:none;" onclick="addCustomNote()">NOTITIE +</button></div>
@@ -90,7 +100,9 @@
             <button class="btn" style="width:100%;" onclick="toggleSub('setAdmin')">BEHEER SETLIST</button>
         </div>
     </div>
+
     <div id="archiveMenu" class="full-menu"><div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>ARCHIEF</b><button class="btn" onclick="openMenu('setMenu')">TERUG</button></div><div id="archiveList" class="menu-scroll"></div></div>
+
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
@@ -98,7 +110,9 @@
         let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 100, setEditMode = false, selectMode = false, selectedSongs = [], activeTags = [];
         let setStartTime = localStorage.getItem('tdfSetStartTime') || null;
         const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+
         window.onload = () => { createBpmNodes(); initBpmWheel(); render(); createChordButtons(); setInterval(updateClocks, 1000); requestAnimationFrame(scrollEngine); document.getElementById('importJsonFile').addEventListener('change', importDB); document.getElementById('importTxtFile').addEventListener('change', importTxt); };
+
         function transpose(dir) {
             const area = document.getElementById('editorArea');
             area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => {
@@ -112,21 +126,36 @@
             });
             showToast(dir > 0 ? "+1 STAP" : "-1 STAP");
         }
+
         function triggerFilePicker(type) { document.getElementById(type === 'json' ? 'importJsonFile' : 'importTxtFile').click(); }
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); localStorage.setItem('tdfArchives', JSON.stringify(archives)); }
+        
         function render() {
-            const sQ = document.getElementById('songSearch').value.toLowerCase(); const dbl = document.getElementById('dbList'); dbl.innerHTML = ""; const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
+            const sQ = document.getElementById('songSearch').value.toLowerCase();
+            const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
+            const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
             let allTags = new Set(); db.forEach(s => { if(s && s.tags) s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); })});
-            Array.from(allTags).sort().forEach(t => { const p = document.createElement('div'); p.className = 'tag-pill'; p.innerText = t; p.style.background = activeTags.includes(t) ? "var(--amber)" : "#333"; p.style.color = activeTags.includes(t) ? "#000" : "#aaa";
+            Array.from(allTags).sort().forEach(t => {
+                const p = document.createElement('div'); p.className = 'tag-pill'; p.innerText = t; p.style.background = activeTags.includes(t) ? "var(--amber)" : "#333"; p.style.color = activeTags.includes(t) ? "#000" : "#aaa"; p.style.borderRadius = "20px"; p.style.padding = "8px 16px";
                 p.onclick = (e) => { e.stopPropagation(); if(selectMode && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); } }; tagsDiv.appendChild(p);
             });
             db.filter(s => { if(!s) return false; const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ); const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase())); return mSearch && mTags; }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}<div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div><button class="btn btn-danger" style="margin-right:10px;" onclick="event.stopPropagation(); deleteFromDB('${s.title.replace(/'/g, "\\")}')">X</button><button class="btn" style="margin-right:10px;" onclick="event.stopPropagation(); startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button><button class="btn" onclick="event.stopPropagation(); addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`; dbl.appendChild(d);
+                const d = document.createElement('div'); d.className = "setlist-row";
+                d.innerHTML = `
+                    ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
+                    <button class="btn btn-danger" style="margin-right:10px;" onclick="event.stopPropagation(); deleteFromDB('${s.title.replace(/'/g, "\\")}')">X</button>
+                    <button class="btn btn-edit-xl" style="margin-right:10px;" onclick="event.stopPropagation(); startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
+                    <button class="btn" onclick="event.stopPropagation(); addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
+                dbl.appendChild(d);
             });
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => { const d = document.createElement('div'); d.className = "setlist-row"; const isN = s.isNote; d.innerHTML = `<div style="display:${setEditMode?'flex':'none'}; flex-direction:column; margin-right:10px;"><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, -1)">▲</button><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, 1)">▼</button></div><div style="flex:1" onclick="${(setEditMode || isN)?'':'liveSetSong('+i+')'}"><span>${isN ? (s.title ? '-- '+s.title+' --' : ' ') : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="event.stopPropagation(); setlist.splice(${i},1); save(); render();">X</button>`; setl.appendChild(d); });
             const archl = document.getElementById('archiveList'); archl.innerHTML = ""; archives.forEach((a, i) => { const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `<div style="flex:1" onclick="loadArchive(${i})"><b>${a.name}</b></div><button class="btn" style="margin-right:8px;" onclick="event.stopPropagation(); archiveWAExport(${i})">WA</button><button class="btn btn-danger" onclick="event.stopPropagation(); deleteArchive(${i})">X</button>`; archl.appendChild(d); });
         }
+
+        function startEdit(t) { cur = db.find(x => x && x.title === t); if(cur) { document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
+        function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics('lyricsArea'); render(); }
         function renameSong() { if(!cur) return; const newName = prompt("Nieuwe naam:", cur.title); if(newName && newName !== cur.title) { cur.title = newName.toUpperCase().trim(); document.getElementById('editorTitle').innerText = cur.title; save(); render(); } }
         function deleteFromDB(title) { if(confirm(`Wissen: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); } }
         function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; save(); toggleSelectMode(); render(); } }
@@ -143,8 +172,6 @@
         function cleanDuplicates() { const initialCount = db.length; const uniqueTitles = new Set(); db = db.filter(song => { if (!song || typeof song !== 'object' || !song.title) return false; const cleanTitle = song.title.toLowerCase().trim(); const isDuplicate = uniqueTitles.has(cleanTitle); uniqueTitles.add(cleanTitle); return !isDuplicate; }); save(); render(); showToast("OK"); }
         function importTxt(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { const title = file.name.replace(/\.[^/.]+$/, ""); db.push({ title: title.toUpperCase(), content: ev.target.result, scrollSpeed: 100, tags: "", liveSize: 'std' }); save(); render(); e.target.value = ''; }; reader.readAsText(file); }
         function importDB(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const imported = JSON.parse(ev.target.result); if(Array.isArray(imported)) { db = imported; save(); render(); showToast("OK"); } } catch(err) { showToast("ERROR"); } e.target.value = ''; }; reader.readAsText(file); }
-        function startEdit(t) { cur = db.find(x => x && x.title === t); document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; }
-        function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics('lyricsArea'); render(); }
         function loadSongByName(t) { cur = db.find(x => x && x.title === t); drawLyrics('lyricsArea'); closeMenus(); }
         function liveSetSong(i) { curIdx = i; cur = setlist[i]; enterLiveView(); closeMenus(); }
         function goToNextSong() { if (curIdx < setlist.length - 1) { curIdx++; if(setlist[curIdx].isNote) { goToNextSong(); return; } cur = setlist[curIdx]; enterLiveView(); } else { exitLiveView(); openMenu('setMenu'); showToast("EINDE"); } }
