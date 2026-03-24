@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.77</title>
+    <title>TDF Digital v9.78</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,14 +28,11 @@
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 20px; }
         
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; color: #fff; }
-        .select-check { width: 30px; height: 30px; margin-right: 15px; accent-color: var(--amber); }
+        .select-check { width: 35px; height: 35px; margin-right: 15px; accent-color: var(--amber); }
 
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
         .btn-danger { border-color: var(--red); color: var(--red); }
-        
-        .search-area { padding: 10px 15px; background: #111; border-bottom: 1px solid #333; }
-        .search-bar { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         
         #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; background: #111; border-bottom: 1px solid #333; white-space: nowrap; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
@@ -80,7 +77,7 @@
         <img src="logo.png" id="bgLogo" class="watermark">
         <div id="lyricsArea"></div>
         <div id="editorContainer">
-            <div class="chord-bar" id="chordBar" style="height:60px; background:#222; padding:10px; display:flex; gap:8px; overflow-x:auto;"></div>
+            <div id="chordBar" style="height:60px; background:#222; padding:10px; display:flex; gap:8px; overflow-x:auto;"></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
@@ -88,18 +85,18 @@
 
     <div id="liveFooter">
         <div style="display:flex; gap:8px;">
-            <button class="btn" style="border-radius:50%; width:50px; height:50px; font-size:1.2rem;" onclick="exitLiveView()">X</button>
-            <button class="btn" style="border-radius:50%; width:50px; height:50px; font-size:1.5rem;" onclick="location.reload()">⌂</button>
+            <button class="btn" onclick="exitLiveView()">X</button>
+            <button class="btn" onclick="location.reload()">⌂</button>
         </div>
         <div style="display:flex; gap:8px;">
-            <button class="btn" style="width:60px; height:50px; font-size:1.5rem;" onclick="resetSongScroll()">⏮</button>
-            <button id="playBtn" class="btn" style="width:75px; font-size:1.8rem; height:50px;" onclick="toggleScroll()">▶</button>
+            <button class="btn" onclick="resetSongScroll()">⏮</button>
+            <button id="playBtn" class="btn" style="width:75px;" onclick="toggleScroll()">▶</button>
         </div>
         <div class="wheel-wrap" id="thumbWheel">
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
-        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); min-width:60px; font-weight:bold;">00:00</div>
+        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); font-weight:bold;">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -107,17 +104,18 @@
             <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div class="search-area">
-            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()">
+        <div style="padding:10px 15px; background:#111;">
+            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="margin:0; width:100%;">
         </div>
         <div id="tagList"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
+            <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="exportDB()">EXPORT DB</button>
                 <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
             </div>
-            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
+            <button class="btn" id="songAdminToggle" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
         </div>
     </div>
 
@@ -143,7 +141,6 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 7, setEditMode = false;
-        let pressTimer;
 
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }, 1000); requestAnimationFrame(scrollEngine); };
 
@@ -157,7 +154,28 @@
             selectMode = !selectMode; 
             selectedSongs = [];
             document.getElementById('selectBtn').classList.toggle('active', selectMode);
+            document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
+            document.getElementById('songAdminToggle').style.display = selectMode ? 'none' : 'block';
             render(); 
+        }
+
+        function toggleSongSelection(t) { 
+            if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); 
+            else selectedSongs.push(t); 
+            document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`;
+        }
+
+        function bulkAddToSet() {
+            if(selectedSongs.length === 0) return;
+            selectedSongs.forEach(title => {
+                const s = db.find(x => x.title === title);
+                if(s) setlist.push(JSON.parse(JSON.stringify(s)));
+            });
+            save();
+            showToast(`${selectedSongs.length} TOEGEVOEGD`);
+            toggleSelectMode();
+            closeMenus();
+            openMenu('setMenu');
         }
 
         function toggleSetEdit() { 
@@ -184,7 +202,6 @@
                         if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
                     }
                 };
-                p.oncontextmenu = (e) => { e.preventDefault(); if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } };
                 tagsDiv.appendChild(p);
             });
 
@@ -211,7 +228,6 @@
             });
         }
 
-        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
         function loadSongByName(t) { cur = db.find(x => x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function addToSetlist(t) { const s = db.find(x => x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
         function liveSetSong(i) { cur = setlist[i]; enterLiveView(); closeMenus(); }
