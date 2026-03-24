@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.12</title>
+    <title>TDF Digital v10.13</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -110,7 +110,7 @@
         <div class="menu-footer">
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="openMenu('manMenu')">MANUAL / HELP</button>
-                <button class="btn" style="color:var(--amber)" onclick="cleanDuplicates()">CLEAN DB (REMOVE DUPES)</button>
+                <button class="btn" style="color:var(--amber)" onclick="cleanDuplicates()">CLEAN DB (RECOVER & REMOVE DUPES)</button>
                 <button class="btn" onclick="document.getElementById('importTxtFile').click()">IMPORT TXT SONG</button>
                 <button class="btn" onclick="exportDB()">EXPORT DB (JSON)</button>
                 <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT DB (JSON)</button>
@@ -141,7 +141,7 @@
     <div id="manMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>HELP</b><button class="btn" onclick="openMenu('songsMenu')">X</button></div>
         <div class="menu-scroll" style="padding:20px;">
-            <p><b>Dedupliceren:</b> Gebruik 'CLEAN DB' om dubbele titels in één keer te verwijderen.</p>
+            <p><b>Herstel:</b> Gebruik 'CLEAN DB' als liedjes niet meer reageren of dubbel zijn.</p>
             <p><b>Bulk:</b> SELECT -> Songs kiezen -> Delete of Zet in Set.</p>
         </div>
     </div>
@@ -174,14 +174,17 @@
         function cleanDuplicates() {
             const initialCount = db.length;
             const uniqueTitles = new Set();
+            // Stap 1: Filter corrupte data en duplicaten (Nuclear Clean)
             db = db.filter(song => {
-                const isDuplicate = uniqueTitles.has(song.title.toLowerCase().trim());
-                uniqueTitles.add(song.title.toLowerCase().trim());
+                if (!song || typeof song !== 'object' || !song.title) return false;
+                const cleanTitle = song.title.toLowerCase().trim();
+                const isDuplicate = uniqueTitles.has(cleanTitle);
+                uniqueTitles.add(cleanTitle);
                 return !isDuplicate;
             });
             const removed = initialCount - db.length;
             save(); render();
-            showToast(`${removed} DUBBELEN VERWIJDERD`);
+            showToast(`${removed} FOUTEN/DUBBELEN OPGESCHOOND`);
         }
 
         function scrollEngine() {
@@ -200,24 +203,27 @@
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
             
-            let allTags = new Set(); db.forEach(s => s.tags && s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); }));
+            let allTags = new Set(); 
+            db.forEach(s => { if(s && s.tags) s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); })});
+            
             Array.from(allTags).sort().forEach(t => {
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : ''); p.innerText = t;
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
+                        db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); render();
                     } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
                 }; tagsDiv.appendChild(p);
             });
 
             db.filter(s => {
+                if(!s) return false;
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ);
                 const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase()));
                 return mSearch && mTags;
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                d.innerHTML = `${selectMode ? `<input type="checkbox" style="width:30px;height:30px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small>${s.tags||''}</small></div>
                     <button class="btn btn-danger" style="display:${selectMode?'none':'block'}; margin-right:10px;" onclick="deleteFromDB('${s.title.replace(/'/g, "\\'")}')">X</button>
                     <button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
@@ -226,6 +232,7 @@
 
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
+                if(!s) return;
                 const d = document.createElement('div'); d.className = "row-item";
                 d.innerHTML = `<div style="flex:1" onclick="${setEditMode?'':'liveSetSong('+i+')'}"><span>${s.isNote ? '-- '+s.title+' --' : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 setl.appendChild(d);
@@ -239,12 +246,12 @@
             });
         }
 
-        function deleteFromDB(t) { if(confirm(`Wissen?`)) { db = db.filter(s => s.title !== t); save(); render(); } }
-        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes wissen?`)) { db = db.filter(s => !selectedSongs.includes(s.title)); selectedSongs = []; toggleSelectMode(); save(); render(); } }
+        function deleteFromDB(t) { if(confirm(`Wissen?`)) { db = db.filter(s => s && s.title !== t); save(); render(); } }
+        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; toggleSelectMode(); save(); render(); } }
         function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkActions').style.display = selectMode ? 'flex' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
-        function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
-        function loadSongByName(t) { cur = db.find(x => x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
+        function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x && x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
+        function loadSongByName(t) { cur = db.find(x => x && x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function enterLiveView() { if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0; }
         function exitLiveView() { document.getElementById('mainTopBar').style.display = 'flex'; document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling = false; }
         function initTouchWheel() { const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(1, Math.min(40, startS + (startY - e.touches[0].clientY) / 10)); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
@@ -257,17 +264,21 @@
         function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
         function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); }
         function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
-        function addToSetlist(t) { const s = db.find(x => x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("OK"); render(); } }
+        function addToSetlist(t) { const s = db.find(x => x && x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("OK"); render(); } }
         function toggleSetEdit() { setEditMode = !setEditMode; render(); }
         function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); render(); } }
         function loadArchive(idx) { if(confirm("Laden?")) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
         function deleteArchive(idx) { if(confirm("Wissen?")) { archives.splice(idx, 1); save(); render(); } }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); const d = new Date(); a.href = URL.createObjectURL(blob); a.download = `tdf_db_${d.getDate()}-${d.getMonth()+1}.json`; a.click(); }
+        function exportDB() { 
+            const d = new Date(); const dateStr = `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
+            const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); 
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db_${dateStr}.json`; a.click(); 
+        }
         function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
         function importTxt(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { const title = file.name.replace(/\.[^/.]+$/, ""); db.push({ title: title, content: ev.target.result, scrollSpeed: 11 }); save(); render(); }; reader.readAsText(file); }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("GEKOPIEERD")); }
-        function whatsappImport() { const input = prompt("Lijst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const song = db.find(s => s.title.toLowerCase() === l.trim().toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }); save(); render(); } }
-        function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectMode && selectedSongs.length > 0) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
+        function whatsappImport() { const input = prompt("Lijst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const song = db.find(s => s && s.title.toLowerCase() === l.trim().toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }); save(); render(); } }
+        function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectMode && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
         function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
         function startEdit() { if(!cur) return; document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); document.getElementById('lyricsArea').contentEditable = true; }
     </script>
