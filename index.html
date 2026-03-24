@@ -1,11 +1,11 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.32</title>
+    <title>TDF Digital v10.33</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -116,10 +116,13 @@
             <div id="songsAdmin" class="admin-submenu" style="display:none; background:#222; border:1px solid #444; border-radius:12px; width:100%; padding:15px; gap:10px; margin-bottom:10px;">
                 <button class="btn" style="color:var(--amber)" onclick="cleanDuplicates()">CLEAN DB</button>
                 <button class="btn" onclick="document.getElementById('importTxtFile').click()">IMPORT TXT</button>
-                <button class="btn" onclick="exportDB()">EXPORT JSON</button>
-                <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT JSON</button>
+                <button class="btn" onclick="exportDB()">EXPORT JSON DB</button>
+                <button class="btn" onclick="document.getElementById('importJsonFile').click()">IMPORT JSON DB</button>
             </div>
-            <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
+            <div id="bulkControls" style="display:none; width:100%; flex-direction:column; gap:8px;">
+                <button class="btn" id="bulkToSetBtn" style="background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button>
+                <button class="btn btn-danger" onclick="bulkDeleteFromDB()">VERWIJDER SELECTIE</button>
+            </div>
             <button class="btn" id="adminBtnMain" style="width:100%;" onclick="toggleSub('songsAdmin')">BEHEER DATABASE</button>
         </div>
     </div>
@@ -203,6 +206,7 @@
                 const d = document.createElement('div'); d.className = "setlist-row";
                 d.innerHTML = `${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
+                    <button class="btn btn-danger" style="margin-right:10px;" onclick="event.stopPropagation(); deleteFromDB('${s.title.replace(/'/g, "\\")}')">X</button>
                     <button class="btn" style="margin-right:10px;" onclick="event.stopPropagation(); startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
                     <button class="btn" onclick="event.stopPropagation(); addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
@@ -230,7 +234,10 @@
             });
         }
 
-        function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
+        function deleteFromDB(title) { if(confirm(`Database wissen: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); showToast("WISSEN VOLTOOID"); } }
+        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes definitief wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; save(); toggleSelectMode(); render(); showToast("SELECTIE GEWIST"); } }
+
+        function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkControls').style.display = selectMode ? 'flex' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
         function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x && x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
         function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
