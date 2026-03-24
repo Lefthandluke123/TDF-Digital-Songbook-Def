@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.79</title>
+    <title>TDF Digital v9.80</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
+        /* Nav & Layout */
         .top-bar { height: 85px; background: var(--grey); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 15px 12px 15px; border-bottom: 2px solid #222; flex-shrink: 0; z-index: 4000; }
         .top-left, .top-right { display: flex; align-items: center; gap: 8px; flex: 1.5; }
         .top-center { flex: 2; text-align: center; font-weight: bold; color: #fff; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -19,10 +20,12 @@
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; opacity: 0.1; }
 
+        /* Content Areas */
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; z-index: 20; color: #fff; }
         #liveContent { font-size: 2.5rem !important; font-weight: bold; }
 
+        /* Menus */
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 20px; }
@@ -33,6 +36,7 @@
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
         
+        /* Tagging UI */
         #tagList { display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px; background: #111; border-bottom: 1px solid #333; white-space: nowrap; }
         .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
@@ -41,9 +45,11 @@
         .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; }
         .admin-submenu.open { display: flex; flex-direction: column; }
 
+        /* Editor Container (Forced Plain Text) */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
+        /* Live Footer & Clock */
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
@@ -82,7 +88,7 @@
                 <button class="btn" onclick="finishEdit()">OK / OPSLAAN</button>
             </div>
             <div id="chordBar" style="height:60px; background:#222; padding:10px; display:flex; gap:8px; overflow-x:auto;"></div>
-            <textarea id="editorArea" spellcheck="false"></textarea>
+            <textarea id="editorArea" spellcheck="false" placeholder="Plak hier je tekst met [Akkoorden]..."></textarea>
         </div>
         
         <div id="liveView"><div id="liveContent"></div></div>
@@ -110,7 +116,7 @@
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div style="padding:10px 15px; background:#111;">
-            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="margin:0; width:100%;">
+            <input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje of tag..." oninput="render()" style="margin:0; width:100%;">
         </div>
         <div id="tagList"></div>
         <div id="dbList" class="menu-scroll"></div>
@@ -145,7 +151,7 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
-        let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 7, setEditMode = false;
+        let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 11, setEditMode = false;
 
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }, 1000); requestAnimationFrame(scrollEngine); };
 
@@ -192,10 +198,24 @@
                 p.innerText = t;
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
-                        save(); showToast("TAG TOEGEVOEGD"); render();
+                        // BULK TAGGING LOGICA
+                        db.forEach(s => { 
+                            if(selectedSongs.includes(s.title)) { 
+                                let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; 
+                                if(!ts.includes(t)) ts.push(t); 
+                                s.tags = ts.join(', '); 
+                            } 
+                        });
+                        save(); showToast(`TAG '${t}' TOEGEVOEGD`); render();
                     } else {
                         if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
+                    }
+                };
+                p.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    if(selectMode && selectedSongs.length > 0) {
+                        db.forEach(s => { if(selectedSongs.includes(s.title) && s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
+                        save(); showToast(`TAG '${t}' VERWIJDERD`); render();
                     }
                 };
                 tagsDiv.appendChild(p);
@@ -238,7 +258,7 @@
 
         function enterLiveView() { 
             if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; 
-            drawLyrics('liveContent'); currentSpeed = cur.scrollSpeed || 7; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0;
+            drawLyrics('liveContent'); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0;
         }
 
         function exitLiveView() { document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling = false; }
@@ -264,9 +284,7 @@
 
         function finishEdit() { 
             cur.content = document.getElementById('editorArea').value; 
-            // Update in DB als het een db song is
-            let dbSong = db.find(x => x.title === cur.title);
-            if(dbSong) dbSong.content = cur.content;
+            let dbSong = db.find(x => x.title === cur.title); if(dbSong) dbSong.content = cur.content;
             save(); 
             document.getElementById('editorContainer').style.display = 'none'; 
             if(document.getElementById('liveView').style.display !== 'block') {
