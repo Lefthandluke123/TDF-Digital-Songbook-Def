@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.77</title>
+    <title>TDF Digital v10.79</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #34c759; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -38,8 +38,15 @@
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
         
         #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
+        .wheel-wrap { position: relative; width: 90px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
+        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
+        /* CIJFERS VERBETERD */
+        .wheel-num { height: 34px; line-height: 34px; font-size: 1.1rem; color: #fff; opacity: 0.4; transition: 0.1s; } 
+        .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; opacity: 1; text-shadow: 0 0 10px rgba(255,191,0,0.4); }
+
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
         #archiveView { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; flex-direction: column; z-index: 100001; }
+        .font-sm { font-size: 1.3rem !important; } .font-std { font-size: 2.1rem !important; } .font-lg { font-size: 3.1rem !important; }
     </style>
 </head>
 <body>
@@ -75,9 +82,13 @@
 
     <div id="liveFooter">
         <button class="btn" onclick="exitLive()">EXIT</button>
-        <button class="btn" onclick="navSet(-1)">❮</button>
-        <button id="playBtn" class="btn" style="width:60px;" onclick="toggleScroll()">▶</button>
-        <button class="btn" onclick="navSet(1)">❯</button>
+        <button class="btn" style="font-size:1.5rem;" onclick="navSet(-1)">❮</button>
+        <button id="playBtn" class="btn" style="width:60px; font-size:1.6rem;" onclick="toggleScroll()">▶</button>
+        <button class="btn" style="font-size:1.5rem;" onclick="navSet(1)">❯</button>
+        <div class="wheel-wrap" id="bpmWheel">
+            <div style="position:absolute; width:100%; height:34px; top:33px; border-top:2px solid var(--amber); border-bottom:2px solid var(--amber); background:rgba(255,191,0,0.15); pointer-events:none; z-index:2;"></div>
+            <div class="wheel-strip" id="wheelStrip"></div>
+        </div>
         <button class="btn" onclick="cycleFontSize()">A+</button>
     </div>
 
@@ -131,11 +142,11 @@
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
         let activeTags = [], bulkMode = false, selectedSongs = [];
         const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
-        const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         const flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { 
-            render(); createChordButtons();
+            render(); createChordButtons(); createBpmNodes(); initBpmWheel();
             document.getElementById('importJsonFile').addEventListener('change', importDB);
             setInterval(() => {
                 document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
@@ -193,113 +204,44 @@
             });
         }
 
-        function saveSetToArchive() {
-            if(setlist.length === 0) return showToast("LEGE SET");
-            const name = prompt("Naam voor deze setlist:");
-            if(name) {
-                archives[name] = JSON.parse(JSON.stringify(setlist));
-                localStorage.setItem('tdfArchives', JSON.stringify(archives));
-                showToast("OPGESLAGEN");
-            }
+        function createBpmNodes() { const s = document.getElementById('wheelStrip'); for(let i=MIN_BPM; i<=MAX_BPM; i++) { const d = document.createElement('div'); d.className='wheel-num'; d.innerText=i; s.appendChild(d); } }
+        function initBpmWheel() {
+            const w = document.getElementById('bpmWheel'); let sY = 0, sV = 0;
+            w.addEventListener('touchstart', e => { sY = e.touches[0].clientY; sV = currentSpeed; e.preventDefault(); }, {passive:false});
+            w.addEventListener('touchmove', e => { 
+                let delta = Math.round((sY - e.touches[0].clientY) / 5);
+                currentSpeed = Math.max(MIN_BPM, Math.min(MAX_BPM, sV + delta));
+                if(cur) { cur.scrollSpeed = currentSpeed; save(); }
+                updateWheel(); e.preventDefault(); 
+            }, {passive:false});
+        }
+        function updateWheel() {
+            const s = document.getElementById('wheelStrip');
+            s.style.transform = `translateY(${(1 * 34) - ((currentSpeed - MIN_BPM) * 34)}px)`;
+            s.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', (i + MIN_BPM) === currentSpeed));
         }
 
-        function openArchive() {
-            const view = document.getElementById('archiveView');
-            const list = document.getElementById('archiveList');
-            list.innerHTML = "";
-            Object.keys(archives).forEach(name => {
-                const d = document.createElement('div'); d.className = "setlist-row";
-                d.innerHTML = `<div style="flex:1;" onclick="loadArchive('${name.replace(/'/g, "\\'")}')"><b>${name.toUpperCase()}</b></div>
-                               <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="deleteArchive('${name.replace(/'/g, "\\'")}')">X</button>`;
-                list.appendChild(d);
-            });
-            view.style.display = 'flex';
-        }
-
-        function loadArchive(name) {
-            if(confirm(`Setlist '${name}' laden? Huidige set wordt overschreven.`)) {
-                setlist = JSON.parse(JSON.stringify(archives[name]));
-                save(); render();
-                document.getElementById('archiveView').style.display = 'none';
-                showToast("GELADEN");
-            }
-        }
-
-        function deleteArchive(name) {
-            if(confirm(`Archief '${name}' verwijderen?`)) {
-                delete archives[name];
-                localStorage.setItem('tdfArchives', JSON.stringify(archives));
-                openArchive();
-            }
-        }
-
-        function exportSetToWA() {
-            if(setlist.length === 0) return showToast("LEGE SET");
-            let text = "TDF SETLIST:\n";
-            setlist.forEach((s, i) => {
-                text += `${i + 1}. ${s.title}\n`;
-            });
-            navigator.clipboard.writeText(text).then(() => showToast("TEKST GEKOPIEERD"));
-        }
-
-        function importSetFromWA() {
-            const text = prompt("Plak de WA lijst (bijv: 1. Titel, 2. Titel) hier:");
-            if(text) {
-                const lines = text.split('\n');
-                let newSet = [];
-                lines.forEach(line => {
-                    const title = line.replace(/^\d+\.\s*/, "").trim();
-                    if(title && title !== "TDF SETLIST:") {
-                        const song = db.find(s => s && s.title.toUpperCase() === title.toUpperCase());
-                        if(song) newSet.push(JSON.parse(JSON.stringify(song)));
-                        else newSet.push({ title: title, isNote: true }); // Als notitie toevoegen als song niet in DB zit
-                    }
-                });
-                if(newSet.length > 0) {
-                    setlist = newSet; save(); render(); showToast("SET GEÏMPORTEERD");
-                }
-            }
-        }
-
-        function createChordButtons() {
-            const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
-            ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
-                const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c;
-                b.onclick = () => {
-                    const a = document.getElementById('editorArea'); const s = a.selectionStart;
-                    a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd);
-                    a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2;
-                };
-                bar.appendChild(b);
-            });
-        }
-
-        function transpose(dir) {
-            const area = document.getElementById('editorArea');
-            area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => {
-                const transposed = chord.split('/').map(part => {
-                    let root = part.match(/^[A-G][#b]?/)?.[0]; if (!root) return part;
-                    let suffix = part.slice(root.length), val = flats[root] || root, idx = scale.indexOf(val);
-                    if (idx === -1) return part;
-                    return scale[(idx + dir + 12) % 12] + suffix;
-                }).join('/');
-                return `[${transposed}]`;
-            });
-        }
-
+        function saveSetToArchive() { if(setlist.length === 0) return showToast("LEGE SET"); const name = prompt("Naam voor deze setlist:"); if(name) { archives[name] = JSON.parse(JSON.stringify(setlist)); localStorage.setItem('tdfArchives', JSON.stringify(archives)); showToast("OPGESLAGEN"); } }
+        function openArchive() { const view = document.getElementById('archiveView'); const list = document.getElementById('archiveList'); list.innerHTML = ""; Object.keys(archives).forEach(name => { const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `<div style="flex:1;" onclick="loadArchive('${name.replace(/'/g, "\\'")}')"><b>${name.toUpperCase()}</b></div><button class="btn" style="border-color:var(--red); color:var(--red);" onclick="deleteArchive('${name.replace(/'/g, "\\'")}')">X</button>`; list.appendChild(d); }); view.style.display = 'flex'; }
+        function loadArchive(name) { if(confirm(`Setlist '${name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[name])); save(); render(); document.getElementById('archiveView').style.display = 'none'; showToast("GELADEN"); } }
+        function deleteArchive(name) { if(confirm(`Archief '${name}' verwijderen?`)) { delete archives[name]; localStorage.setItem('tdfArchives', JSON.stringify(archives)); openArchive(); } }
+        function exportSetToWA() { if(setlist.length === 0) return showToast("LEGE SET"); let text = "TDF SETLIST:\n"; setlist.forEach((s, i) => { text += `${i + 1}. ${s.title}\n`; }); navigator.clipboard.writeText(text).then(() => showToast("TEKST GEKOPIEERD")); }
+        function importSetFromWA() { const text = prompt("Plak de WA lijst hier:"); if(text) { const lines = text.split('\n'); let newSet = []; lines.forEach(line => { const title = line.replace(/^\d+\.\s*/, "").trim(); if(title && title !== "TDF SETLIST:") { const song = db.find(s => s && s.title.toUpperCase() === title.toUpperCase()); if(song) newSet.push(JSON.parse(JSON.stringify(song))); else newSet.push({ title: title, isNote: true }); } }); if(newSet.length > 0) { setlist = newSet; save(); render(); showToast("SET GEÏMPORTEERD"); } } }
+        function transpose(dir) { const area = document.getElementById('editorArea'); area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => { const transposed = chord.split('/').map(part => { let root = part.match(/^[A-G][#b]?/)?.[0]; if (!root) return part; let suffix = part.slice(root.length), val = flats[root] || root, idx = scale.indexOf(val); if (idx === -1) return part; return scale[(idx + dir + 12) % 12] + suffix; }).join('/'); return `[${transposed}]`; }); }
+        function createChordButtons() { const bar = document.getElementById('editorChordBar'); bar.innerHTML = ""; ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
         function toggleBulk() { bulkMode = !bulkMode; selectedSongs = []; document.getElementById('bulkBtn').classList.toggle('active', bulkMode); document.getElementById('bulkTagBtn').style.display = bulkMode ? 'block' : 'none'; render(); }
         function toggleSel(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); }
         function bulkTag() { if(selectedSongs.length === 0) return; const t = prompt("Tag toevoegen aan selectie:"); if(t) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let curTags = s.tags ? s.tags.split(',').map(x=>x.trim()) : []; if(!curTags.includes(t)) curTags.push(t); s.tags = curTags.join(', '); } }); save(); toggleBulk(); render(); } }
         function moveItem(idx, dir) { const newIdx = idx + dir; if (newIdx < 0 || newIdx >= setlist.length) return; const item = setlist.splice(idx, 1)[0]; setlist.splice(newIdx, 0, item); save(); render(); }
         function addCustomNote() { const val = prompt("Notitie/Pauze:"); if (val) { setlist.push({ title: val.toUpperCase(), isNote: true }); save(); render(); } }
         function loadPreview(t) { cur = db.find(x=>x.title===t); drawLyrics(false); closeMenus(); document.getElementById('bgLogo').style.display = 'none'; }
-        function enterLive(index) { if (setlist[index].isNote) return; curIdx = index; cur = setlist[curIdx]; if(!startTime) { startTime = new Date().toISOString(); localStorage.setItem('tdfStartTime', startTime); } document.getElementById('lyricsArea').classList.add('live-mode'); document.getElementById('liveFooter').style.display = 'flex'; document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('bgLogo').style.display = 'none'; resetScroll(); drawLyrics(true); closeMenus(); }
+        function enterLive(index) { if (setlist[index].isNote) return; curIdx = index; cur = setlist[curIdx]; if(!startTime) { startTime = new Date().toISOString(); localStorage.setItem('tdfStartTime', startTime); } document.getElementById('lyricsArea').classList.add('live-mode'); document.getElementById('liveFooter').style.display = 'flex'; document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('bgLogo').style.display = 'none'; currentSpeed = cur.scrollSpeed || 100; updateWheel(); resetScroll(); drawLyrics(true); closeMenus(); }
+        function exitLive() { document.getElementById('lyricsArea').classList.remove('live-mode'); document.getElementById('liveFooter').style.display = 'none'; document.getElementById('mainTopBar').style.display = 'flex'; isScrolling = false; }
         function drawLyrics(isLive) { const area = document.getElementById('lyricsArea'); if(!cur) return; area.className = (isLive ? 'live-mode ' : '') + 'font-' + (cur.liveSize || 'std'); area.innerHTML = cur.content.split('\n').map(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); return `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || '&nbsp;'}</div>`; }).join(''); }
         function scrollLoop() { if(isScrolling) { scrollPos += (currentSpeed * 0.006); document.getElementById('lyricsArea').scrollTop = scrollPos; } requestAnimationFrame(scrollLoop); }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollPos = document.getElementById('lyricsArea').scrollTop; }
         function resetScroll() { scrollPos = 0; document.getElementById('lyricsArea').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
         function navSet(dir) { let n = curIdx + dir; while (n >= 0 && n < setlist.length && setlist[n].isNote) { n += dir; } if(n >= 0 && n < setlist.length) enterLive(n); else showToast("EINDE SET"); }
-        function exitLive() { document.getElementById('lyricsArea').classList.remove('live-mode'); document.getElementById('liveFooter').style.display = 'none'; document.getElementById('mainTopBar').style.display = 'flex'; isScrolling = false; }
         function cycleFontSize() { if(!cur) return; const sz = ['sm', 'std', 'lg']; cur.liveSize = sz[(sz.indexOf(cur.liveSize || 'std') + 1) % 3]; save(); drawLyrics(true); }
         function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
         function renameSong() { if(!cur) return; const n = prompt("Naam:", cur.title); if(n) { cur.title = n.toUpperCase(); save(); render(); } }
