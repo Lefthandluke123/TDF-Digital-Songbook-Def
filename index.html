@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.56</title>
+    <title>TDF Digital v9.58</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -24,11 +24,16 @@
 
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
         
-        /* Watermerk met DUIdelijke puls-animatie */
-        @keyframes pulseWatermark { 0% { opacity: 0; } 50% { opacity: 0.3; } 100% { opacity: 0; } }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulseWatermark 3s infinite ease-in-out; }
+        @keyframes pulseWatermark { 0% { opacity: 0.05; } 50% { opacity: 0.25; } 100% { opacity: 0.05; } }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulseWatermark 3.5s infinite ease-in-out; display: block; }
 
-        #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
+        #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; display: flex; flex-direction: column; }
+        
+        /* Start-instructie en Manual Tekst */
+        .start-hint { font-size: 1.2rem; color: #666; text-align: center; margin-top: auto; margin-bottom: 20px; font-style: italic; z-index: 2; }
+        #manualContent { display: none; color: #000; font-size: 1.2rem; line-height: 1.5; padding: 20px; z-index: 5; }
+        #manualContent h2 { font-size: 1.8rem; border-bottom: 2px solid var(--grey); padding-bottom: 10px; margin-top: 0; }
+        #manualContent h3 { color: var(--grey); margin-top: 25px; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 10; }
         .chord-bar { height: 60px; background: #222; padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #444; }
@@ -37,6 +42,7 @@
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
+        
         .menu-scroll { flex: 1; overflow-y: auto; }
 
         .search-area { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; flex-direction: column; gap: 12px; }
@@ -50,10 +56,7 @@
 
         .swipe-container { position: relative; overflow: hidden; background: var(--red); margin-bottom: 2px; }
         .row-item { background: var(--row-bg); display: flex; align-items: center; padding: 15px 20px; min-height: 75px; position: relative; z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; }
-        
-        /* XL Setlist Title */
         .setlist-title { font-size: 1.8rem; font-weight: bold; display: block; }
-        
         .delete-btn { position: absolute; right: 0; top: 0; height: 100%; width: 80px; background: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 1; }
 
         .select-check { display: none; transform: scale(1.8); margin-right: 25px; accent-color: var(--amber); }
@@ -62,7 +65,11 @@
         .edit-only-container { display: none; flex-direction: column; margin-right: 15px; }
         .is-editing .edit-only-container { display: flex; }
 
-        .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; gap: 10px; justify-content: space-around; flex-wrap: wrap; }
+        /* Footer en Beheer Menu */
+        .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; position: relative; }
+        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: 90%; z-index: 100; padding: 10px; gap: 10px; }
+        .admin-submenu.open { display: flex; flex-direction: column; }
+
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 10001; display: none; }
 
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; z-index: 5000; }
@@ -95,7 +102,44 @@
 
     <div class="main-container">
         <img src="logo.png" class="watermark" alt="">
-        <div id="lyricsArea">Gebruik het SONGS of SET menu om een liedje te laden.</div>
+        <div id="lyricsArea">
+            <div id="manualContent">
+                <h2>Quick Manual v9.58</h2>
+                
+                <h3>1. Algemeen</h3>
+                <p>Kies 'SONGS' (database) of 'SET' (actuele setlist). Klik op de TDF logo-knop linksboven om terug te keren naar het beginscherm.</p>
+                
+                <h3>2. Liedjes Beheren (SONGS)</h3>
+                <ul>
+                    <li><b>Laden:</b> Klik op de titel.</li>
+                    <li><b>Toevoegen aan SET:</b> Klik op de goudomrande '+'-knop.</li>
+                    <li><b>Beheer Menu:</b> Klik op 'BEHEER' in de footer voor Clean, Import, Export en Manual.</li>
+                    <li><b>Select-modus:</b> Klik op 'SELECT' voor bulk-tagging of bulk-verplaatsen naar de SETLIST.</li>
+                </ul>
+                
+                <h3>3. Tags Organiseren</h3>
+                <ul>
+                    <li><b>Filteren:</b> Klik op een bestaande tag (wordt goud).</li>
+                    <li><b>Nieuwe Tag Maken:</b> Gebruik '+ Tag' invulveld. *Moet in Select-modus*</li>
+                    <li><b>Bulk-Taggen:</b> Vink liedjes aan, klik op een tag in de lijst.</li>
+                </ul>
+                
+                <h3>4. Setlist Beheren (SET)</h3>
+                <ul>
+                    <li><b>XL Titels:</b> Titels zijn groot voor podium-leesbaarheid.</li>
+                    <li><b>Edit Mode:</b> Gebruik 'EDIT MODE' om volgorde aan te passen (↑ ↓) of songs te verwijderen.</li>
+                    <li><b>Wissen/Export:</b> Gebruik de knoppen in de footer van het SET menu.</li>
+                </ul>
+                
+                <h3>5. Live View</h3>
+                <ul>
+                    <li><b>Starten:</b> Klik op 'LIVE' (top-bar) na het laden van een song.</li>
+                    <li><b>Scrollen:</b> Gebruik het duimwiel rechtsonder. Klik ▶ om scroll te activeren.</li>
+                \</ul>
+            </div>
+            
+            <div id="startHint" class="start-hint">Gebruik het SONGS of SET menu om een liedje te laden.</div>
+        </div>
         <div id="editorContainer">
             <div class="chord-bar" id="chordBar"></div>
             <div style="padding:10px 15px; background:#222;"><input type="text" id="tagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:10px; border-radius:6px;" placeholder="Tags (komma gescheiden)..."></div>
@@ -129,11 +173,17 @@
         </div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; flex:1;" onclick="addSelectedToSet()">ZET IN SET</button>
-            <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT</button>
-            <button class="btn" onclick="exportDB()">EXPORT</button>
-            <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
-            <input type="file" id="importFile" style="display:none" onchange="importDB(event)">
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--green); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
+            
+            <button class="btn" style="width:70%;" onclick="toggleAdminMenu()">BEHEER</button>
+            
+            <div id="adminSubmenu" class="admin-submenu">
+                <button class="btn" onclick="showManual()">MANUAL</button>
+                <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
+                <button class="btn" onclick="exportDB()">EXPORT DB</button>
+                <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
+                <input type="file" id="importFile" style="display:none" onchange="importDB(event)">
+            </div>
         </div>
     </div>
 
@@ -153,14 +203,41 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 0, setEditMode = false;
-        let startX = 0, currentSwipeItem = null;
+        let startX = 0, currentSwipeItem = null, initialLoad = true;
 
-        window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
+        window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); initialLoad = false; };
 
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
-        function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
+        
+        function openMenu(id) { 
+            document.getElementById(id).classList.add('open'); 
+            render(); 
+        }
+        
+        function closeMenus() { 
+            document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); 
+            // Sluit ook admin submenu
+            document.getElementById('adminSubmenu').classList.remove('open');
+        }
+        
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => { t.style.display = 'none'; }, 1500); }
+
+        function toggleAdminMenu() {
+            document.getElementById('adminSubmenu').classList.toggle('open');
+        }
+
+        function showManual() {
+            closeMenus();
+            // Verberg watermerk en instructs, toon manual
+            document.querySelector('.watermark').style.display = 'none';
+            document.getElementById('manualContent').style.display = 'block';
+            document.getElementById('startHint').style.display = 'none';
+            document.getElementById('title').innerText = "TDF MANUAL";
+            // Maak cur null zodat topbar knoppen verdwijnen
+            cur = null;
+            document.getElementById('editBtn').style.display = 'none';
+            document.getElementById('liveBtn').style.display = 'none';
+        }
 
         function createNewTag() {
             const input = document.getElementById('newTagInput');
@@ -244,10 +321,10 @@
         function handleTouchEnd(e) { if(selectMode || !currentSwipeItem) return; let diff = e.changedTouches[0].clientX - startX; if (diff < -50) currentSwipeItem.style.transform = `translateX(-80px)`; else currentSwipeItem.style.transform = `translateX(0px)`; }
         function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); }
         function addToSetlist(title) { const s = db.find(x => x.title === title); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
-        function cleanDuplicates() { if(!confirm("Dubbele liedjes verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); }
+        function cleanDuplicates() { if(!confirm("Dubbele liedjes verwijderen?")) return; const unique = {}; db.forEach(s => unique[s.title] = s); db = Object.values(unique); save(); render(); toggleAdminMenu(); }
         
-        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db_backup.json`; a.click(); }
-        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
+        function exportDB() { const data = JSON.stringify(db, null, 2); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db_backup.json`; a.click(); toggleAdminMenu(); }
+        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); toggleAdminMenu(); }; reader.readAsText(e.target.files[0]); }
         
         function exportSetlist() {
             if(setlist.length === 0) { showToast("SETLIST IS LEEG"); return; }
@@ -269,11 +346,34 @@
         function deleteSong(title) { db = db.filter(s => s.title !== title); save(); render(); }
         function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); }
         function moveSetItem(index, dir) { let target = index + dir; if (target >= 0 && target < setlist.length) { [setlist[index], setlist[target]] = [setlist[target], setlist[index]]; save(); render(); } }
-        function startEdit() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; }
-        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); }
-        function drawLyrics(id) { const container=document.getElementById(id); if(!cur) return; const lines=cur.content.split('\n'); let h=""; lines.forEach(l => { let chords=[], txt="", i=0; while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } } let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; }); container.innerHTML=h; if(id === 'lyricsArea') container.scrollTop=0; }
-        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false; requestAnimationFrame(() => { document.getElementById('liveView').scrollTop = 0; updateWheelPosition(); updatePlayBtn(); }); }
-        function exitLiveView() { if(cur) save(); document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; }
+        
+        function startEdit() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('editorContainer').style.display='flex'; document.getElementById('editorArea').value=cur.content; document.getElementById('tagField').value=cur.tags||""; document.getElementById('editBtn').style.display='none'; document.getElementById('saveBtn').style.display='block'; document.getElementById('liveBtn').style.display='none'; document.getElementById('title').innerText = "BEWERKEN: " + cur.title; }
+        function finishEdit() { cur.content=document.getElementById('editorArea').value; cur.tags=document.getElementById('tagField').value; let idx=db.findIndex(s=>s.title===cur.title); if(idx!==-1) db[idx]=JSON.parse(JSON.stringify(cur)); save(); document.getElementById('editorContainer').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('editBtn').style.display='block'; document.getElementById('saveBtn').style.display='none'; document.getElementById('liveBtn').style.display='block'; drawLyrics('lyricsArea'); document.getElementById('title').innerText = cur.title; }
+        
+        function drawLyrics(id) { 
+            const container=document.getElementById(id); 
+            if(!cur) return; 
+            const lines=cur.content.split('\n'); 
+            let h=""; 
+            lines.forEach(l => { 
+                let chords=[], txt="", i=0; 
+                while(i<l.length){ if(l[i]==='['){ let e=l.indexOf(']',i); chords.push({p:txt.length, v:l.substring(i+1,e)}); i=e+1; } else { txt+=l[i]; i++; } }
+                let r=""; chords.forEach(c => { r+=`<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; });
+                h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`; 
+            }); 
+            container.innerHTML=h; 
+            if(id === 'lyricsArea') {
+                container.scrollTop=0;
+                document.getElementById('startHint').style.display = 'none';
+                document.getElementById('manualContent').style.display = 'none';
+                // Herstel topbar knoppen
+                document.getElementById('editBtn').style.display = 'block';
+                document.getElementById('liveBtn').style.display = 'block';
+            }
+        }
+        
+        function enterLiveView() { if(!cur) return; document.getElementById('manualContent').style.display='none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false; requestAnimationFrame(() => { document.getElementById('liveView').scrollTop = 0; updateWheelPosition(); updatePlayBtn(); }); document.getElementById('title').innerText = "LIVE: " + cur.title; }
+        function exitLiveView() { if(cur) save(); document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling=false; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; document.getElementById('title').innerText = cur.title; }
         function toggleScroll() { isScrolling = !isScrolling; updatePlayBtn(); }
         function updatePlayBtn() { document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
         function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 0) { scrollAcc += (currentSpeed * 0.4); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
