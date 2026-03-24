@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.51</title>
+    <title>TDF Digital v10.56</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,6 +25,9 @@
         
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
+
+        .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
+        .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
@@ -46,11 +49,12 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Kies een liedje uit het menu...</div>
+        <div id="lyricsArea">Kies een liedje...</div>
         
         <div id="editorContainer">
             <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn" onclick="document.getElementById('editorContainer').style.display='none'">X</button>
+                <button class="btn" onclick="editTags()">TAGS</button>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="transpose(-1)">[-1]</button><button class="btn" onclick="transpose(1)">[+1]</button></div>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="exportSingleTxt()">TXT</button><button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button></div>
             </div>
@@ -61,10 +65,11 @@
 
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>SONGS</b>
+            <b>SONGS DATABASE</b>
             <button class="btn" onclick="closeMenus()">SLUIT X</button>
         </div>
-        <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek liedje..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div style="padding:15px 15px 0 15px;"><input type="text" id="songSearch" placeholder="Zoek op titel of tags..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222; -webkit-overflow-scrolling: touch;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px;">
             <button class="btn" onclick="exportDB()">BACKUP</button>
@@ -75,7 +80,7 @@
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>SETLIST</b>
+            <b>ACTIEVE SET</b>
             <button class="btn" onclick="closeMenus()">SLUIT X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
@@ -87,29 +92,58 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        let activeTags = [];
         let cur = null;
 
+        const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
         const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         const flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { render(); createChordButtons(); document.getElementById('importJsonFile').addEventListener('change', importDB); };
 
         function render() {
+            // Render Tag Bar
+            const tagBar = document.getElementById('tagFilterBar');
+            tagBar.innerHTML = "";
+            
+            fixedTags.forEach(tag => {
+                const p = document.createElement('div');
+                p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : "");
+                p.innerText = tag.toUpperCase();
+                p.onclick = () => {
+                    if(activeTags.includes(tag)) activeTags = activeTags.filter(t => t !== tag);
+                    else activeTags.push(tag);
+                    render();
+                };
+                tagBar.appendChild(p);
+            });
+
+            // Render Song List
             const dbl = document.getElementById('dbList');
             dbl.innerHTML = "";
             const query = document.getElementById('songSearch').value.toLowerCase();
 
-            db.filter(s => s && s.title.toLowerCase().includes(query)).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+            db.filter(s => {
+                if(!s) return false;
+                const matchesSearch = s.title.toLowerCase().includes(query) || (s.tags || "").toLowerCase().includes(query);
+                const songTags = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
+                const matchesTags = activeTags.length === 0 || activeTags.every(at => songTags.includes(at.toLowerCase()));
+                return matchesSearch && matchesTags;
+            }).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
                 const row = document.createElement('div');
                 row.className = "setlist-row";
                 row.innerHTML = `
-                    <div style="flex:1; font-size:1.4rem;" onclick="load('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
+                    <div style="flex:1; font-size:1.4rem;" onclick="load('${s.title.replace(/'/g, "\\'")}')">
+                        <b>${s.title}</b><br>
+                        <small style="opacity:0.4; font-size:0.8rem; text-transform:uppercase;">${s.tags || ''}</small>
+                    </div>
                     <button class="btn" style="margin-right:10px; min-width:80px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎ EDIT</button>
                     <button class="btn" style="min-width:60px;" onclick="addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>
                 `;
                 dbl.appendChild(row);
             });
 
+            // Render Setlist
             const setl = document.getElementById('setList');
             setl.innerHTML = "";
             setlist.forEach((s, i) => {
@@ -133,6 +167,16 @@
             if(cur) {
                 document.getElementById('editorArea').value = cur.content;
                 document.getElementById('editorContainer').style.display = 'flex';
+            }
+        }
+
+        function editTags() {
+            const newTags = prompt("Voer tags in (bijv: irish, uptempo):", cur.tags || "");
+            if(newTags !== null) {
+                cur.tags = newTags.toLowerCase();
+                save();
+                render();
+                showToast("TAGS BIJGEWERKT");
             }
         }
 
