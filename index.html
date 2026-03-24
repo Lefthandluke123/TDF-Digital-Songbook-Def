@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.45</title>
+    <title>TDF Digital v10.46</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -25,9 +25,8 @@
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; }
-        .setlist-row.edit-active { border-left: 6px solid var(--amber); background: #252525; }
-        .setlist-row span { font-size: 1.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; cursor: pointer; }
+        .setlist-row.edit-active { border-left: 8px solid var(--amber); background: #252525; }
         
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 50; position: relative; }
         .btn.active { background: var(--amber); color: #000; }
@@ -158,23 +157,25 @@
                 p.onclick = (e) => { e.stopPropagation(); if(selectMode && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); } }; tagsDiv.appendChild(p);
             });
             db.filter(s => { if(!s) return false; const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ); const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase())); return mSearch && mTags; }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const d = document.createElement('div'); d.className = "setlist-row" + (songEditMode ? " edit-active" : "");
-                const tEnc = s.title.replace(/'/g, "\\'");
+                const d = document.createElement('div'); 
+                d.className = "setlist-row" + (songEditMode ? " edit-active" : "");
+                d.setAttribute('data-title', s.title);
+                d.onclick = function(e) {
+                    const title = this.getAttribute('data-title');
+                    if (selectMode) { toggleSongSelection(title); render(); return; }
+                    if (songEditMode) { startEdit(title); } 
+                    else { loadSongByName(title); }
+                };
+
                 d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${tEnc}')">` : ''}
-                    <div style="flex:1" onclick="handleSongInteraction('${tEnc}')"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
-                    <button class="btn" style="min-width:50px;" onclick="event.stopPropagation(); addToSetlist('${tEnc}')">+</button>`;
+                    ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''}>` : ''}
+                    <div style="flex:1"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
+                    <button class="btn" style="min-width:50px;" onclick="event.stopPropagation(); addToSetlist(this.parentElement.getAttribute('data-title'))">+</button>`;
                 dbl.appendChild(d);
             });
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => { const d = document.createElement('div'); d.className = "setlist-row"; const isN = s.isNote; d.innerHTML = `<div style="display:${setEditMode?'flex':'none'}; flex-direction:column; margin-right:10px;"><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, -1)">▲</button><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, 1)">▼</button></div><div style="flex:1" onclick="${(setEditMode || isN)?'':'liveSetSong('+i+')'}"><span>${isN ? (s.title ? '-- '+s.title+' --' : ' ') : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="event.stopPropagation(); setlist.splice(${i},1); save(); render();">X</button>`; setl.appendChild(d); });
             const archl = document.getElementById('archiveList'); archl.innerHTML = ""; archives.forEach((a, i) => { const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `<div style="flex:1" onclick="loadArchive(${i})"><b>${a.name}</b></div><button class="btn" style="margin-right:8px;" onclick="event.stopPropagation(); archiveWAExport(${i})">WA</button><button class="btn btn-danger" onclick="event.stopPropagation(); deleteArchive(${i})">X</button>`; archl.appendChild(d); });
-        }
-
-        function handleSongInteraction(title) {
-            if (selectMode) { toggleSongSelection(title); render(); return; }
-            if (songEditMode) { startEdit(title); } 
-            else { loadSongByName(title); }
         }
 
         function startEdit(t) { 
