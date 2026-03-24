@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.91</title>
+    <title>TDF Digital v9.93</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,18 +20,15 @@
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 600px 35px; z-index: 20; color: #fff; }
         
-        /* Gecorrigeerde Font Scaling */
-        .font-sm { font-size: 1.8rem !important; } /* Een stap kleiner dan standaard */
+        .font-sm { font-size: 1.8rem !important; }
         .font-std { font-size: 2.5rem !important; }
-        .font-lg { font-size: 3.0rem !important; } /* Subtiel groter */
+        .font-lg { font-size: 3.0rem !important; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 20px; }
         
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; color: #fff; border-bottom: 1px solid #222; }
-        .select-check { width: 35px; height: 35px; margin-right: 15px; accent-color: var(--amber); cursor: pointer; }
-
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .btn.active { background: var(--amber); color: #000; }
         
@@ -46,13 +43,17 @@
         .chord-btn { background: #333; color: var(--amber); border: 2px solid var(--amber); padding: 12px 15px; border-radius: 8px; font-weight: 900; font-size: 1.1rem; min-width: 65px; text-align: center; flex-shrink: 0; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
-        /* Scrollwheel Contrast Fix */
-        #liveFooter { height: calc(110px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px env(safe-area-inset-bottom) 15px; z-index: 5000; }
-        .wheel-wrap { position: relative; width: 100px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
-        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
-        .wheel-num { height: 28px; line-height: 28px; font-size: 0.95rem; color: #eee; } /* Lichter voor leesbaarheid */
-        .wheel-num.active { color: var(--amber); font-size: 1.4rem; font-weight: 900; }
-        .wheel-overlay { position: absolute; width: 100%; height: 32px; top: 26px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.1); pointer-events: none; }
+        /* PWA Beheer Footer Fix */
+        .menu-footer { padding: 15px 15px calc(25px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; flex-shrink: 0; width: 100%; }
+        .admin-submenu { display: none; background: #222; border: 2px solid #444; border-radius: 12px; width: 100%; padding: 15px; gap: 12px; margin-bottom: 15px; box-shadow: 0 -10px 25px rgba(0,0,0,0.7); }
+        .admin-submenu.open { display: flex; flex-direction: column; }
+
+        #liveFooter { height: calc(125px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(15px + env(safe-area-inset-bottom)) 15px; z-index: 5000; }
+        .wheel-wrap { position: relative; width: 110px; height: 90px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
+        .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; transition: transform 0.05s linear; }
+        .wheel-num { height: 30px; line-height: 30px; font-size: 1rem; color: #ffffff; opacity: 0.6; } 
+        .wheel-num.active { color: var(--amber); font-size: 1.5rem; font-weight: 900; opacity: 1; }
+        .wheel-overlay { position: absolute; width: 100%; height: 34px; top: 28px; border-top: 2px solid var(--amber); border-bottom: 2px solid var(--amber); background: rgba(255,191,0,0.15); pointer-events: none; }
         
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 40000; display: none; }
     </style>
@@ -93,20 +94,20 @@
     </div>
 
     <div id="liveFooter">
-        <div style="display:flex; gap:5px;">
+        <div style="display:flex; gap:8px;">
             <button class="btn" onclick="exitLiveView()">X</button>
             <button class="btn" onclick="location.reload()">⌂</button>
         </div>
-        <div style="display:flex; gap:5px;">
+        <div style="display:flex; gap:8px;">
             <button class="btn" onclick="resetSongScroll()">⏮</button>
-            <button id="playBtn" class="btn" style="width:65px; font-size:1.5rem;" onclick="toggleScroll()">▶</button>
+            <button id="playBtn" class="btn" style="width:70px; font-size:1.6rem;" onclick="toggleScroll()">▶</button>
             <button class="btn" id="fontSizeBtn" style="min-width:55px; color:#fff;" onclick="cycleFontSize()">A+</button>
         </div>
         <div class="wheel-wrap" id="thumbWheel">
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
-        <div id="liveClock" style="text-align:right; font-size:0.85rem; color:var(--amber); font-weight:bold; min-width:55px;">00:00</div>
+        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); font-weight:bold; min-width:60px;">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -115,10 +116,7 @@
         <div class="tag-cloud-wrapper"><div id="tagList"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <div id="songsAdmin" class="admin-submenu">
-                <button class="btn" onclick="exportDB()">EXPORT DB</button>
-                <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
-            </div>
+            <div id="songsAdmin" class="admin-submenu"><button class="btn" onclick="exportDB()">EXPORT DB</button><button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button></div>
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button>
             <button class="btn" style="width:100%;" id="adminBtnMain" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
         </div>
@@ -128,11 +126,7 @@
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT MODE</button><button class="btn" onclick="closeMenus()">X</button></div>
         <div id="setList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <div id="setAdmin" class="admin-submenu">
-                <button class="btn" onclick="whatsappExport()">WA-EXPORT</button>
-                <button class="btn" onclick="whatsappImport()">WA-IMPORT</button>
-                <button class="btn btn-danger" onclick="clearSetlist()">CLEAR SETLIST</button>
-            </div>
+            <div id="setAdmin" class="admin-submenu"><button class="btn" onclick="whatsappExport()">WA-EXPORT</button><button class="btn" onclick="whatsappImport()">WA-IMPORT</button><button class="btn btn-danger" onclick="clearSetlist()">CLEAR SETLIST</button></div>
             <button class="btn" style="width:100%;" onclick="toggleAdminMenu('setAdmin')">BEHEER SETLIST</button>
         </div>
     </div>
@@ -205,7 +199,7 @@
         function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling && currentSpeed > 4) { scrollAcc += (currentSpeed * 0.055); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
         function initTouchWheel() { const wheel = document.getElementById('thumbWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.max(4, Math.min(22, startS + ((startY - e.touches[0].clientY) / 15))); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
         function createWheelNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i=40; i<=220; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i + " BPM"; strip.appendChild(d); } }
-        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 28) - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
+        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 30) - (currentSpeed * 300)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
 
         function startEdit() { if(!cur) return; document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorTagField').value = cur.tags || ""; document.getElementById('editorContainer').style.display = 'flex'; document.getElementById('liveFooter').style.display = 'none'; }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbS = db.find(x => x.title === cur.title); if(dbS) { dbS.content = cur.content; dbS.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display === 'block') { document.getElementById('liveFooter').style.display = 'flex'; drawLyrics('liveContent'); applyFontSize(); } else { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } }
