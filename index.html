@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.65</title>
+    <title>TDF Digital v10.64</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,11 +27,7 @@
 
         .setlist-row { height: 85px; background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 15px; color: #fff; border-bottom: 1px solid #222; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn.active { background: var(--amber); color: #000; }
-
-        .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
-        .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
-
+        
         #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
         .wheel-wrap { position: relative; width: 90px; height: 100px; background: #000; border: 2px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
@@ -44,12 +40,12 @@
         .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
+        .font-sm { font-size: 1.3rem !important; } .font-std { font-size: 2.1rem !important; } .font-lg { font-size: 3.1rem !important; }
     </style>
 </head>
 <body>
 
     <div id="toast">MELDING</div>
-    <input type="file" id="importJsonFile" style="display:none" accept="application/json">
 
     <div class="top-bar" id="mainTopBar">
         <div class="top-left"><img src="logo.png" class="logo-img" onclick="location.reload()"><button class="btn" onclick="openMenu('songsMenu')">SONGS</button><button class="btn" onclick="openMenu('setMenu')">SET</button></div>
@@ -84,16 +80,17 @@
     </div>
 
     <div id="songsMenu" class="full-menu">
+        <input type="file" id="importJsonFile" style="display:none" accept="application/json">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; gap:10px;"><b>DATABASE</b> <button class="btn" id="bulkSelectBtn" onclick="toggleSelectMode()">SELECT</button></div>
+            <b>DATABASE</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
-        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
-            <div id="bulkControls" style="display:none; gap:10px;"><button class="btn" style="background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button></div>
-            <div id="normalAdmin" style="display:flex; gap:10px;"><button class="btn" onclick="exportDB()">BACKUP</button><button class="btn" onclick="triggerImport()">RESTORE</button></div>
+            <button class="btn" onclick="exportDB()">BACKUP</button>
+            <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button>
+            <button class="btn" style="border-color:var(--red); color:var(--red);" onclick="cleanDuplicates()">CLEAN</button>
         </div>
     </div>
 
@@ -112,13 +109,11 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
-        let activeTags = [], selectMode = false, selectedSongs = [];
-        const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
-        const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+        const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { 
             render(); createChordButtons(); createBpmNodes(); initBpmWheel();
-            document.getElementById('importJsonFile').addEventListener('change', importDB, false);
+            document.getElementById('importJsonFile').addEventListener('change', importDB);
             setInterval(() => {
                 document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
                 if(startTime) document.getElementById('setTimer').innerText = Math.floor((new Date() - new Date(startTime)) / 60000) + "m";
@@ -126,78 +121,22 @@
             requestAnimationFrame(scrollLoop);
         };
 
-        function toggleSelectMode() {
-            selectMode = !selectMode;
-            selectedSongs = [];
-            document.getElementById('bulkSelectBtn').classList.toggle('active', selectMode);
-            document.getElementById('bulkControls').style.display = selectMode ? 'flex' : 'none';
-            document.getElementById('normalAdmin').style.display = selectMode ? 'none' : 'flex';
-            render();
-        }
-
         function render() {
-            const tagBar = document.getElementById('tagFilterBar'); tagBar.innerHTML = "";
-            fixedTags.forEach(tag => {
-                const p = document.createElement('div'); p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : ""); p.innerText = tag.toUpperCase();
-                p.onclick = () => {
-                    if (selectMode && selectedSongs.length > 0) {
-                        selectedSongs.forEach(title => {
-                            let song = db.find(s => s.title === title);
-                            if (song) {
-                                let ts = song.tags ? song.tags.split(',').map(x=>x.trim()) : [];
-                                if (!ts.includes(tag)) ts.push(tag);
-                                song.tags = ts.join(', ');
-                            }
-                        });
-                        save(); render(); showToast("TAGS TOEGEVOEGD");
-                    } else {
-                        if(activeTags.includes(tag)) activeTags = activeTags.filter(t => t !== tag);
-                        else activeTags.push(tag);
-                        render();
-                    }
-                };
-                tagBar.appendChild(p);
-            });
-
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            const q = document.getElementById('songSearch').value.toLowerCase();
-            db.filter(s => {
-                if(!s) return false;
-                const mSearch = s.title.toLowerCase().includes(q) || (s.tags || "").toLowerCase().includes(q);
-                const sTags = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
-                const mTags = activeTags.length === 0 || activeTags.every(at => sTags.includes(at.toLowerCase()));
-                return mSearch && mTags;
-            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+            const q = document.getElementById('songSearch') ? document.getElementById('songSearch').value : "";
+            db.filter(s => s && s.title.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                const isChecked = selectedSongs.includes(s.title);
-                d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${isChecked?'checked':''} onchange="toggleSelect('${s.title.replace(/'/g, "\\'")}')">` : ''}
-                    <div style="flex:1;" onclick="${selectMode ? "toggleSelect('"+s.title.replace(/'/g, "\\'")+"')" : "loadPreview('"+s.title.replace(/'/g, "\\'")+"')" }">
-                        <b>${s.title}</b><br><small style="opacity:0.4; font-size:0.8rem; text-transform:uppercase;">${s.tags || ''}</small>
-                    </div>
-                    ${!selectMode ? `<button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button><button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>` : ''}
-                `;
+                d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
+                               <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
+                               <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
-
             const sl = document.getElementById('setList'); sl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "setlist-row";
                 d.innerHTML = `<div style="flex:1;" onclick="enterLive(${i})">${i+1}. ${s.title}</div><button class="btn" style="border-color:var(--red); color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
                 sl.appendChild(d);
             });
-        }
-
-        function toggleSelect(t) {
-            if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t);
-            else selectedSongs.push(t);
-            render();
-        }
-
-        function bulkAddToSet() {
-            selectedSongs.forEach(t => addToSet(t));
-            toggleSelectMode();
-            openMenu('setMenu');
         }
 
         function loadPreview(t) { cur = db.find(x=>x.title===t); drawLyrics(false); closeMenus(); document.getElementById('bgLogo').style.display = 'none'; }
@@ -287,17 +226,11 @@
         function editTags() { if(!cur) return; const t = prompt("Tags:", cur.tags); if(t !== null) { cur.tags = t.toLowerCase(); save(); render(); } }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics(false); render(); }
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); if(selectMode) toggleSelectMode(); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 1000); }
         function exportDB() { const b = new Blob([JSON.stringify(db)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `tdf_backup.json`; a.click(); }
-        
-        function triggerImport() {
-            document.getElementById('importJsonFile').click();
-        }
-
         function importDB(e) {
-            const f = e.target.files[0];
-            if(!f) return;
+            const f = e.target.files[0]; if(!f) return;
             const r = new FileReader();
             r.onload = (ev) => {
                 try {
@@ -306,15 +239,15 @@
                         db = data;
                         save();
                         render();
-                        showToast("IMPORT OK");
+                        showToast("OK");
                     }
                 } catch(err) { showToast("FOUT"); }
                 e.target.value = '';
             };
             r.readAsText(f);
         }
-
         function clearSetlist() { if(confirm("Setlist wissen?")) { setlist = []; startTime = null; localStorage.removeItem('tdfStartTime'); save(); render(); } }
+        function cleanDuplicates() { const titles = new Set(); db = db.filter(s => { if(!s || titles.has(s.title)) return false; titles.add(s.title); return true; }); save(); render(); showToast("CLEAN OK"); }
     </script>
 </body>
 </html>
