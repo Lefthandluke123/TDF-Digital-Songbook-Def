@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.56</title>
+    <title>TDF Digital v10.57</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -15,6 +15,10 @@
         .logo-img { height: 45px; width: auto; cursor: pointer; }
         
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; z-index: 1000; }
+        
+        @keyframes pulse { 0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); } 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } }
+        .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; display: block; }
+
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 10; background: transparent; }
         
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 100000; transition: 0.3s; display: flex; flex-direction: column; }
@@ -49,12 +53,13 @@
     </div>
 
     <div class="main-container">
-        <div id="lyricsArea">Kies een liedje...</div>
+        <img src="logo.png" id="bgLogo" class="watermark">
+        <div id="lyricsArea"></div>
         
         <div id="editorContainer">
             <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn" onclick="document.getElementById('editorContainer').style.display='none'">X</button>
-                <button class="btn" onclick="editTags()">TAGS</button>
+                <div style="display:flex; gap:5px;"><button class="btn" onclick="renameSong()">NAAM</button><button class="btn" onclick="editTags()">TAGS</button></div>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="transpose(-1)">[-1]</button><button class="btn" onclick="transpose(1)">[+1]</button></div>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="exportSingleTxt()">TXT</button><button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button></div>
             </div>
@@ -65,22 +70,21 @@
 
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>SONGS DATABASE</b>
+            <b>DATABASE</b>
             <button class="btn" onclick="closeMenus()">SLUIT X</button>
         </div>
-        <div style="padding:15px 15px 0 15px;"><input type="text" id="songSearch" placeholder="Zoek op titel of tags..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
-        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222; -webkit-overflow-scrolling: touch;"></div>
+        <div style="padding:15px 15px 0 15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px;">
             <button class="btn" onclick="exportDB()">BACKUP</button>
             <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button>
-            <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN</button>
         </div>
     </div>
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>ACTIEVE SET</b>
+            <b>SETLIST</b>
             <button class="btn" onclick="closeMenus()">SLUIT X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
@@ -102,10 +106,8 @@
         window.onload = () => { render(); createChordButtons(); document.getElementById('importJsonFile').addEventListener('change', importDB); };
 
         function render() {
-            // Render Tag Bar
             const tagBar = document.getElementById('tagFilterBar');
             tagBar.innerHTML = "";
-            
             fixedTags.forEach(tag => {
                 const p = document.createElement('div');
                 p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : "");
@@ -118,17 +120,15 @@
                 tagBar.appendChild(p);
             });
 
-            // Render Song List
             const dbl = document.getElementById('dbList');
             dbl.innerHTML = "";
             const query = document.getElementById('songSearch').value.toLowerCase();
-
             db.filter(s => {
                 if(!s) return false;
-                const matchesSearch = s.title.toLowerCase().includes(query) || (s.tags || "").toLowerCase().includes(query);
-                const songTags = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
-                const matchesTags = activeTags.length === 0 || activeTags.every(at => songTags.includes(at.toLowerCase()));
-                return matchesSearch && matchesTags;
+                const mSearch = s.title.toLowerCase().includes(query) || (s.tags || "").toLowerCase().includes(query);
+                const sTags = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
+                const mTags = activeTags.length === 0 || activeTags.every(at => sTags.includes(at.toLowerCase()));
+                return mSearch && mTags;
             }).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
                 const row = document.createElement('div');
                 row.className = "setlist-row";
@@ -143,7 +143,6 @@
                 dbl.appendChild(row);
             });
 
-            // Render Setlist
             const setl = document.getElementById('setList');
             setl.innerHTML = "";
             setlist.forEach((s, i) => {
@@ -158,6 +157,7 @@
             cur = db.find(x => x.title === title);
             if(cur) {
                 document.getElementById('lyricsArea').innerHTML = cur.content.replace(/\n/g, '<br>');
+                document.getElementById('bgLogo').style.display = 'none';
                 closeMenus();
             }
         }
@@ -170,13 +170,20 @@
             }
         }
 
+        function renameSong() {
+            if(!cur) return;
+            const newName = prompt("Nieuwe naam:", cur.title);
+            if(newName && newName !== cur.title) {
+                cur.title = newName.toUpperCase().trim();
+                save(); render();
+            }
+        }
+
         function editTags() {
-            const newTags = prompt("Voer tags in (bijv: irish, uptempo):", cur.tags || "");
+            const newTags = prompt("Tags (komma-gescheiden):", cur.tags || "");
             if(newTags !== null) {
                 cur.tags = newTags.toLowerCase();
-                save();
-                render();
-                showToast("TAGS BIJGEWERKT");
+                save(); render();
             }
         }
 
@@ -198,8 +205,7 @@
             const s = db.find(x => x.title === title);
             if(s) {
                 setlist.push(JSON.parse(JSON.stringify(s)));
-                save();
-                showToast("SET +1");
+                save(); showToast("SET +1");
             }
         }
 
@@ -238,7 +244,6 @@
         function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_backup.json`; a.click(); }
         function importDB(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); showToast("RESTORE OK"); }; reader.readAsText(file); }
         function exportSingleTxt() { if(!cur) return; const blob = new Blob([document.getElementById('editorArea').value], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${cur.title}.txt`; a.click(); }
-        function cleanDuplicates() { const titles = new Set(); db = db.filter(s => { if(!s || titles.has(s.title)) return false; titles.add(s.title); return true; }); save(); render(); showToast("CLEAN OK"); }
     </script>
 </body>
 </html>
