@@ -1,11 +1,11 @@
-=<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.64</title>
+    <title>TDF Digital v10.65</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,9 +41,9 @@
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
         .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
+        .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
 
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
-        .font-sm { font-size: 1.3rem !important; } .font-std { font-size: 2.1rem !important; } .font-lg { font-size: 3.1rem !important; }
     </style>
 </head>
 <body>
@@ -85,7 +85,7 @@
 
     <div id="songsMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; gap:10px;"><b>SONGS</b> <button class="btn" id="bulkSelectBtn" onclick="toggleSelectMode()">SELECT</button></div>
+            <div style="display:flex; gap:10px;"><b>DATABASE</b> <button class="btn" id="bulkSelectBtn" onclick="toggleSelectMode()">SELECT</button></div>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
@@ -93,7 +93,7 @@
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
             <div id="bulkControls" style="display:none; gap:10px;"><button class="btn" style="background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button></div>
-            <div id="normalAdmin" style="display:flex; gap:10px;"><button class="btn" onclick="exportDB()">BACKUP</button><button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button></div>
+            <div id="normalAdmin" style="display:flex; gap:10px;"><button class="btn" onclick="exportDB()">BACKUP</button><button class="btn" onclick="triggerImport()">RESTORE</button></div>
         </div>
     </div>
 
@@ -118,7 +118,7 @@
 
         window.onload = () => { 
             render(); createChordButtons(); createBpmNodes(); initBpmWheel();
-            document.getElementById('importJsonFile').addEventListener('change', importDB);
+            document.getElementById('importJsonFile').addEventListener('change', importDB, false);
             setInterval(() => {
                 document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
                 if(startTime) document.getElementById('setTimer').innerText = Math.floor((new Date() - new Date(startTime)) / 60000) + "m";
@@ -260,7 +260,7 @@
         function createChordButtons() {
             const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
             ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
-                const b = document.createElement('div'); b.className = 'chord-btn'; b.style.background="#333"; b.style.color="var(--amber)"; b.style.padding="10px"; b.style.borderRadius="5px"; b.style.minWidth="45px"; b.style.textAlign="center"; b.innerText = c;
+                const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c;
                 b.onclick = () => {
                     const a = document.getElementById('editorArea'); const s = a.selectionStart;
                     a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd);
@@ -290,12 +290,30 @@
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); if(selectMode) toggleSelectMode(); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 1000); }
         function exportDB() { const b = new Blob([JSON.stringify(db)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `tdf_backup.json`; a.click(); }
+        
+        function triggerImport() {
+            document.getElementById('importJsonFile').click();
+        }
+
         function importDB(e) {
-            const f = e.target.files[0]; if(!f) return;
+            const f = e.target.files[0];
+            if(!f) return;
             const r = new FileReader();
-            r.onload = (ev) => { try { const data = JSON.parse(ev.target.result); if(Array.isArray(data)) { db = data; save(); render(); showToast("OK"); } } catch(err) { showToast("FOUT"); } e.target.value = ''; };
+            r.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(Array.isArray(data)) {
+                        db = data;
+                        save();
+                        render();
+                        showToast("IMPORT OK");
+                    }
+                } catch(err) { showToast("FOUT"); }
+                e.target.value = '';
+            };
             r.readAsText(f);
         }
+
         function clearSetlist() { if(confirm("Setlist wissen?")) { setlist = []; startTime = null; localStorage.removeItem('tdfStartTime'); save(); render(); } }
     </script>
 </body>
