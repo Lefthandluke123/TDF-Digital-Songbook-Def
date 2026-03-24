@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.99</title>
+    <title>TDF Digital v10.0.3</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,6 +31,7 @@
         
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; color: #fff; border-bottom: 1px solid #222; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .btn-danger { border-color: var(--red) !important; color: var(--red) !important; }
         .btn.active { background: var(--amber); color: #000; }
         
         .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
@@ -121,12 +122,14 @@
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button><button class="btn" onclick="closeMenus()">X</button></div>
         <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:12px; border-radius:8px;"></div>
         <div class="tag-cloud-wrapper"><div id="tagList"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
-        <div id="dbList" class="menu-scroll"></div>
+        <div id="dbList" class="menu-scroll" style="padding:0;"></div>
         <div class="menu-footer">
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="openMenu('manualMenu')">MANUAL / HELP</button>
+                <button class="btn" onclick="cleanDuplicates()">CLEAN DUPLICATES</button>
                 <button class="btn" onclick="exportDB()">EXPORT DB</button>
                 <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
+                <button class="btn btn-danger" onclick="wipeDatabase()">WIPE ALL SONGS</button>
             </div>
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button>
             <button class="btn" style="width:100%;" id="adminBtnMain" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
@@ -135,7 +138,7 @@
 
     <div id="setMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT MODE</button><button class="btn" onclick="closeMenus()">X</button></div>
-        <div id="setList" class="menu-scroll"></div>
+        <div id="setList" class="menu-scroll" style="padding:0;"></div>
         <div class="menu-footer">
             <div id="setAdmin" class="admin-submenu">
                 <button class="btn" onclick="saveActiveSet()">SAVE SET</button>
@@ -150,15 +153,15 @@
 
     <div id="archiveMenu" class="full-menu">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>SETLIST ARCHIEF</b><button class="btn" onclick="openMenu('setMenu')">TERUG</button></div>
-        <div id="archiveList" class="menu-scroll"></div>
+        <div id="archiveList" class="menu-scroll" style="padding:0;"></div>
     </div>
 
     <div id="manualMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>HELP</b><button class="btn" onclick="openMenu('songsMenu')">TERUG</button></div>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>HELP</b><button class="btn" onclick="openMenu('songsMenu')">X</button></div>
         <div class="menu-scroll" style="padding:20px;">
-            <p><b>Archief:</b> Sla je huidige lijst op via BEHEER -> SAVE SET. Open oude lijsten via ARCHIEF.</p>
-            <p><b>Tags:</b> Gebruik SELECT om songs te kiezen, klik daarna op een tag in de cloud om deze toe te voegen.</p>
-            <p><b>Live:</b> De klok toont actuele tijd (wit) en set-duur (amber).</p>
+            <p><b>X-knop:</b> Gebruik de rode X in de lijst om één specifiek liedje te wissen.</p>
+            <p><b>Clean Duplicates:</b> Verwijdert automatisch alle liedjes met dezelfde titel (houdt de nieuwste over).</p>
+            <p><b>Wipe Database:</b> Wist de gehele database na twee keer bevestigen.</p>
         </div>
     </div>
 
@@ -182,24 +185,27 @@
             }
         }
 
-        function save() { 
-            localStorage.setItem('tdfSongs', JSON.stringify(db)); 
-            localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); 
-            localStorage.setItem('tdfArchives', JSON.stringify(archives));
+        function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); localStorage.setItem('tdfArchives', JSON.stringify(archives)); }
+
+        function wipeDatabase() { if(confirm("HELE DATABASE WISSEN?")) { if(confirm("Zeker weten?")) { db = []; save(); render(); showToast("DATABASE LEEG"); } } }
+
+        function deleteSong(title) { if(confirm(`'${title}' verwijderen?`)) { db = db.filter(s => s.title !== title); save(); render(); } }
+
+        function cleanDuplicates() {
+            const originalCount = db.length;
+            const seen = new Set();
+            db = db.filter(s => {
+                const isDuplicate = seen.has(s.title.toLowerCase());
+                seen.add(s.title.toLowerCase());
+                return !isDuplicate;
+            });
+            save(); render();
+            showToast(`KLAAR: ${originalCount - db.length} DUBBELEN VERWIJDERD`);
         }
 
-        function saveActiveSet() {
-            if(setlist.length === 0) return;
-            const name = prompt("Naam voor deze setlist:");
-            if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); showToast("SET OPGESLAGEN"); render(); }
-        }
-
-        function loadArchive(idx) {
-            if(confirm(`Setlist '${archives[idx].name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); }
-        }
-
-        function deleteArchive(idx) { if(confirm("Verwijderen uit archief?")) { archives.splice(idx, 1); save(); render(); } }
-
+        function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam voor setlist:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); render(); } }
+        function loadArchive(idx) { if(confirm(`Setlist '${archives[idx].name}' laden?`)) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
+        function deleteArchive(idx) { if(confirm("Wissen?")) { archives.splice(idx, 1); save(); render(); } }
         function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
@@ -217,7 +223,9 @@
                         db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); render();
                     } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
-                }; tagsDiv.appendChild(p);
+                };
+                let timer; p.onmousedown = p.ontouchstart = () => { timer = setTimeout(() => handleTagDelete(t), 800); };
+                p.onmouseup = p.onmouseleave = p.ontouchend = () => clearTimeout(timer); tagsDiv.appendChild(p);
             });
             db.filter(s => {
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ);
@@ -227,6 +235,7 @@
                 const d = document.createElement('div'); d.className = "row-item";
                 d.innerHTML = `${selectMode ? `<input type="checkbox" class="select-check" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small>${s.tags||''}</small></div>
+                    <button class="btn btn-danger" style="margin-right:8px; padding: 5px 10px;" onclick="deleteSong('${s.title.replace(/'/g, "\\"')}')">X</button>
                     <button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
@@ -244,6 +253,7 @@
             });
         }
 
+        function handleTagDelete(t) { if(confirm(`Tag '${t}' verwijderen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); }); save(); render(); } }
         function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; let idx = sizes.indexOf(cur.liveSize || 'std'); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); }
         function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
         function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
@@ -266,12 +276,6 @@
         function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbS = db.find(x => x.title === cur.title); if(dbS) { dbS.content = cur.content; dbS.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display === 'block') { document.getElementById('liveFooter').style.display = 'flex'; drawLyrics('liveContent'); applyFontSize(); } else { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } }
         function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; document.getElementById('bgLogo').style.display = 'none'; }
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
-        function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("GEKOPIEERD")); }
-        function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const song = db.find(s => s.title.toLowerCase() === l.trim().toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }); save(); render(); } }
-        function clearSetlist() { if(confirm("Setlist en Timer wissen?")) { setlist = []; setStartTime = null; localStorage.removeItem('tdfSetStartTime'); document.getElementById('setTimer').innerText = "0m"; save(); render(); } }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_db_backup.json'; a.click(); }
-        function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
-        function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectMode && selectedSongs.length > 0) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
     </script>
 </body>
 </html>
