@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.68</title>
+    <title>TDF Digital v9.70</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -89,8 +89,11 @@
         <div id="lyricsArea">
             <div id="manualContent">
                 <div class="m-section">
-                    <h2>Manual v9.68</h2>
-                    <p><b>Setlist Edit:</b> In de SETLIST opent een klik op een liedje direct de <b>platte tekst editor</b> wanneer EDIT MODE aan staat.</p>
+                    <h2>Manual v9.70</h2>
+                    <h3>1. Live Mode Reset</h3>
+                    <p>Gebruik de <b>⏮ (Reset)</b> knop in de Live footer om direct naar het begin van het liedje te springen. Dit stopt ook automatisch het scrollen.</p>
+                    <h3>2. Home & Sluiten</h3>
+                    <p><b>X:</b> Terug naar song overzicht. <br><b>⌂:</b> Direct naar logo beginscherm.</p>
                 </div>
             </div>
         </div>
@@ -103,15 +106,24 @@
     </div>
 
     <div id="liveFooter">
-        <button class="btn" style="border-radius:50%; width:55px; height:55px; font-size:1.5rem;" onclick="exitLiveView()">X</button>
-        <button id="playBtn" class="btn" style="width:75px; font-size:1.8rem; height:55px;" onclick="toggleScroll()">▶</button>
+        <div style="display:flex; gap:8px;">
+            <button class="btn" style="border-radius:50%; width:50px; height:50px; font-size:1.4rem;" onclick="exitLiveView()">X</button>
+            <button class="btn" style="border-radius:50%; width:50px; height:50px; font-size:1.4rem;" onclick="location.reload()">⌂</button>
+        </div>
+        
+        <div style="display:flex; gap:8px;">
+            <button class="btn" style="width:60px; height:50px; font-size:1.8rem;" onclick="resetSongScroll()">⏮</button>
+            <button id="playBtn" class="btn" style="width:75px; font-size:1.8rem; height:50px;" onclick="toggleScroll()">▶</button>
+        </div>
+
         <div class="wheel-wrap" id="thumbWheel">
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
+        
         <div id="liveClockDisplay" style="text-align:right; line-height:1.2;">
-            <div id="liveTime" style="font-weight:bold; font-size:1.3rem; color:var(--amber);">00:00</div>
-            <div id="liveSetTimer" style="font-size:0.8rem; color:#aaa;">SET: 00:00</div>
+            <div id="liveTime" style="font-weight:bold; font-size:1.1rem; color:var(--amber);">00:00</div>
+            <div id="liveSetTimer" style="font-size:0.75rem; color:#aaa;">SET: 00:00</div>
         </div>
     </div>
 
@@ -192,7 +204,7 @@
             }
         }
 
-        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; render(); }
+        function toggleSelectMode() { selectMode = !selectMode; selectedSongs = []; document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; document.getElementById('songsAdminBtn').style.display = selectMode ? 'none' : 'block'; render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
@@ -206,6 +218,8 @@
                 p.innerText = t;
                 p.onmousedown = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
                 p.onmouseup = () => clearTimeout(pressTimer);
+                p.ontouchstart = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
+                p.ontouchend = () => clearTimeout(pressTimer);
                 p.onclick = () => {
                     if(selectMode) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); }
                     else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
@@ -261,7 +275,6 @@
             document.getElementById('liveView').style.display='block'; 
             document.getElementById('liveFooter').style.display='flex'; 
             document.getElementById('editBtn').style.display='none';
-            document.getElementById('saveBtn').style.display='none';
             document.getElementById('liveBtn').style.display='none';
             drawLyrics('liveContent'); 
             currentSpeed=cur.scrollSpeed||0; scrollAcc=0; isScrolling=false;
@@ -277,6 +290,14 @@
             document.getElementById('liveBtn').style.display='block';
             document.getElementById('title').innerText = cur ? cur.title : "TDF DIGITAL";
             isScrolling=false;
+        }
+
+        function resetSongScroll() {
+            scrollAcc = 0;
+            const lv = document.getElementById('liveView');
+            if(lv) lv.scrollTop = 0;
+            isScrolling = false;
+            updatePlayBtn();
         }
 
         function drawLyrics(id) {
@@ -321,7 +342,8 @@
         function scrollEngine() { 
             const lv=document.getElementById('liveView'); 
             if(lv && lv.style.display==='block' && isScrolling && currentSpeed>0) { 
-                scrollAcc += (currentSpeed * 0.08); 
+                // Echte BPM Logica
+                scrollAcc += (currentSpeed * 0.12); 
                 lv.scrollTop = Math.floor(scrollAcc); 
             } requestAnimationFrame(scrollEngine); 
         }
@@ -344,7 +366,7 @@
         function exportSetlist() { if(setlist.length === 0) return; const data=JSON.stringify(setlist); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='setlist.json'; a.click(); }
         function clearSetlist() { if(confirm("Setlist wissen? Timer reset.")) { setlist=[]; setStartTime=null; save(); render(); } }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("SET GEKOPIEERD")); }
-        function whatsappImport() { const input = prompt("Plak WhatsApp tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim().toLowerCase(); if(!t) return null; const song = db.find(s => s.title.toLowerCase() === t); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }).filter(x=>x); save(); render(); } }
+        function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim().toLowerCase(); if(!t) return null; const song = db.find(s => s.title.toLowerCase() === t); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }).filter(x=>x); save(); render(); } }
     </script>
 </body>
 </html>
