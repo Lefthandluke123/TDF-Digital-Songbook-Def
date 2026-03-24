@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.64</title>
+    <title>TDF Digital v9.66</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,15 +41,12 @@
         .search-bar { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; }
         
         #tagList { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; padding-bottom: 10px; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
 
         .row-item { background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 15px 20px; min-height: 75px; position: relative; }
         .setlist-title { font-size: 1.8rem; font-weight: bold; display: block; }
         .note-row { color: var(--amber); font-style: italic; font-size: 1.5rem; }
-
-        /* Grote Checkbox voor Select Mode */
-        .select-check { width: 30px; height: 30px; margin-right: 20px; accent-color: var(--amber); }
 
         .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; }
         .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); width: 90%; z-index: 100; padding: 10px; gap: 10px; }
@@ -58,16 +55,15 @@
         #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 25px; z-index: 5000; }
         .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
-        .wheel-num { height: 28px; line-height: 28px; font-size: 1.1rem; color: #444; }
-        .wheel-num.active { color: var(--amber); font-size: 1.7rem; font-weight: 900; }
+        .wheel-num { height: 28px; line-height: 28px; font-size: 0.9rem; color: #444; }
+        .wheel-num.active { color: var(--amber); font-size: 1.4rem; font-weight: 900; }
         .wheel-overlay { position: absolute; width: 100%; height: 30px; top: 27px; border-top: 1px solid var(--amber); border-bottom: 1px solid var(--amber); background: rgba(255,191,0,0.05); pointer-events: none; }
 
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; z-index: 20; }
         #toast { position: fixed; top: 95px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 11000; display: none; }
         
         #manualContent { display: none; color: #000; font-size: 0.95rem; line-height: 1.4; padding: 25px; z-index: 5; background: #fff; overflow-y: auto; }
-        .m-section h2 { font-size: 1.3rem; border-bottom: 2px solid #eee; margin-top: 20px; }
-        .m-section h3 { font-size: 1rem; color: #666; margin-bottom: 5px; }
+        .set-timer-box { padding: 10px 20px; background: #222; width: 100%; display: flex; justify-content: space-between; color: var(--amber); font-weight: bold; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -92,25 +88,10 @@
         <img src="logo.png" id="bgLogo" class="watermark">
         <div id="lyricsArea">
             <div id="manualContent">
-                <div class="m-section">
-                    <h2>HANDLEIDING / MANUAL (NL/EN)</h2>
-                    
-                    <h3>1. Songs & Database</h3>
-                    <p><b>NL:</b> Beheer hier je liedjes. Klik op <b>+</b> voor toevoegen aan set. <br>
-                    <b>EN:</b> Manage your songs. Click <b>+</b> to add to setlist.</p>
-
-                    <h3>2. Bulk Toevoegen & Tagging</h3>
-                    <p><b>NL:</b> Klik op <b>SELECT</b> in het SONG menu. Vink meerdere liedjes aan. De knop onderin verandert naar "ZET X IN SET". Klik hierop om de hele selectie in één keer naar je setlist te verplaatsen. Tik op een tag in de cloud om deze aan de selectie toe te voegen.<br>
-                    <b>EN:</b> Click <b>SELECT</b> in the SONG menu. Check multiple songs. Use the bottom button "ZET X IN SET" to move all to setlist at once. Tap a tag in the cloud to apply to selection.</p>
-
-                    <h3>3. WhatsApp Import/Export</h3>
-                    <p><b>NL:</b> Ga naar SET > SET BEHEER. Gebruik WA-EXPORT om de lijst naar klembord te kopiëren. Gebruik WA-IMPORT om een lijst uit WhatsApp te plakken.<br>
-                    <b>EN:</b> Go to SET > SET BEHEER. Use WA-EXPORT to copy list to clipboard. Use WA-IMPORT to paste a list from WhatsApp.</p>
-
-                    <h3>4. Live Mode</h3>
-                    <p><b>NL:</b> Klik in de setlist op een titel voor Live Mode (XL letters + scroll). <br>
-                    <b>EN:</b> Tap a setlist title for Live Mode (XL text + scroll).</p>
-                </div>
+                <h2>Quick Manual v9.66</h2>
+                <p><b>Klok & Timer:</b> De app start een set-timer zodra je de eerste song in LIVE MODE laadt. De verstreken tijd zie je in SET en LIVE.<br>
+                <b>BPM Scroll:</b> Gebruik het wiel voor BPM snelheid per song.<br>
+                <b>WA-Import:</b> Plak tekst uit WhatsApp in de SET-beheer sectie.</p>
             </div>
         </div>
         <div id="editorContainer">
@@ -128,7 +109,10 @@
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
-        <div id="liveClock" style="font-weight:bold; font-size:1.3rem; color:var(--amber);">00:00</div>
+        <div id="liveClockDisplay" style="text-align:right; line-height:1.2;">
+            <div id="liveTime" style="font-weight:bold; font-size:1.3rem; color:var(--amber);">00:00</div>
+            <div id="liveSetTimer" style="font-size:0.8rem; color:#aaa;">SET: 00:00</div>
+        </div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -142,8 +126,7 @@
         </div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
-            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--amber); color:#000; width:100%;" onclick="addSelectedToSet()">ZET IN SET</button>
-            <button class="btn btn-danger" id="bulkClearTagsBtn" style="display:none; width:100%;" onclick="bulkClearTags()">TAGS WISSEN</button>
+            <button class="btn" id="bulkToSetBtn" style="display:none; background:var(--amber); color:#000; width:100%; margin-bottom:10px;" onclick="addSelectedToSet()">ZET IN SET</button>
             <button class="btn" style="width:70%;" id="songsAdminBtn" onclick="toggleAdminMenu('songsAdmin')">BEHEER</button>
             <div id="songsAdmin" class="admin-submenu">
                 <button class="btn" onclick="showManual()">MANUAL</button>
@@ -154,6 +137,10 @@
     </div>
 
     <div id="setMenu" class="full-menu">
+        <div class="set-timer-box">
+            <span id="setMenuTime">00:00</span>
+            <span id="setMenuTimer">SET: 00:00</span>
+        </div>
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
             <button class="btn" id="setEditToggle" onclick="toggleSetEdit()">EDIT MODE</button>
             <button class="btn" onclick="closeMenus()">X</button>
@@ -179,58 +166,38 @@
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
+        let setStartTime = localStorage.getItem('tdfSetStart') ? parseInt(localStorage.getItem('tdfSetStart')) : null;
         let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 0, setEditMode = false;
+        let pressTimer;
 
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(updateClock, 1000); requestAnimationFrame(scrollEngine); };
-        function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
+        function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); if(setStartTime) localStorage.setItem('tdfSetStart', setStartTime); else localStorage.removeItem('tdfSetStart'); }
         function openMenu(id) { document.getElementById(id).classList.add('open'); render(); }
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.classList.remove('open')); }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
 
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+            if(document.getElementById('liveTime')) document.getElementById('liveTime').innerText = timeStr;
+            if(document.getElementById('setMenuTime')) document.getElementById('setMenuTime').innerText = timeStr;
+            
+            if(setStartTime) {
+                const diff = Math.floor((now.getTime() - setStartTime) / 1000);
+                const m = Math.floor(diff / 60).toString().padStart(2,'0');
+                const s = (diff % 60).toString().padStart(2,'0');
+                const duration = `SET: ${m}:${s}`;
+                if(document.getElementById('liveSetTimer')) document.getElementById('liveSetTimer').innerText = duration;
+                if(document.getElementById('setMenuTimer')) document.getElementById('setMenuTimer').innerText = duration;
+            }
+        }
+
         function toggleSelectMode() {
-            selectMode = !selectMode;
-            selectedSongs = [];
-            updateBulkBtnText();
+            selectMode = !selectMode; selectedSongs = [];
             document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            document.getElementById('bulkClearTagsBtn').style.display = selectMode ? 'block' : 'none';
             document.getElementById('songsAdminBtn').style.display = selectMode ? 'none' : 'block';
             render();
-        }
-
-        function updateBulkBtnText() {
-            const btn = document.getElementById('bulkToSetBtn');
-            btn.innerText = selectedSongs.length > 0 ? `ZET ${selectedSongs.length} IN SET` : "ZET IN SET";
-        }
-
-        function toggleSongSelection(t) { 
-            if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); 
-            else selectedSongs.push(t); 
-            updateBulkBtnText();
-        }
-
-        function addSelectedToSet() { 
-            if(selectedSongs.length === 0) return;
-            selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); 
-            save(); 
-            showToast(`${selectedSongs.length} TOEGEVOEGD`); 
-            toggleSelectMode(); 
-            closeMenus(); 
-            openMenu('setMenu'); 
-        }
-
-        function bulkClearTags() {
-            if(selectedSongs.length === 0) return;
-            db.forEach(s => { if(selectedSongs.includes(s.title)) s.tags = ""; });
-            save(); showToast("TAGS VERWIJDERD"); toggleSelectMode();
-        }
-
-        function showManual() {
-            closeMenus();
-            document.getElementById('bgLogo').style.display = 'none';
-            document.getElementById('manualContent').style.display = 'block';
-            document.getElementById('title').innerText = "MANUAL";
-            cur = null;
         }
 
         function render() {
@@ -240,12 +207,15 @@
             let allTags = new Set(); db.forEach(s => s.tags && s.tags.split(',').forEach(t => allTags.add(t.trim())));
 
             Array.from(allTags).sort().forEach(t => {
+                if(!t) return;
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
-                p.innerText = t; p.onclick = () => {
-                    if(selectMode) { 
-                        db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); 
-                        save(); showToast("TAGS BIJGEWERKT"); render(); 
-                    }
+                p.innerText = t;
+                p.onmousedown = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
+                p.onmouseup = () => clearTimeout(pressTimer);
+                p.ontouchstart = () => { pressTimer = window.setTimeout(() => { if(confirm(`Tag '${t}' wissen?`)) { db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').filter(x=>x.trim()!==t).join(','); }); save(); render(); } }, 800); };
+                p.ontouchend = () => clearTimeout(pressTimer);
+                p.onclick = () => {
+                    if(selectMode) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); }
                     else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
                 }; tagsDiv.appendChild(p);
             });
@@ -256,9 +226,8 @@
                 return mSearch && (selectMode || mTags);
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
-                const isSel = selectedSongs.includes(s.title);
                 d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" class="select-check" ${isSel?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                    ${selectMode ? `<input type="checkbox" class="select-check" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
                     <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }">
                         <b>${s.title}</b><br><small>${s.tags||''}</small>
                     </div>
@@ -283,12 +252,19 @@
             });
         }
 
+        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(s => s !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
         function addToSetlist(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); closeMenus(); openMenu('setMenu'); } }
-        function addNoteRow() { const v = document.getElementById('noteInput').value; if(v) { setlist.push({title:v, isNote:true}); save(); render(); document.getElementById('noteInput').value=""; } }
+        function addSelectedToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); closeMenus(); openMenu('setMenu'); }
         function moveSetItem(i, d) { let t=i+d; if(t>=0 && t<setlist.length) { [setlist[i],setlist[t]] = [setlist[t],setlist[i]]; save(); render(); } }
         function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditTools').style.display = setEditMode ? 'flex' : 'none'; render(); }
+        function addNoteRow() { const v = document.getElementById('noteInput').value; if(v) { setlist.push({title:v, isNote:true}); save(); render(); document.getElementById('noteInput').value=""; } }
         
-        function liveSetSong(i) { cur=setlist[i]; enterLiveView(); closeMenus(); }
+        function liveSetSong(i) { 
+            cur=setlist[i]; 
+            if(!setStartTime) { setStartTime = new Date().getTime(); save(); }
+            enterLiveView(); closeMenus(); 
+        }
+        
         function editSetSong(i) { cur=setlist[i]; startEdit(); closeMenus(); }
         function loadSongByName(t) { cur=db.find(x=>x.title===t); if(!cur) return; document.getElementById('title').innerText=cur.title; drawLyrics('lyricsArea'); closeMenus(); }
 
@@ -324,13 +300,12 @@
                 h+=`<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt||' '}</div>`;
             });
             container.innerHTML = h;
-            if(id==='lyricsArea') { container.scrollTop=0; document.getElementById('bgLogo').style.display='none'; document.getElementById('manualContent').style.display='none'; document.getElementById('editBtn').style.display='block'; document.getElementById('liveBtn').style.display='block'; }
+            if(id==='lyricsArea') { container.scrollTop=0; document.getElementById('bgLogo').style.display='none'; document.getElementById('manualContent').style.display='none'; }
         }
 
         function startEdit() { 
             if(!cur) return; 
             document.getElementById('lyricsArea').style.display='none'; 
-            document.getElementById('manualContent').style.display='none';
             document.getElementById('editorContainer').style.display='flex'; 
             document.getElementById('editorArea').value=cur.content; 
             document.getElementById('tagField').value=cur.tags||""; 
@@ -365,16 +340,16 @@
 
         function scrollEngine() { const lv=document.getElementById('liveView'); if(lv && lv.style.display==='block' && isScrolling && currentSpeed>0) { scrollAcc+=(currentSpeed*0.4); lv.scrollTop=Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
         function initTouchWheel() { const wheel=document.getElementById('thumbWheel'); let startY=0, startS=0; wheel.addEventListener('touchstart', (e) => { startY=e.touches[0].clientY; startS=currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed=Math.max(0, Math.min(15, startS + ((startY-e.touches[0].clientY)/15))); if(cur) cur.scrollSpeed=currentSpeed; updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
-        function createWheelNodes() { const strip=document.getElementById('wheelStrip'); strip.innerHTML=""; for(let i=0; i<=150; i++) { const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(1); strip.appendChild(d); } }
+        function createWheelNodes() { const strip=document.getElementById('wheelStrip'); strip.innerHTML=""; for(let i=0; i<=150; i++) { const d=document.createElement('div'); d.className='wheel-num'; d.innerText=(i/10).toFixed(0) + " BPM"; strip.appendChild(d); } }
         function updateWheelPosition() { const strip=document.getElementById('wheelStrip'); strip.style.transform=`translateY(${28.5-(currentSpeed*280)}px)`; const activeIdx=Math.round(currentSpeed*10); strip.querySelectorAll('.wheel-num').forEach((n,i)=>n.classList.toggle('active',i===activeIdx)); }
         function toggleScroll() { isScrolling=!isScrolling; document.getElementById('playBtn').innerText=isScrolling?"⏸":"▶"; }
-        function updateClock() { document.getElementById('liveClock').innerText=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }
+        function showManual() { closeMenus(); document.getElementById('bgLogo').style.display='none'; document.getElementById('manualContent').style.display='block'; document.getElementById('title').innerText="MANUAL"; cur=null; }
         function exportDB() { const data=JSON.stringify(db); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tdf_db.json'; a.click(); }
-        function importDB(e) { const reader=new FileReader(); reader.onload=(ev)=>{db=JSON.parse(ev.target.result); save(); render();}; reader.readAsText(e.target.files[0]); }
+        function importDB(e) { const reader = new FileReader(); reader.onload=(ev)=>{db=JSON.parse(ev.target.result); save(); render();}; reader.readAsText(e.target.files[0]); }
         function exportSetlist() { if(setlist.length === 0) return; const data=JSON.stringify(setlist); const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='setlist.json'; a.click(); }
-        function clearSetlist() { if(confirm("Setlist wissen?")) { setlist=[]; save(); render(); } }
+        function clearSetlist() { if(confirm("Setlist wissen? Timer wordt ook gereset.")) { setlist=[]; setStartTime=null; save(); render(); } }
         function whatsappExport() { const txt = setlist.map(s => s.isNote ? `--- ${s.title} ---` : s.title).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("SET GEKOPIEERD")); }
-        function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim(); if(!t) return null; const song = db.find(s => s.title === t); return song ? JSON.parse(JSON.stringify(song)) : {title: t, isNote: true}; }).filter(x=>x); save(); render(); } }
+        function whatsappImport() { const input = prompt("Plak tekst:"); if(input) { const lines = input.split('\n'); setlist = lines.map(l => { const t = l.trim().toLowerCase(); if(!t) return null; const song = db.find(s => s.title.toLowerCase() === t); return song ? JSON.parse(JSON.stringify(song)) : {title: l.trim(), isNote: true}; }).filter(x=>x); save(); render(); } }
     </script>
 </body>
 </html>
