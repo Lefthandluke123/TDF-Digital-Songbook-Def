@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.61</title>
+    <title>TDF Digital v10.62</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -99,8 +99,8 @@
         };
 
         function render() {
-            const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            const q = document.getElementById('songSearch').value || "";
+            const dbl = document.getElementById('dbList'); dbl.innerHTML = "<div style='padding:15px;'><b>SONGS DATABASE</b></div>";
+            const q = document.getElementById('songSearch') ? document.getElementById('songSearch').value : "";
             db.filter(s => s && s.title.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "setlist-row";
                 d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
@@ -108,7 +108,7 @@
                                <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
-            const sl = document.getElementById('setList'); sl.innerHTML = "";
+            const sl = document.getElementById('setList'); sl.innerHTML = "<div style='padding:15px;'><b>ACTIEVE SET</b></div>";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "setlist-row";
                 d.innerHTML = `<div style="flex:1;" onclick="enterLive(${i})">${i+1}. ${s.title}</div><button class="btn" style="border-color:var(--red); color:var(--red);" onclick="setlist.splice(${i},1); save(); render();">X</button>`;
@@ -173,7 +173,6 @@
         }
 
         function cycleFontSize() { if(!cur) return; const sz = ['sm', 'std', 'lg']; cur.liveSize = sz[(sz.indexOf(cur.liveSize || 'std') + 1) % 3]; save(); drawLyrics(true); }
-        
         function createChordButtons() {
             const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
             ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
@@ -186,7 +185,6 @@
                 bar.appendChild(b);
             });
         }
-
         function transpose(dir) {
             const a = document.getElementById('editorArea');
             a.value = a.value.replace(/\[(.*?)\]/g, (m, c) => {
@@ -198,7 +196,6 @@
                 return `[${t}]`;
             });
         }
-
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("SET +1"); } }
         function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
@@ -209,7 +206,23 @@
         function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 1000); }
         function exportDB() { const b = new Blob([JSON.stringify(db)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `tdf_backup.json`; a.click(); }
-        function importDB(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); showToast("OK"); }; r.readAsText(f); }
+        function importDB(e) {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(Array.isArray(data)) {
+                        db = data;
+                        save();
+                        render();
+                        showToast("IMPORT OK");
+                    } else { showToast("GEEN LIJST"); }
+                } catch(err) { showToast("FOUT BESTAND"); }
+                e.target.value = ''; // Reset de picker voor een volgende keer
+            };
+            r.readAsText(f);
+        }
         function clearSetlist() { if(confirm("Setlist wissen?")) { setlist = []; startTime = null; localStorage.removeItem('tdfStartTime'); save(); render(); } }
     </script>
 </body>
