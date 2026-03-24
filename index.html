@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.46</title>
+    <title>TDF Digital v10.47</title>
     <style>
-        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
+        :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: ui-monospace, 'SF Mono', monospace; background: var(--bg-black); color: #fff; margin: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
@@ -15,8 +15,7 @@
         .logo-img { height: 45px; width: auto; cursor: pointer; }
         
         .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; background: #fff; z-index: 1000; }
-        @keyframes pulse { 0% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } 50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); } 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(0.95); } }
-        .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; }
+        .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; opacity: 0.1; }
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 10; background: transparent; }
         #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 40px 35px 600px 35px; z-index: 2000; color: #fff; }
@@ -25,21 +24,17 @@
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; cursor: pointer; }
-        .setlist-row.edit-active { border-left: 8px solid var(--amber); background: #252525; }
+        .setlist-row { height: 70px; background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px 0 20px; color: #fff; border-bottom: 1px solid #222; position: relative; }
+        .setlist-row.edit-active { border-left: 10px solid var(--amber); background: #333; }
         
-        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 50; position: relative; }
+        .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 500; position: relative; }
         .btn.active { background: var(--amber); color: #000; }
-        .btn-danger { border-color: var(--red); color: var(--red); }
 
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
-        .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 45px; text-align: center; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
-        #liveFooter { height: calc(130px + env(safe-area-inset-bottom)); background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px calc(20px + env(safe-area-inset-bottom)) 15px; z-index: 10000; pointer-events: auto; }
+        #liveFooter { height: 130px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 10000; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
-        .font-sm { font-size: 1.6rem !important; } .font-std { font-size: 2.5rem !important; } .font-lg { font-size: 3.8rem !important; }
     </style>
 </head>
 <body>
@@ -53,25 +48,20 @@
         <div class="top-right"><button class="btn" id="liveBtn" style="background:var(--amber); color:#000;" onclick="enterLiveView()">LIVE</button></div>
     </div>
 
-    <div class="main-container"><img src="logo.png" id="bgLogo" class="watermark"><div id="lyricsArea"></div><div id="liveView"><div id="liveContent"></div></div>
+    <div class="main-container">
+        <img src="logo.png" id="bgLogo" class="watermark">
+        <div id="lyricsArea"></div>
+        <div id="liveView"><div id="liveContent"></div></div>
+        
         <div id="editorContainer">
-            <div style="padding:10px 15px; background:#111; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333;">
+            <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn" onclick="renameSong()">NAAM</button>
                 <div style="display:flex; gap:5px;"><button class="btn" onclick="transpose(-1)">[-1]</button><button class="btn" onclick="transpose(1)">[+1]</button></div>
-                <div style="display:flex; gap:5px;"><button class="btn" onclick="exportSingleTxt()">EXPORT TXT</button><button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button></div>
+                <div style="display:flex; gap:5px;"><button class="btn" onclick="exportSingleTxt()">TXT</button><button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button></div>
             </div>
-            <div class="chord-bar" id="editorChordBar"></div>
+            <div id="editorChordBar" style="display:flex; overflow-x:auto; padding:10px; background:#222; gap:8px;"></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
-    </div>
-
-    <div id="liveFooter">
-        <div style="display:flex; gap:8px;"><button class="btn" onclick="exitLiveView()">X</button></div>
-        <div style="display:flex; align-items:center;"><button class="btn" onclick="resetSongScroll()">⏮</button><button id="playBtn" class="btn" style="width:60px; font-size:1.6rem; margin: 0 10px;" onclick="toggleScroll()">▶</button>
-            <div class="wheel-wrap" id="bpmWheel" style="position:relative; width:100px; height:100px; background:#000; border:2px solid #444; border-radius:12px; overflow:hidden; touch-action:none; margin:0 10px;"><div style="position:absolute; width:100%; height:36px; top:32px; border-top:1px solid var(--amber); border-bottom:1px solid var(--amber); background:rgba(255,191,0,0.15); pointer-events:none; z-index:2;"></div><div class="wheel-strip" id="wheelStrip" style="position:absolute; width:100%; text-align:center; top:0; left:0; pointer-events:none; transition:transform 0.1s linear;"></div></div>
-            <button class="btn" id="fontSizeBtn" onclick="cycleFontSize()">A+</button>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px;"><div style="text-align:right"><div id="liveClockDisplay" style="font-size:1.1rem; font-weight:bold;">00:00</div><div id="setTimerDisplay" style="font-size:0.9rem; color:var(--amber); font-weight:bold;">0m</div></div><button id="nextSongBtn" class="btn" style="background:var(--amber); color:#000; min-width:90px;" onclick="goToNextSong()">VOLGENDE</button></div>
     </div>
 
     <div id="songsMenu" class="full-menu">
@@ -82,43 +72,120 @@
             </div>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek..." oninput="render()" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:12px; border-radius:8px;"></div>
-        <div class="tag-cloud-wrapper"><div id="tagList" style="display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0;"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
+        <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div id="tagList" style="display:flex; overflow-x:auto; gap:10px; padding:0 15px 15px 15px;"></div>
         <div id="dbList" class="menu-scroll"></div>
-        <div class="menu-footer" style="padding: 20px 15px calc(45px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 12px; align-items: center; flex-shrink: 0;">
-            <div id="songsAdmin" class="admin-submenu" style="display:none; background:#222; border:1px solid #444; border-radius:12px; width:100%; padding:15px; gap:10px; margin-bottom:10px;"><button class="btn" style="color:var(--amber)" onclick="cleanDuplicates()">CLEAN DB</button><button class="btn" onclick="triggerFilePicker('txt')">IMPORT TXT</button><button class="btn" onclick="exportDB()">EXPORT JSON DB</button><button class="btn" onclick="triggerFilePicker('json')">IMPORT JSON DB</button></div>
-            <div id="bulkControls" style="display:none; width:100%; flex-direction:column; gap:8px;"><button class="btn" id="bulkToSetBtn" style="background:var(--amber); color:#000;" onclick="bulkAddToSet()">ZET IN SET</button><button class="btn btn-danger" onclick="bulkDeleteFromDB()">VERWIJDER SELECTIE</button></div>
-            <button class="btn" id="adminBtnMain" style="width:100%;" onclick="toggleSub('songsAdmin')">BEHEER DATABASE</button>
+        <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333;">
+            <div id="songsAdmin" style="display:none; flex-direction:column; gap:10px; margin-bottom:15px;">
+                <button class="btn" onclick="exportDB()">BACKUP JSON</button>
+                <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE JSON</button>
+                <button class="btn btn-danger" onclick="cleanDuplicates()">CLEAN DUPLICATES</button>
+            </div>
+            <button class="btn" style="width:100%;" onclick="toggleSub('songsAdmin')">DATABASE BEHEER</button>
         </div>
     </div>
 
     <div id="setMenu" class="full-menu">
-        <div class="setlist-header" style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display:flex; gap:10px;"><button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT</button><button class="btn" id="addNoteBtn" style="display:none;" onclick="addCustomNote()">NOTITIE +</button></div>
-            <div style="text-align:right"><div id="headerTime" style="font-size:1.2rem; font-weight:bold;">00:00</div><div id="headerTimer" style="font-size:1rem; color:var(--amber); font-weight:bold;">0m</div></div>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <button class="btn" onclick="toggleSetEdit()">EDIT</button>
+            <b id="headerTime">00:00</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
         <div id="setList" class="menu-scroll"></div>
-        <div class="menu-footer" style="padding: 20px 15px calc(45px + env(safe-area-inset-bottom)); background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 12px; align-items: center; flex-shrink: 0;">
-            <div id="setAdmin" class="admin-submenu" style="display:none; background:#222; border:1px solid #444; border-radius:12px; width:100%; padding:15px; gap:10px; margin-bottom:10px;"><button class="btn" onclick="saveActiveSet()">SAVE SET</button><button class="btn" onclick="openMenu('archiveMenu')">ARCHIEF</button><button class="btn" onclick="whatsappImport()">WA-IMPORT</button><button class="btn" onclick="whatsappExport()">WA-EXPORT</button><button class="btn btn-danger" onclick="clearSetlist()">CLEAR ALL</button></div>
-            <button class="btn" style="width:100%;" onclick="toggleSub('setAdmin')">BEHEER SETLIST</button>
+        <div class="menu-footer" style="padding:20px; background:#111;">
+            <button class="btn" style="width:100%;" onclick="saveActiveSet()">SAVE SETLIST</button>
         </div>
     </div>
-
-    <div id="archiveMenu" class="full-menu"><div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><b>ARCHIEF</b><button class="btn" onclick="openMenu('setMenu')">TERUG</button></div><div id="archiveList" class="menu-scroll"></div></div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
-        let archives = JSON.parse(localStorage.getItem('tdfArchives')) || [];
-        let cur = null, curIdx = -1, isScrolling = false, scrollAcc = 0, currentSpeed = 100, setEditMode = false, songEditMode = false, selectMode = false, selectedSongs = [], activeTags = [];
-        let setStartTime = localStorage.getItem('tdfSetStartTime') || null;
-        const MIN_BPM = 40, MAX_BPM = 220, scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
+        let songEditMode = false;
+        let cur = null;
 
-        window.onload = () => { createBpmNodes(); initBpmWheel(); render(); createChordButtons(); setInterval(updateClocks, 1000); requestAnimationFrame(scrollEngine); document.getElementById('importJsonFile').addEventListener('change', importDB); document.getElementById('importTxtFile').addEventListener('change', importTxt); };
+        const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
-        function toggleSongEditMode() { songEditMode = !songEditMode; document.getElementById('songEditGlobalBtn').classList.toggle('active', songEditMode); render(); }
-        
+        window.onload = () => { render(); createChordButtons(); setInterval(() => { document.getElementById('headerTime').innerText = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'}); }, 1000); };
+
+        function toggleSongEditMode() {
+            songEditMode = !songEditMode;
+            document.getElementById('songEditGlobalBtn').classList.toggle('active', songEditMode);
+            render();
+            showToast(songEditMode ? "EDIT AAN" : "EDIT UIT");
+        }
+
+        function render() {
+            const dbl = document.getElementById('dbList');
+            dbl.innerHTML = "";
+            const query = document.getElementById('songSearch').value.toLowerCase();
+
+            db.filter(s => s && s.title.toLowerCase().includes(query)).sort((a,b) => a.title.localeCompare(b.title)).forEach(s => {
+                const row = document.createElement('div');
+                row.className = "setlist-row" + (songEditMode ? " edit-active" : "");
+                row.innerHTML = `<div style="flex:1; font-size:1.4rem;"><b>${s.title}</b></div><button class="btn" style="min-width:60px; font-size:1.5rem;">+</button>`;
+                
+                // De "Magic Fix" voor iPad: reageer op de aanraking van de hele rij
+                row.addEventListener('touchstart', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        addToSetlist(s.title);
+                        e.stopPropagation();
+                    } else {
+                        if (songEditMode) {
+                            startEdit(s.title);
+                        } else {
+                            loadSong(s.title);
+                        }
+                    }
+                });
+
+                // Fallback voor muis
+                row.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        if (songEditMode) startEdit(s.title); else loadSong(s.title);
+                    }
+                };
+
+                dbl.appendChild(row);
+            });
+        }
+
+        function startEdit(title) {
+            cur = db.find(x => x.title === title);
+            if(cur) {
+                document.getElementById('editorArea').value = cur.content;
+                document.getElementById('editorContainer').style.display = 'flex';
+            }
+        }
+
+        function finishEdit() {
+            if(cur) {
+                cur.content = document.getElementById('editorArea').value;
+                localStorage.setItem('tdfSongs', JSON.stringify(db));
+                document.getElementById('editorContainer').style.display = 'none';
+                loadSong(cur.title);
+                render();
+            }
+        }
+
+        function loadSong(title) {
+            cur = db.find(x => x.title === title);
+            if(cur) {
+                const container = document.getElementById('lyricsArea');
+                container.innerHTML = cur.content.replace(/\n/g, '<br>');
+                closeMenus();
+            }
+        }
+
+        function addToSetlist(title) {
+            const s = db.find(x => x.title === title);
+            if(s) {
+                setlist.push(JSON.parse(JSON.stringify(s)));
+                localStorage.setItem('tdfSetlist', JSON.stringify(setlist));
+                showToast("TOEGEVOEGD");
+            }
+        }
+
         function transpose(dir) {
             const area = document.getElementById('editorArea');
             area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => {
@@ -130,105 +197,29 @@
                 }).join('/');
                 return `[${transposed}]`;
             });
-            showToast(dir > 0 ? "+1 STAP" : "-1 STAP");
         }
 
-        function exportSingleTxt() {
-            if(!cur) return;
-            const content = document.getElementById('editorArea').value;
-            const blob = new Blob([content], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${cur.title}.txt`;
-            a.click();
-            showToast("GEËXPORTEERD");
-        }
-
-        function triggerFilePicker(type) { document.getElementById(type === 'json' ? 'importJsonFile' : 'importTxtFile').click(); }
-        function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); localStorage.setItem('tdfArchives', JSON.stringify(archives)); }
-        
-        function render() {
-            const sQ = document.getElementById('songSearch').value.toLowerCase();
-            const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
-            const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
-            let allTags = new Set(); db.forEach(s => { if(s && s.tags) s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); })});
-            Array.from(allTags).sort().forEach(t => {
-                const p = document.createElement('div'); p.className = 'tag-pill'; p.innerText = t; p.style.background = activeTags.includes(t) ? "var(--amber)" : "#333"; p.style.color = activeTags.includes(t) ? "#000" : "#aaa"; p.style.borderRadius = "20px"; p.style.padding = "8px 16px";
-                p.onclick = (e) => { e.stopPropagation(); if(selectMode && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } }); save(); render(); } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); } }; tagsDiv.appendChild(p);
-            });
-            db.filter(s => { if(!s) return false; const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ); const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase())); return mSearch && mTags; }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
-                const d = document.createElement('div'); 
-                d.className = "setlist-row" + (songEditMode ? " edit-active" : "");
-                d.setAttribute('data-title', s.title);
-                d.onclick = function(e) {
-                    const title = this.getAttribute('data-title');
-                    if (selectMode) { toggleSongSelection(title); render(); return; }
-                    if (songEditMode) { startEdit(title); } 
-                    else { loadSongByName(title); }
+        function createChordButtons() {
+            const bar = document.getElementById('editorChordBar');
+            ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
+                const b = document.createElement('button');
+                b.className = 'chord-btn';
+                b.innerText = c;
+                b.onclick = () => {
+                    const area = document.getElementById('editorArea');
+                    const start = area.selectionStart;
+                    area.value = area.value.substring(0, start) + `[${c}]` + area.value.substring(area.selectionEnd);
+                    area.focus();
                 };
-
-                d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" style="width:25px;height:25px;margin-right:15px" ${selectedSongs.includes(s.title)?'checked':''}>` : ''}
-                    <div style="flex:1"><b>${s.title}</b><br><small style="opacity:0.6">${s.tags||''}</small></div>
-                    <button class="btn" style="min-width:50px;" onclick="event.stopPropagation(); addToSetlist(this.parentElement.getAttribute('data-title'))">+</button>`;
-                dbl.appendChild(d);
+                bar.appendChild(b);
             });
-            const setl = document.getElementById('setList'); setl.innerHTML = "";
-            setlist.forEach((s, i) => { const d = document.createElement('div'); d.className = "setlist-row"; const isN = s.isNote; d.innerHTML = `<div style="display:${setEditMode?'flex':'none'}; flex-direction:column; margin-right:10px;"><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, -1)">▲</button><button class="btn-move" onclick="event.stopPropagation(); moveItem(${i}, 1)">▼</button></div><div style="flex:1" onclick="${(setEditMode || isN)?'':'liveSetSong('+i+')'}"><span>${isN ? (s.title ? '-- '+s.title+' --' : ' ') : (i+1)+'. '+s.title}</span></div><button class="btn btn-danger" style="display:${setEditMode?'block':'none'}" onclick="event.stopPropagation(); setlist.splice(${i},1); save(); render();">X</button>`; setl.appendChild(d); });
-            const archl = document.getElementById('archiveList'); archl.innerHTML = ""; archives.forEach((a, i) => { const d = document.createElement('div'); d.className = "setlist-row"; d.innerHTML = `<div style="flex:1" onclick="loadArchive(${i})"><b>${a.name}</b></div><button class="btn" style="margin-right:8px;" onclick="event.stopPropagation(); archiveWAExport(${i})">WA</button><button class="btn btn-danger" onclick="event.stopPropagation(); deleteArchive(${i})">X</button>`; archl.appendChild(d); });
         }
 
-        function startEdit(t) { 
-            cur = db.find(x => x && x.title === t); 
-            if(cur) {
-                document.getElementById('editorTitle').innerText = cur.title; 
-                document.getElementById('editorArea').value = cur.content; 
-                document.getElementById('editorContainer').style.display = 'flex'; 
-            }
-        }
-        function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics('lyricsArea'); render(); }
-        function renameSong() { if(!cur) return; const newName = prompt("Nieuwe naam:", cur.title); if(newName && newName !== cur.title) { cur.title = newName.toUpperCase().trim(); document.getElementById('editorTitle').innerText = cur.title; save(); render(); } }
-        function deleteFromDB(title) { if(confirm(`Wissen: ${title}?`)) { db = db.filter(s => s && s.title !== title); save(); render(); } }
-        function bulkDeleteFromDB() { if(confirm(`${selectedSongs.length} liedjes wissen?`)) { db = db.filter(s => s && !selectedSongs.includes(s.title)); selectedSongs = []; save(); toggleSelectMode(); render(); } }
-        function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkControls').style.display = selectMode ? 'flex' : 'none'; document.getElementById('adminBtnMain').style.display = selectMode ? 'none' : 'block'; render(); }
-        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
-        function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x && x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); openMenu('setMenu'); }
-        function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectedSongs.length > 0) { db.forEach(s => { if(s && selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
-        function moveItem(idx, dir) { const newIdx = idx + dir; if (newIdx < 0 || newIdx >= setlist.length) return; const item = setlist.splice(idx, 1)[0]; setlist.splice(newIdx, 0, item); save(); render(); }
-        function addCustomNote() { const val = prompt("Notitie:"); if(val !== null) { setlist.push({title: val.toUpperCase().trim(), isNote: true}); save(); render(); } }
-        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); document.getElementById('addNoteBtn').style.display = setEditMode ? 'block' : 'none'; render(); }
-        function cycleFontSize() { if(!cur) return; const sizes = ['sm', 'std', 'lg']; if(!cur.liveSize || !sizes.includes(cur.liveSize)) cur.liveSize = 'std'; let idx = sizes.indexOf(cur.liveSize); cur.liveSize = sizes[(idx + 1) % sizes.length]; applyFontSize(); save(); }
-        function applyFontSize() { const lc = document.getElementById('liveContent'); if(!lc || !cur) return; lc.className = 'font-' + (cur.liveSize || 'std'); }
-        function createChordButtons() { const bar = document.getElementById('editorChordBar'); bar.innerHTML = ""; ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = (e) => { e.preventDefault(); const area = document.getElementById('editorArea'); const start = area.selectionStart; const val = area.value; area.value = val.substring(0, start) + `[${c}]` + val.substring(area.selectionEnd); area.focus(); area.selectionStart = area.selectionEnd = start + c.length + 2; }; bar.appendChild(b); }); }
-        function cleanDuplicates() { const initialCount = db.length; const uniqueTitles = new Set(); db = db.filter(song => { if (!song || typeof song !== 'object' || !song.title) return false; const cleanTitle = song.title.toLowerCase().trim(); const isDuplicate = uniqueTitles.has(cleanTitle); uniqueTitles.add(cleanTitle); return !isDuplicate; }); save(); render(); showToast("OK"); }
-        function importTxt(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { const title = file.name.replace(/\.[^/.]+$/, ""); db.push({ title: title.toUpperCase(), content: ev.target.result, scrollSpeed: 100, tags: "", liveSize: 'std' }); save(); render(); e.target.value = ''; }; reader.readAsText(file); }
-        function importDB(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { try { const imported = JSON.parse(ev.target.result); if(Array.isArray(imported)) { db = imported; save(); render(); showToast("OK"); } } catch(err) { showToast("ERROR"); } e.target.value = ''; }; reader.readAsText(file); }
-        function loadSongByName(t) { cur = db.find(x => x && x.title === t); drawLyrics('lyricsArea'); closeMenus(); }
-        function liveSetSong(i) { curIdx = i; cur = setlist[i]; enterLiveView(); closeMenus(); }
-        function goToNextSong() { if (curIdx < setlist.length - 1) { curIdx++; if(setlist[curIdx].isNote) { goToNextSong(); return; } cur = setlist[curIdx]; enterLiveView(); } else { exitLiveView(); openMenu('setMenu'); showToast("EINDE"); } }
-        function enterLiveView() { if(!cur) return; if(!setStartTime) { setStartTime = new Date().toISOString(); localStorage.setItem('tdfSetStartTime', setStartTime); } document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; document.getElementById('bgLogo').style.display = 'none'; drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 100; updateWheelPosition(); resetSongScroll(); }
-        function exitLiveView() { document.getElementById('mainTopBar').style.display = 'flex'; document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; document.getElementById('bgLogo').style.display = 'block'; isScrolling = false; }
-        function scrollEngine() { const lv = document.getElementById('liveView'); if(lv && lv.style.display === 'block' && isScrolling) { scrollAcc += (currentSpeed * 0.005); lv.scrollTop = Math.floor(scrollAcc); } requestAnimationFrame(scrollEngine); }
-        function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollAcc = document.getElementById('liveView').scrollTop; }
-        function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
-        function createBpmNodes() { const strip = document.getElementById('wheelStrip'); strip.innerHTML = ""; for(let i = MIN_BPM; i <= MAX_BPM; i++) { const d = document.createElement('div'); d.className = 'wheel-num'; d.innerText = i; strip.appendChild(d); } }
-        function initBpmWheel() { const wheel = document.getElementById('bpmWheel'); let startY = 0, startS = 0; wheel.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; startS = currentSpeed; e.preventDefault(); }, {passive:false}); wheel.addEventListener('touchmove', (e) => { currentSpeed = Math.round(Math.max(MIN_BPM, Math.min(MAX_BPM, startS + (startY - e.touches[0].clientY) / 8))); if(cur) { cur.scrollSpeed = currentSpeed; save(); } updateWheelPosition(); e.preventDefault(); }, {passive:false}); }
-        function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(1 * 34) - ((currentSpeed - MIN_BPM) * 34)}px)`; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', (i + MIN_BPM) === currentSpeed)); }
-        function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; document.getElementById('bgLogo').style.display = 'none'; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; }
-        function addToSetlist(t) { const s = db.find(x => x && x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("OK"); render(); } }
-        function openMenu(id) { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.getElementById(id).classList.add('open'); render(); }
-        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); document.querySelectorAll('.admin-submenu').forEach(s => s.style.display = 'none'); }
-        function toggleSub(id) { const el = document.getElementById(id); el.style.display = el.style.display === 'none' ? 'flex' : 'none'; }
-        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
-        function clearSetlist() { if(confirm("Wissen?")) { setlist = []; setStartTime = null; curIdx = -1; localStorage.removeItem('tdfSetStartTime'); save(); render(); } }
-        function whatsappImport() { const input = prompt("Plak lijst:"); if(input) { const lines = input.split('\n'); const newSet = lines.map(l => { const clean = l.replace(/^\d+\.\s*/, "").replace(/^--\s*|\s*--$/g, "").trim(); if(!clean) return {title: "", isNote: true}; const song = db.find(s => s && s.title.toLowerCase() === clean.toLowerCase()); return song ? JSON.parse(JSON.stringify(song)) : {title: clean.toUpperCase(), isNote: true}; }); setlist = [...setlist, ...newSet]; save(); render(); } }
-        function whatsappExport() { const txt = setlist.map((s, i) => s.isNote ? (s.title ? `-- ${s.title} --` : ' ') : `${i+1}. ${s.title}`).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("OK")); }
-        function archiveWAExport(idx) { const txt = archives[idx].list.map((s, i) => s.isNote ? (s.title ? `-- ${s.title} --` : ' ') : `${i+1}. ${s.title}`).join('\n'); navigator.clipboard.writeText(txt).then(() => showToast("OK")); }
-        function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tdf_db.json`; a.click(); }
-        function updateClocks() { const now = new Date(); const timeStr = now.toLocaleTimeString('nl-NL', {hour: '2-digit', minute: '2-digit'}); let timerStr = "0m"; if(setStartTime) { timerStr = Math.floor((now - new Date(setStartTime)) / 60000) + "m"; } document.getElementById('liveClockDisplay').innerText = timeStr; document.getElementById('setTimerDisplay').innerText = timerStr; document.getElementById('headerTime').innerText = timeStr; document.getElementById('headerTimer').innerText = timerStr; }
-        function deleteArchive(idx) { if(confirm("Wissen?")) { archives.splice(idx, 1); save(); render(); } }
-        function saveActiveSet() { if(setlist.length === 0) return; const name = prompt("Naam:"); if(name) { archives.push({ name: name, list: JSON.parse(JSON.stringify(setlist)), date: new Date().toISOString() }); save(); render(); } }
-        function loadArchive(idx) { if(confirm("Laden?")) { setlist = JSON.parse(JSON.stringify(archives[idx].list)); save(); render(); closeMenus(); openMenu('setMenu'); } }
+        function openMenu(id) { document.getElementById(id).classList.add('open'); }
+        function closeMenus() { document.querySelectorAll('.full-menu').forEach(m => m.classList.remove('open')); }
+        function toggleSub(id) { const el = document.getElementById(id); el.style.display = (el.style.display === 'none') ? 'flex' : 'none'; }
+        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display='block'; setTimeout(()=>t.style.display='none', 1000); }
+        function exportSingleTxt() { if(!cur) return; const blob = new Blob([document.getElementById('editorArea').value], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${cur.title}.txt`; a.click(); }
     </script>
 </body>
 </html>
