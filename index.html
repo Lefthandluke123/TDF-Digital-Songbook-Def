@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v10.68</title>
+    <title>TDF Digital v10.74</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,18 +19,26 @@
         .watermark { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; animation: pulse 4s infinite ease-in-out; }
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 10; background: transparent; }
-        #lyricsArea.live-mode { background: #000; color: #fff; padding-bottom: 60vh; }
+        #lyricsArea.live-mode { background: #000; color: #fff; padding-bottom: 65vh; }
         
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 100000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
         .menu-scroll { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px; color: #fff; border-bottom: 1px solid #222; }
+        .setlist-row { height: calc((100vh - 180px) / 14); background: var(--row-bg); margin-bottom: 2px; display: flex; align-items: center; padding: 0 10px; color: #fff; border-bottom: 1px solid #222; overflow: hidden; }
         .btn { border: 1px solid var(--amber); color: var(--amber); background: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .btn.active { background: var(--amber); color: #000; }
         .btn-move { border: 1px solid #444; color: #888; padding: 5px 10px; margin: 0 2px; font-size: 1.1rem; border-radius: 4px; background: #222; }
         
+        .tag-pill { background: #333; color: #aaa; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; margin-right: 8px; border: 1px solid transparent; flex-shrink: 0; }
+        .tag-pill.active { background: var(--amber); color: #000; border-color: #fff; }
+
+        /* Editor & Chord Bar */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 200000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
+        .chord-bar { display: flex; overflow-x: auto; gap: 8px; padding: 10px; background: #222; border-bottom: 1px solid #444; flex-shrink: 0; }
+        .chord-btn { background: #333; color: var(--amber); border: 1px solid var(--amber); padding: 8px 12px; border-radius: 6px; font-weight: bold; min-width: 48px; text-align: center; cursor: pointer; }
+        
         #liveFooter { height: 140px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-around; padding: 0 10px 25px 10px; z-index: 10000; flex-shrink: 0; }
         #toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--amber); color: #000; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 500000; display: none; }
     </style>
@@ -40,8 +48,15 @@
     <div id="toast">MELDING</div>
 
     <div class="top-bar" id="mainTopBar">
-        <div class="top-left"><img src="logo.png" class="logo-img" onclick="location.reload()"><button class="btn" onclick="openMenu('songsMenu')">SONGS</button><button class="btn" onclick="openMenu('setMenu')">SET</button></div>
-        <div style="text-align:right"><div id="liveClock" style="font-size:1.2rem; font-weight:bold;">00:00</div><div id="setTimer" style="font-size:0.9rem; color:var(--amber); font-weight:bold;">0m</div></div>
+        <div class="top-left">
+            <img src="logo.png" class="logo-img" onclick="location.reload()">
+            <button class="btn" onclick="openMenu('songsMenu')">SONGS</button>
+            <button class="btn" onclick="openMenu('setMenu')">SET</button>
+        </div>
+        <div style="text-align:right">
+            <div id="liveClock" style="font-size:1.2rem; font-weight:bold;">00:00</div>
+            <div id="setTimer" style="font-size:0.9rem; color:var(--amber); font-weight:bold;">0m</div>
+        </div>
     </div>
 
     <div class="main-container">
@@ -50,9 +65,11 @@
         <div id="editorContainer">
             <div style="padding:15px; background:#111; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn" onclick="document.getElementById('editorContainer').style.display='none'">X</button>
-                <div style="flex:1; text-align:center;"><b id="edTitle">EDITOR</b></div>
+                <div style="display:flex; gap:5px;"><button class="btn" onclick="transpose(-1)">[-1]</button><button class="btn" onclick="transpose(1)">[+1]</button></div>
+                <div style="display:flex; gap:5px;"><button class="btn" onclick="renameSong()">NAAM</button><button class="btn" onclick="editTags()">TAGS</button></div>
                 <button class="btn" style="background:var(--amber); color:#000;" onclick="finishEdit()">OPSLAAN</button>
             </div>
+            <div id="editorChordBar" class="chord-bar"></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
     </div>
@@ -68,12 +85,15 @@
     <div id="songsMenu" class="full-menu">
         <input type="file" id="importJsonFile" style="display:none" accept="application/json">
         <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <b>SONGS</b>
+            <button class="btn" id="bulkBtn" onclick="toggleBulk()">BULK</button>
+            <b>SONGS DATABASE</b>
             <button class="btn" onclick="closeMenus()">X</button>
         </div>
-        <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div style="padding:15px;"><input type="text" id="songSearch" placeholder="Zoek op titel of tag..." oninput="render()" style="width:100%; background:#111; color:#fff; border:1px solid #444; padding:15px; border-radius:8px; font-size:1.2rem;"></div>
+        <div id="tagFilterBar" style="display:flex; overflow-x:auto; padding:15px; border-bottom:1px solid #222;"></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer" style="padding:20px; background:#111; border-top:1px solid #333; display:flex; gap:10px; justify-content:center;">
+            <button class="btn" id="bulkTagBtn" style="display:none; background:var(--amber); color:#000;" onclick="bulkTag()">TAG SELECTIE</button>
             <button class="btn" onclick="exportDB()">BACKUP</button>
             <button class="btn" onclick="document.getElementById('importJsonFile').click()">RESTORE</button>
         </div>
@@ -93,9 +113,13 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, curIdx = -1, isScrolling = false, scrollPos = 0, currentSpeed = 100, startTime = localStorage.getItem('tdfStartTime') || null;
+        let activeTags = [], bulkMode = false, selectedSongs = [];
+        const fixedTags = ["irish", "scots", "british", "country", "si-so", "ballad", "uptempo"];
+        const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const flats = { "Db": "C#", "Eb": "D#", "Gb": "F#", "Ab": "G#", "Bb": "A#" };
 
         window.onload = () => { 
-            render(); 
+            render(); createChordButtons();
             document.getElementById('importJsonFile').addEventListener('change', importDB);
             setInterval(() => {
                 document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
@@ -105,13 +129,34 @@
         };
 
         function render() {
+            const tagBar = document.getElementById('tagFilterBar');
+            if(tagBar) {
+                tagBar.innerHTML = "";
+                fixedTags.forEach(tag => {
+                    const p = document.createElement('div');
+                    p.className = "tag-pill" + (activeTags.includes(tag) ? " active" : "");
+                    p.innerText = tag.toUpperCase();
+                    p.onclick = () => { if(activeTags.includes(tag)) activeTags = activeTags.filter(t => t !== tag); else activeTags.push(tag); render(); };
+                    tagBar.appendChild(p);
+                });
+            }
+
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             const q = document.getElementById('songSearch').value.toLowerCase();
-            db.filter(s => s && s.title.toLowerCase().includes(q)).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
+            db.filter(s => {
+                if(!s) return false;
+                const mS = s.title.toLowerCase().includes(q) || (s.tags || "").toLowerCase().includes(q);
+                const sT = s.tags ? s.tags.toLowerCase().split(',').map(t => t.trim()) : [];
+                const mT = activeTags.length === 0 || activeTags.every(at => sT.includes(at.toLowerCase()));
+                return mS && mT;
+            }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "setlist-row";
-                d.innerHTML = `<div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b></div>
-                               <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
-                               <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
+                const isSel = selectedSongs.includes(s.title);
+                d.innerHTML = `
+                    ${bulkMode ? `<input type="checkbox" style="width:30px;height:30px;margin-right:15px;" ${isSel?'checked':''} onchange="toggleSel('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                    <div style="flex:1;" onclick="loadPreview('${s.title.replace(/'/g, "\\'")}')"><b>${s.title}</b><br><small style="opacity:0.4;text-transform:uppercase;">${s.tags || ''}</small></div>
+                    <button class="btn" style="margin-right:10px;" onclick="startEdit('${s.title.replace(/'/g, "\\'")}')">✎</button>
+                    <button class="btn" onclick="addToSet('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
 
@@ -132,52 +177,49 @@
             });
         }
 
-        function moveItem(idx, dir) {
-            const newIdx = idx + dir;
-            if (newIdx < 0 || newIdx >= setlist.length) return;
-            const item = setlist.splice(idx, 1)[0];
-            setlist.splice(newIdx, 0, item);
-            save(); render();
+        function createChordButtons() {
+            const bar = document.getElementById('editorChordBar'); bar.innerHTML = "";
+            ["A", "Am", "B", "Bm", "C", "Cm", "D", "Dm", "E", "Em", "F", "Fm", "G", "Gm", "7"].forEach(c => {
+                const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c;
+                b.onclick = () => {
+                    const a = document.getElementById('editorArea'); const s = a.selectionStart;
+                    a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd);
+                    a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2;
+                };
+                bar.appendChild(b);
+            });
         }
 
-        function addCustomNote() {
-            const val = prompt("Notitie/Pauze:");
-            if (val) { setlist.push({ title: val.toUpperCase(), isNote: true }); save(); render(); }
+        function transpose(dir) {
+            const area = document.getElementById('editorArea');
+            area.value = area.value.replace(/\[(.*?)\]/g, (match, chord) => {
+                const transposed = chord.split('/').map(part => {
+                    let root = part.match(/^[A-G][#b]?/)?.[0]; if (!root) return part;
+                    let suffix = part.slice(root.length), val = flats[root] || root, idx = scale.indexOf(val);
+                    if (idx === -1) return part;
+                    return scale[(idx + dir + 12) % 12] + suffix;
+                }).join('/');
+                return `[${transposed}]`;
+            });
         }
 
+        function toggleBulk() { bulkMode = !bulkMode; selectedSongs = []; document.getElementById('bulkBtn').classList.toggle('active', bulkMode); document.getElementById('bulkTagBtn').style.display = bulkMode ? 'block' : 'none'; render(); }
+        function toggleSel(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); }
+        function bulkTag() { if(selectedSongs.length === 0) return; const t = prompt("Tag toevoegen aan selectie:"); if(t) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let curTags = s.tags ? s.tags.split(',').map(x=>x.trim()) : []; if(!curTags.includes(t)) curTags.push(t); s.tags = curTags.join(', '); } }); save(); toggleBulk(); render(); } }
+        function moveItem(idx, dir) { const newIdx = idx + dir; if (newIdx < 0 || newIdx >= setlist.length) return; const item = setlist.splice(idx, 1)[0]; setlist.splice(newIdx, 0, item); save(); render(); }
+        function addCustomNote() { const val = prompt("Notitie/Pauze:"); if (val) { setlist.push({ title: val.toUpperCase(), isNote: true }); save(); render(); } }
         function loadPreview(t) { cur = db.find(x=>x.title===t); drawLyrics(false); closeMenus(); document.getElementById('bgLogo').style.display = 'none'; }
-        
-        function enterLive(index) {
-            if (setlist[index].isNote) return;
-            curIdx = index; cur = setlist[curIdx];
-            if(!startTime) { startTime = new Date().toISOString(); localStorage.setItem('tdfStartTime', startTime); }
-            document.getElementById('lyricsArea').classList.add('live-mode');
-            document.getElementById('liveFooter').style.display = 'flex';
-            document.getElementById('mainTopBar').style.display = 'none';
-            document.getElementById('bgLogo').style.display = 'none';
-            drawLyrics(true); closeMenus();
-        }
-
-        function drawLyrics(isLive) {
-            const area = document.getElementById('lyricsArea'); if(!cur) return;
-            area.className = (isLive ? 'live-mode ' : '') + 'font-' + (cur.liveSize || 'std');
-            area.innerHTML = cur.content.split('\n').map(l => {
-                let chords = [], txt = "", i = 0;
-                while(i < l.length) {
-                    if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; }
-                    else { txt += l[i]; i++; }
-                }
-                let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; });
-                return `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || '&nbsp;'}</div>`;
-            }).join('');
-        }
-
+        function enterLive(index) { if (setlist[index].isNote) return; curIdx = index; cur = setlist[curIdx]; if(!startTime) { startTime = new Date().toISOString(); localStorage.setItem('tdfStartTime', startTime); } document.getElementById('lyricsArea').classList.add('live-mode'); document.getElementById('liveFooter').style.display = 'flex'; document.getElementById('mainTopBar').style.display = 'none'; document.getElementById('bgLogo').style.display = 'none'; resetScroll(); drawLyrics(true); closeMenus(); }
+        function drawLyrics(isLive) { const area = document.getElementById('lyricsArea'); if(!cur) return; area.className = (isLive ? 'live-mode ' : '') + 'font-' + (cur.liveSize || 'std'); area.innerHTML = cur.content.split('\n').map(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i+1, e)}); i = e+1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); return `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || '&nbsp;'}</div>`; }).join(''); }
         function scrollLoop() { if(isScrolling) { scrollPos += (currentSpeed * 0.006); document.getElementById('lyricsArea').scrollTop = scrollPos; } requestAnimationFrame(scrollLoop); }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; if(isScrolling) scrollPos = document.getElementById('lyricsArea').scrollTop; }
-        function navSet(dir) { let n = curIdx + dir; while (n >= 0 && n < setlist.length && setlist[n].isNote) { n += dir; } if(n >= 0 && n < setlist.length) enterLive(n); }
+        function resetScroll() { scrollPos = 0; document.getElementById('lyricsArea').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
+        function navSet(dir) { let n = curIdx + dir; while (n >= 0 && n < setlist.length && setlist[n].isNote) { n += dir; } if(n >= 0 && n < setlist.length) enterLive(n); else showToast("EINDE SET"); }
         function exitLive() { document.getElementById('lyricsArea').classList.remove('live-mode'); document.getElementById('liveFooter').style.display = 'none'; document.getElementById('mainTopBar').style.display = 'flex'; isScrolling = false; }
         function cycleFontSize() { if(!cur) return; const sz = ['sm', 'std', 'lg']; cur.liveSize = sz[(sz.indexOf(cur.liveSize || 'std') + 1) % 3]; save(); drawLyrics(true); }
-        function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('edTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
+        function startEdit(t) { cur = db.find(x => x.title === t); if(cur) { document.getElementById('editorArea').value = cur.content; document.getElementById('editorContainer').style.display = 'flex'; } }
+        function renameSong() { if(!cur) return; const n = prompt("Naam:", cur.title); if(n) { cur.title = n.toUpperCase(); save(); render(); } }
+        function editTags() { if(!cur) return; const t = prompt("Tags:", cur.tags); if(t !== null) { cur.tags = t.toLowerCase(); save(); render(); } }
         function finishEdit() { cur.content = document.getElementById('editorArea').value; save(); document.getElementById('editorContainer').style.display = 'none'; drawLyrics(false); render(); }
         function save() { localStorage.setItem('tdfSongs', JSON.stringify(db)); localStorage.setItem('tdfSetlist', JSON.stringify(setlist)); }
         function addToSet(t) { const s = db.find(x=>x.title===t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); render(); showToast("SET +1"); } }
