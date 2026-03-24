@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>TDF Digital v9.87</title>
+    <title>TDF Digital v9.88</title>
     <style>
         :root { --bg-black: #000; --amber: #ffbf00; --grey: #121212; --row-bg: #1c1c1e; --red: #ff3b30; --green: #25D366; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -18,7 +18,12 @@
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; pointer-events: none; z-index: 0; opacity: 0.1; }
 
         #lyricsArea { flex: 1; overflow-y: auto; padding: 40px; color: #000; font-size: 1.8rem; line-height: 1.6; position: relative; z-index: 1; background: transparent; }
-        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 400px 35px; z-index: 20; color: #fff; }
+        #liveView { display: none; flex: 1; background: #000; overflow-y: auto; padding: 100px 35px 600px 35px; z-index: 20; color: #fff; }
+        
+        /* Font Scaling Classes */
+        .font-std { font-size: 2.5rem !important; }
+        .font-lg { font-size: 3.5rem !important; }
+        .font-xl { font-size: 4.5rem !important; }
 
         .full-menu { position: fixed; top: 0; left: -100%; width: 100%; height: 100%; background: #000; z-index: 10000; transition: 0.3s; display: flex; flex-direction: column; }
         .full-menu.open { left: 0; }
@@ -32,25 +37,17 @@
         
         .tag-cloud-wrapper { background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; height: 60px; padding: 0 10px; flex-shrink: 0; }
         #tagList { display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; flex: 1; padding: 10px 0; }
-        #tagList::-webkit-scrollbar { display: none; }
-        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; border: 1px solid transparent; }
+        .tag-pill { display: inline-block; padding: 8px 16px; background: #333; color: #aaa; border-radius: 20px; font-size: 0.85rem; cursor: pointer; user-select: none; }
         .tag-pill.active { background: var(--amber); color: #000; font-weight: bold; }
-        .plus-tag-btn { background: var(--amber); color: #000; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; font-weight: bold; margin-left: 10px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .menu-footer { padding: 15px; background: #111; border-top: 1px solid #333; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .admin-submenu { display: none; background: #222; border: 1px solid #444; border-radius: 8px; width: 100%; padding: 10px; gap: 10px; margin-bottom: 5px; }
-        .admin-submenu.open { display: flex; flex-direction: column; }
-
-        /* Editor Styles - Cleaned Up */
         #editorContainer { display: none; flex: 1; flex-direction: column; background: #000; z-index: 30000; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .chord-bar-wrapper { width: 100%; background: #222; border-bottom: 1px solid #444; overflow-x: auto; flex-shrink: 0; }
         #chordBar { display: flex; gap: 10px; padding: 15px; min-width: 100%; }
         .chord-btn { background: #333; color: var(--amber); border: 2px solid var(--amber); padding: 12px 15px; border-radius: 8px; font-weight: 900; font-size: 1.1rem; min-width: 65px; text-align: center; flex-shrink: 0; }
-        .chord-btn:active { background: var(--amber); color: #000; }
         #editorArea { flex: 1; width: 100%; padding: 25px; font-size: 1.5rem; border: none; background: #fcfcfc; color: #000; outline: none; font-family: monospace; resize: none; }
 
-        #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 5000; }
-        .wheel-wrap { position: relative; width: 110px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
+        #liveFooter { height: 110px; background: #111; border-top: 2px solid #333; display: none; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 5000; }
+        .wheel-wrap { position: relative; width: 100px; height: 85px; background: #000; border: 1px solid #444; border-radius: 12px; overflow: hidden; touch-action: none; }
         .wheel-strip { position: absolute; width: 100%; text-align: center; top: 0; left: 0; pointer-events: none; }
         .wheel-num { height: 28px; line-height: 28px; font-size: 0.9rem; color: #444; }
         .wheel-num.active { color: var(--amber); font-size: 1.2rem; font-weight: bold; }
@@ -88,64 +85,47 @@
                 </div>
                 <input type="text" id="editorTagField" style="width:100%; background:#000; border:1px solid #444; color:var(--amber); padding:8px; border-radius:6px;" placeholder="Tags...">
             </div>
-            <div class="chord-bar-wrapper">
-                <div id="chordBar"></div>
-            </div>
+            <div class="chord-bar-wrapper"><div id="chordBar"></div></div>
             <textarea id="editorArea" spellcheck="false"></textarea>
         </div>
         <div id="liveView"><div id="liveContent"></div></div>
     </div>
 
     <div id="liveFooter">
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:5px;">
             <button class="btn" onclick="exitLiveView()">X</button>
             <button class="btn" onclick="location.reload()">⌂</button>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:5px;">
             <button class="btn" onclick="resetSongScroll()">⏮</button>
-            <button id="playBtn" class="btn" style="width:75px;" onclick="toggleScroll()">▶</button>
+            <button id="playBtn" class="btn" style="width:65px; font-size:1.5rem;" onclick="toggleScroll()">▶</button>
+            <button class="btn" id="fontSizeBtn" style="min-width:55px; color:#fff;" onclick="cycleFontSize()">A+</button>
         </div>
         <div class="wheel-wrap" id="thumbWheel">
             <div class="wheel-overlay"></div>
             <div class="wheel-strip" id="wheelStrip"></div>
         </div>
-        <div id="liveClock" style="text-align:right; font-size:0.9rem; color:var(--amber); font-weight:bold; min-width:60px;">00:00</div>
+        <div id="liveClock" style="text-align:right; font-size:0.85rem; color:var(--amber); font-weight:bold; min-width:55px;">00:00</div>
     </div>
 
     <div id="songsMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-            <button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button>
-            <button class="btn" onclick="closeMenus()">X</button>
-        </div>
-        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="margin:0; width:100%; background:#000; color:#fff; border:1px solid #444; padding:10px; border-radius:8px;"></div>
-        <div class="tag-cloud-wrapper">
-            <div id="tagList"></div>
-            <button class="plus-tag-btn" onclick="addNewTag()">+</button>
-        </div>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="selectBtn" onclick="toggleSelectMode()">SELECT</button><button class="btn" onclick="closeMenus()">X</button></div>
+        <div style="padding:10px 15px; background:#111;"><input type="text" id="songSearch" class="search-bar" placeholder="Zoek liedje..." oninput="render()" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:12px; border-radius:8px;"></div>
+        <div class="tag-cloud-wrapper"><div id="tagList"></div><button class="btn" onclick="addNewTag()" style="margin-left:5px;">+</button></div>
         <div id="dbList" class="menu-scroll"></div>
         <div class="menu-footer">
             <button class="btn" id="bulkToSetBtn" style="display:none; width:100%; background:var(--amber); color:#000; margin-bottom:10px;" onclick="bulkAddToSet()">ZET IN SET</button>
-            <button class="btn" style="width:100%;" id="songAdminToggle" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
-            <div id="songsAdmin" class="admin-submenu">
-                <button class="btn" onclick="exportDB()">EXPORT DB</button>
-                <button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button>
-            </div>
+            <button class="btn" style="width:100%;" onclick="toggleAdminMenu('songsAdmin')">BEHEER DATABASE</button>
+            <div id="songsAdmin" class="admin-submenu"><button class="btn" onclick="exportDB()">EXPORT DB</button><button class="btn" onclick="document.getElementById('importFile').click()">IMPORT DB</button></div>
         </div>
     </div>
 
     <div id="setMenu" class="full-menu">
-        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;">
-            <button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT MODE</button>
-            <button class="btn" onclick="closeMenus()">X</button>
-        </div>
+        <div style="padding:20px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><button class="btn" id="setEditBtn" onclick="toggleSetEdit()">EDIT MODE</button><button class="btn" onclick="closeMenus()">X</button></div>
         <div id="setList" class="menu-scroll"></div>
         <div class="menu-footer">
             <button class="btn" style="width:100%;" onclick="toggleAdminMenu('setAdmin')">BEHEER SETLIST</button>
-            <div id="setAdmin" class="admin-submenu">
-                <button class="btn" onclick="whatsappExport()">WA-EXPORT</button>
-                <button class="btn" onclick="whatsappImport()">WA-IMPORT</button>
-                <button class="btn btn-danger" onclick="clearSetlist()">CLEAR SETLIST</button>
-            </div>
+            <div id="setAdmin" class="admin-submenu"><button class="btn" onclick="whatsappExport()">WA-EXPORT</button><button class="btn" onclick="whatsappImport()">WA-IMPORT</button><button class="btn btn-danger" onclick="clearSetlist()">CLEAR SETLIST</button></div>
         </div>
     </div>
 
@@ -155,7 +135,6 @@
         let db = JSON.parse(localStorage.getItem('tdfSongs')) || [];
         let setlist = JSON.parse(localStorage.getItem('tdfSetlist')) || [];
         let cur = null, activeTags = [], selectMode = false, selectedSongs = [], isScrolling = false, scrollAcc = 0, currentSpeed = 11, setEditMode = false;
-        let pressTimer;
 
         window.onload = () => { createWheelNodes(); initTouchWheel(); createChordBar(); render(); setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); }, 1000); requestAnimationFrame(scrollEngine); };
 
@@ -165,80 +144,49 @@
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         function toggleAdminMenu(id) { document.getElementById(id).classList.toggle('open'); }
 
-        function toggleSelectMode() { 
-            selectMode = !selectMode; 
-            if(!selectMode) selectedSongs = [];
-            document.getElementById('selectBtn').classList.toggle('active', selectMode);
-            document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none';
-            document.getElementById('songAdminToggle').style.display = selectMode ? 'none' : 'block';
-            render(); 
+        function cycleFontSize() {
+            if(!cur) return;
+            const sizes = ['std', 'lg', 'xl'];
+            let idx = sizes.indexOf(cur.liveSize || 'std');
+            cur.liveSize = sizes[(idx + 1) % sizes.length];
+            applyFontSize();
+            save();
+            showToast("GROOTTE: " + cur.liveSize.toUpperCase());
         }
 
-        function toggleSongSelection(title) { 
-            if(selectedSongs.includes(title)) selectedSongs = selectedSongs.filter(x => x !== title);
-            else selectedSongs.push(title);
-            document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`;
+        function applyFontSize() {
+            const lc = document.getElementById('liveContent');
+            if(!lc || !cur) return;
+            lc.className = 'font-' + (cur.liveSize || 'std');
         }
-
-        function addNewTag() {
-            const nt = prompt("Nieuwe tag naam:");
-            if(nt) {
-                if(selectMode && selectedSongs.length > 0) {
-                    db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } });
-                    save(); showToast(`TAG '${nt}' TOEGEVOEGD`); render();
-                } else {
-                    showToast("Selecteer songs om tag toe te voegen.");
-                }
-            }
-        }
-
-        function bulkAddToSet() {
-            selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); });
-            save(); showToast(`${selectedSongs.length} TOEGEVOEGD`); toggleSelectMode(); closeMenus(); openMenu('setMenu');
-        }
-
-        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); render(); }
 
         function render() {
             const sQ = document.getElementById('songSearch').value.toLowerCase();
             const dbl = document.getElementById('dbList'); dbl.innerHTML = "";
             const tagsDiv = document.getElementById('tagList'); tagsDiv.innerHTML = "";
-            
             let allTags = new Set(); db.forEach(s => s.tags && s.tags.split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); }));
-
             Array.from(allTags).sort().forEach(t => {
                 const p = document.createElement('div'); p.className = 'tag-pill' + (activeTags.includes(t) ? ' active' : '');
                 p.innerText = t;
-                p.onmousedown = () => { pressTimer = window.setTimeout(() => handleLongPressTag(t), 800); };
-                p.onmouseup = () => clearTimeout(pressTimer);
-                p.ontouchstart = () => { pressTimer = window.setTimeout(() => handleLongPressTag(t), 800); };
-                p.ontouchend = () => clearTimeout(pressTimer);
                 p.onclick = () => {
                     if(selectMode && selectedSongs.length > 0) {
                         db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(t)) ts.push(t); s.tags = ts.join(', '); } });
                         save(); render();
-                    } else {
-                        if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render();
-                    }
+                    } else { if(activeTags.includes(t)) activeTags = activeTags.filter(x => x !== t); else activeTags.push(t); render(); }
                 };
                 tagsDiv.appendChild(p);
             });
-
             db.filter(s => {
                 const mSearch = s.title.toLowerCase().includes(sQ) || (s.tags||"").toLowerCase().includes(sQ);
                 const mTags = activeTags.every(at => (s.tags||"").toLowerCase().includes(at.toLowerCase()));
                 return mSearch && mTags;
             }).sort((a,b)=>a.title.localeCompare(b.title)).forEach(s => {
                 const d = document.createElement('div'); d.className = "row-item";
-                d.innerHTML = `
-                    ${selectMode ? `<input type="checkbox" class="select-check" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
-                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }">
-                        <b>${s.title}</b><br><small>${s.tags||''}</small>
-                    </div>
+                d.innerHTML = `${selectMode ? `<input type="checkbox" class="select-check" ${selectedSongs.includes(s.title)?'checked':''} onchange="toggleSongSelection('${s.title.replace(/'/g, "\\'")}')">` : ''}
+                    <div style="flex:1" onclick="${selectMode ? "toggleSongSelection('"+s.title.replace(/'/g, "\\'")+"'); render();" : "loadSongByName('"+s.title.replace(/'/g, "\\'")+"')" }"><b>${s.title}</b><br><small>${s.tags||''}</small></div>
                     <button class="btn" style="display:${selectMode?'none':'block'}" onclick="addToSetlist('${s.title.replace(/'/g, "\\'")}')">+</button>`;
                 dbl.appendChild(d);
             });
-
             const setl = document.getElementById('setList'); setl.innerHTML = "";
             setlist.forEach((s, i) => {
                 const d = document.createElement('div'); d.className = "row-item";
@@ -247,26 +195,16 @@
             });
         }
 
-        function handleLongPressTag(t) {
-            if(selectMode && selectedSongs.length > 0) {
-                if(confirm(`Verwijder tag '${t}' van de selectie?`)) {
-                    db.forEach(s => { if(selectedSongs.includes(s.title) && s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                    save(); render();
-                }
-            } else {
-                if(confirm(`Tag '${t}' overal wissen?`)) {
-                    db.forEach(s => { if(s.tags) s.tags = s.tags.split(',').map(x=>x.trim()).filter(x => x !== t).join(', '); });
-                    save(); render();
-                }
-            }
-        }
-
+        function toggleSelectMode() { selectMode = !selectMode; if(!selectMode) selectedSongs = []; document.getElementById('selectBtn').classList.toggle('active', selectMode); document.getElementById('bulkToSetBtn').style.display = selectMode ? 'block' : 'none'; render(); }
+        function toggleSongSelection(t) { if(selectedSongs.includes(t)) selectedSongs = selectedSongs.filter(x => x !== t); else selectedSongs.push(t); document.getElementById('bulkToSetBtn').innerText = `ZET ${selectedSongs.length} IN SET`; }
+        function bulkAddToSet() { selectedSongs.forEach(title => { const s = db.find(x => x.title === title); if(s) setlist.push(JSON.parse(JSON.stringify(s))); }); save(); toggleSelectMode(); closeMenus(); openMenu('setMenu'); }
+        function toggleSetEdit() { setEditMode = !setEditMode; document.getElementById('setEditBtn').classList.toggle('active', setEditMode); render(); }
         function loadSongByName(t) { cur = db.find(x => x.title === t); document.getElementById('title').innerText = cur.title; drawLyrics('lyricsArea'); closeMenus(); }
         function addToSetlist(t) { const s = db.find(x => x.title === t); if(s) { setlist.push(JSON.parse(JSON.stringify(s))); save(); showToast("TOEGEVOEGD"); render(); } }
         function liveSetSong(i) { cur = setlist[i]; enterLiveView(); closeMenus(); }
         function editSetSong(i) { cur = setlist[i]; startEdit(); closeMenus(); }
 
-        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0; }
+        function enterLiveView() { if(!cur) return; document.getElementById('lyricsArea').style.display='none'; document.getElementById('liveView').style.display='block'; document.getElementById('liveFooter').style.display='flex'; drawLyrics('liveContent'); applyFontSize(); currentSpeed = cur.scrollSpeed || 11; scrollAcc = 0; isScrolling = false; updateWheelPosition(); document.getElementById('playBtn').innerText = "▶"; document.getElementById('liveView').scrollTop = 0; }
         function exitLiveView() { document.getElementById('liveView').style.display='none'; document.getElementById('liveFooter').style.display='none'; document.getElementById('lyricsArea').style.display='block'; isScrolling = false; }
         function resetSongScroll() { scrollAcc = 0; document.getElementById('liveView').scrollTop = 0; isScrolling = false; document.getElementById('playBtn').innerText = "▶"; }
         function toggleScroll() { isScrolling = !isScrolling; document.getElementById('playBtn').innerText = isScrolling ? "⏸" : "▶"; }
@@ -276,7 +214,7 @@
         function updateWheelPosition() { const strip = document.getElementById('wheelStrip'); strip.style.transform = `translateY(${(40 * 28) - (currentSpeed * 280)}px)`; const activeIdx = Math.round(currentSpeed * 10) - 400; strip.querySelectorAll('.wheel-num').forEach((n, i) => n.classList.toggle('active', i === activeIdx)); }
 
         function startEdit() { if(!cur) return; document.getElementById('editorTitle').innerText = cur.title; document.getElementById('editorArea').value = cur.content; document.getElementById('editorTagField').value = cur.tags || ""; document.getElementById('editorContainer').style.display = 'flex'; document.getElementById('liveFooter').style.display = 'none'; }
-        function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbSong = db.find(x => x.title === cur.title); if(dbSong) { dbSong.content = cur.content; dbSong.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display === 'block') { document.getElementById('liveFooter').style.display = 'flex'; drawLyrics('liveContent'); } else { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } }
+        function finishEdit() { cur.content = document.getElementById('editorArea').value; cur.tags = document.getElementById('editorTagField').value; let dbS = db.find(x => x.title === cur.title); if(dbS) { dbS.content = cur.content; dbS.tags = cur.tags; } save(); document.getElementById('editorContainer').style.display = 'none'; if(document.getElementById('liveView').style.display === 'block') { document.getElementById('liveFooter').style.display = 'flex'; drawLyrics('liveContent'); applyFontSize(); } else { document.getElementById('lyricsArea').style.display = 'block'; drawLyrics('lyricsArea'); } }
         
         function drawLyrics(id) { const container = document.getElementById(id); if(!cur) return; const lines = cur.content.split('\n'); let h = ""; lines.forEach(l => { let chords = [], txt = "", i = 0; while(i < l.length) { if(l[i] === '[') { let e = l.indexOf(']', i); chords.push({p: txt.length, v: l.substring(i + 1, e)}); i = e + 1; } else { txt += l[i]; i++; } } let r = ""; chords.forEach(c => { r += `<span style="position:absolute; left:${c.p}ch; color:var(--amber); font-weight:bold;">${c.v}</span>`; }); h += `<div style="height:2.2rem; position:relative;">${r}</div><div style="margin-bottom:25px; font-weight:bold;">${txt || ' '}</div>`; }); container.innerHTML = h; document.getElementById('bgLogo').style.display = 'none'; }
         function createChordBar() { const bar = document.getElementById('chordBar'); ["A","Am","B","Bm","C","Cm","D","Dm","E","Em","F","Fm","G","Gm","7"].forEach(c => { const b = document.createElement('div'); b.className = 'chord-btn'; b.innerText = c; b.onclick = () => { const a = document.getElementById('editorArea'); const s = a.selectionStart; a.value = a.value.substring(0, s) + `[${c}]` + a.value.substring(a.selectionEnd); a.focus(); a.selectionStart = a.selectionEnd = s + c.length + 2; }; bar.appendChild(b); }); }
@@ -285,6 +223,7 @@
         function clearSetlist() { if(confirm("Setlist wissen?")) { setlist = []; save(); render(); } }
         function exportDB() { const data = JSON.stringify(db); const blob = new Blob([data], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tdf_db.json'; a.click(); }
         function importDB(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); render(); }; reader.readAsText(e.target.files[0]); }
+        function addNewTag() { const nt = prompt("Nieuwe tag:"); if(nt && selectMode && selectedSongs.length > 0) { db.forEach(s => { if(selectedSongs.includes(s.title)) { let ts = s.tags ? s.tags.split(',').map(x=>x.trim()).filter(x=>x) : []; if(!ts.includes(nt)) ts.push(nt); s.tags = ts.join(', '); } }); save(); render(); } }
     </script>
 </body>
 </html>
